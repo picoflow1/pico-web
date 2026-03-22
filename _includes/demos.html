@@ -1,10 +1,13 @@
 <!-- Demos Section -->
 {% if site.locale and site.locale != "" and site.locale != nil %}
-<section class="page-section" id="{{ site.data.sitetext[site.locale].demos.section | default: "demos" }}" style="background-color: #9e9a9a;">
+<section class="page-section" id="{{ site.data.sitetext[site.locale].demos.section | default: "demos" }}" style="--demo-bg: #9e9a9a; background-color: var(--demo-bg);">
   <div class="container">
     <div class="row">
       <div class="col-lg-12 text-center">
-        <h2 class="section-heading text-uppercase">{{ site.data.sitetext[site.locale].demos.title | default: "Demos" }}</h2>
+        <h2 class="section-heading text-uppercase demo-title">
+          <span>{{ site.data.sitetext[site.locale].demos.title | default: "Demos" }}</span>
+          <img src="{{ 'assets/img/picoclaw.png' | relative_url }}" class="demo-title-logo" alt="PicoFlow claw logo" />
+        </h2>
         {% if site.data.sitetext[site.locale].demos.text %}
         <h3 class="section-subheading text-muted">{{ site.data.sitetext[site.locale].demos.text }}</h3>
         {% endif %}
@@ -45,11 +48,14 @@
   </div>
 </section>
 {% else %}
-<section class="page-section" id="{{ site.data.sitetext.demos.section | default: "demos" }}" style="background-color: #cccccc;">
+<section class="page-section" id="{{ site.data.sitetext.demos.section | default: "demos" }}" style="--demo-bg: #cccccc; background-color: var(--demo-bg);">
   <div class="container">
     <div class="row">
       <div class="col-lg-12 text-center">
-        <h2 class="section-heading text-uppercase">{{ site.data.sitetext.demos.title | default: "Demos" }}</h2>
+        <h2 class="section-heading text-uppercase demo-title">
+          <span>{{ site.data.sitetext.demos.title | default: "Demos" }}</span>
+          <img src="{{ 'assets/img/picoclaw.png' | relative_url }}" class="demo-title-logo" alt="PicoFlow claw logo" />
+        </h2>
         {% if site.data.sitetext.demos.text %}
         <h3 class="section-subheading text-muted">{{ site.data.sitetext.demos.text }}</h3>
         {% endif %}
