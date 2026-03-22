@@ -1,0 +1,88 @@
+<!-- Contact -->
+{% if site.locale and site.locale != "" and site.locale != nil %}
+<section class="page-section" id="{{ site.data.sitetext[site.locale].contact.section | default: "contact" }}">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 text-center">
+        <h2 class="section-heading text-uppercase">
+          {{ site.data.sitetext[site.locale].contact.title | markdownify | default: "Contact Us" }}</h2>
+        <h3 class="section-subheading text-muted text-center">{{ site.data.sitetext[site.locale].contact.text | default: "" }}</h3>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12">
+        <div id="contactForm">
+          <div class="row">
+            <div class="col-md-8 offset-md-2">
+              <div class="form-group">
+                <textarea class="form-control" id="message"
+                  placeholder="{{ site.data.sitetext[site.locale].contact.message | default: "Message*" }}"
+                  rows="8" required="required"></textarea>
+                <p class="help-block text-danger"></p>
+              </div>
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-lg-12 text-center">
+              <div id="success"></div>
+              <button id="sendMessageButton" class="btn btn-primary btn-xl text-uppercase"
+                type="button" onclick="sendEmail()">{{ site.data.sitetext[site.locale].contact.submit | default: "Send Message" }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% else %}
+<section class="page-section" id="{{ site.data.sitetext.contact.section | default: "contact" }}">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 text-center">
+        <h2 class="section-heading text-uppercase">
+          {{ site.data.sitetext.contact.title | markdownify | default: "Contact Us" }}</h2>
+        <h3 class="section-subheading text-muted text-center">{{ site.data.sitetext.contact.text | default: "" }}</h3>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12">
+        <div id="contactForm">
+          <div class="row">
+            <div class="col-md-8 offset-md-2">
+              <div class="form-group">
+                <textarea class="form-control" id="message"
+                  placeholder="{{ site.data.sitetext.contact.message | default: "Message*" }}"
+                  rows="8" required="required"></textarea>
+                <p class="help-block text-danger"></p>
+              </div>
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-lg-12 text-center">
+              <div id="success"></div>
+              <button id="sendMessageButton" class="btn btn-primary btn-xl text-uppercase"
+                type="button" onclick="sendEmail()">{{ site.data.sitetext.contact.submit | default: "Send Message" }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<script>
+function sendEmail() {
+  var message = document.getElementById('message').value;
+  
+  if (!message || message.trim() === '') {
+    alert('Please enter a message.');
+    return;
+  }
+  
+  var email = '{{ site.email }}';
+  var subject = '{{ site.data.sitetext[site.locale].contact.subject | default: "Contact Form Submission" }}';
+  var body = encodeURIComponent(message);
+  
+  window.location.href = 'mailto:' + email + '?subject=' + encodeURIComponent(subject) + '&body=' + body;
+}
+</script>
+<!-- End Contact -->
