@@ -47,7 +47,7 @@ en: &DEFAULT_EN
         emoji: "🦞"
         links:
           - text: "Git Repository"
-            url: "https://github.com/picoflowio/basic-demo"
+            url: "https://github.com/picoflowio/pico-demo"
             class: "btn-outline-dark"
             icon: "fab fa-github"
           - text: "Tutorial"
@@ -60,7 +60,7 @@ en: &DEFAULT_EN
         emoji: ""
         links:
           - text: "Git Repository"
-            url: "https://github.com/picoflowio/hotel-demo"
+            url: "https://github.com/picoflowio/pico-demo"
             class: "btn-outline-dark"
             icon: "fab fa-github"
           - text: "YouTube Video"
@@ -77,7 +77,7 @@ en: &DEFAULT_EN
         emoji: "🦞"
         links:
           - text: "Git Repository"
-            url: "https://github.com/picoflowio/medical-appointment-bot"
+            url: "https://github.com/picoflowio/pico-demo"
             class: "btn-outline-dark"
             icon: "fab fa-github"
           - text: "Tutorial"
@@ -90,7 +90,7 @@ en: &DEFAULT_EN
         emoji: "🦞"
         links:
           - text: "Git Repository"
-            url: "https://github.com/picoflowio/travel-demo"
+            url: "https://github.com/picoflowio/pico-demo"
             class: "btn-outline-dark"
             icon: "fab fa-github"
           - text: "YouTube Video"
