@@ -43,6 +43,13 @@ h6 {
   gap: 12px;
   flex-wrap: wrap;
 }
+.demo-title .demo-by {
+  font-size: 0.55em;
+  text-transform: none !important;
+  letter-spacing: 0;
+  font-weight: 500;
+  line-height: 1;
+}
 .demo-title-logo {
   height: 48px;
   background-color: var(--demo-bg, transparent);

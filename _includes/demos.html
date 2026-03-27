@@ -6,6 +6,7 @@
       <div class="col-lg-12 text-center">
         <h2 class="section-heading text-uppercase demo-title">
           <span>{{ site.data.sitetext[site.locale].demos.title | default: "Demos" }}</span>
+          <small class="demo-by text-muted">by picoClaw</small>
           <img src="{{ 'assets/img/picoclaw.png' | relative_url }}" class="demo-title-logo" alt="PicoFlow claw logo" />
         </h2>
         {% if site.data.sitetext[site.locale].demos.text %}
@@ -54,6 +55,7 @@
       <div class="col-lg-12 text-center">
         <h2 class="section-heading text-uppercase demo-title">
           <span>{{ site.data.sitetext.demos.title | default: "Demos" }}</span>
+          <small class="demo-by text-muted">by picoClaw</small>
           <img src="{{ 'assets/img/picoclaw.png' | relative_url }}" class="demo-title-logo" alt="PicoFlow claw logo" />
         </h2>
         {% if site.data.sitetext.demos.text %}
