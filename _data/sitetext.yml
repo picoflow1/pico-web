@@ -11,7 +11,7 @@
 # -----------------
 en: &DEFAULT_EN
   header:
-    title: Best Agentic framework to
+    title: Best Conversational Agentic Framework
     text: Botify business flows
     button: Explore
     buttonlink: "#services"
