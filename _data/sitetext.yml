@@ -12,7 +12,7 @@
 en: &DEFAULT_EN
   header:
     title: 🥇 Conversational Agentic Framework
-    text: Botify Your Business.
+    text: Botify Your Business
     button: Explore
     buttonlink: "#services"
 
