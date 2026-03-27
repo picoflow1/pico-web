@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build": "eleventy",
+    "build": "eleventy && touch _site/.nojekyll",
     "dev": "eleventy --serve"
   },
   "devDependencies": {
