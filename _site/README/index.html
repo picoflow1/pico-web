@@ -1,139 +1,24 @@
-<h1>Agency Jekyll Theme</h1>
-<p><a href="https://rubygems.org/gems/jekyll-agency"><img src="https://img.shields.io/gem/dt/jekyll-agency?label=gem%20downloads" alt="RubyGems Downloads"></a>
-<a href="/LICENSE.txt"><img src="https://img.shields.io/badge/license-MIT-blue" alt="LICENSE"></a>
-<a href="https://www.paypal.me/raviriley"><img src="https://img.shields.io/badge/PayPal-tip_me-green?logo=paypal" alt="Tip Me via PayPal"></a>
-<a href="https://github.com/raviriley/agency-jekyll-theme-starter/generate"><img src="https://img.shields.io/badge/Generate_theme_from_template-2ea44f" alt="template button"></a>
-<a href="https://jekyll-themes.com/agency-jekyll-theme/"><img src="https://img.shields.io/badge/featured%20on-JekyllThemes-red.svg" alt="Featured on Jekyll-Themes.com"></a></p>
-<h2>Preview - click for live demo</h2>
-<p><a href="https://raviriley.github.io/agency-jekyll-theme-starter/"><img src="/screenshot.PNG" alt="screenshot"></a></p>
-<h2>Warning</h2>
-<blockquote>
-<p>:warning: <strong>Notice for those using legacy Formspree contact forms:</strong> :warning:</p>
-<p>Email-based forms are being <a href="https://help.formspree.io/hc/en-us/articles/360056076314">phased out</a> by Formspree. <a href="https://github.com/raviriley/agency-jekyll-theme/pull/11">#11</a> updated this theme to use the <a href="https://help.formspree.io/hc/en-us/articles/360017735154-How-to-prevent-spam">new Formspree structure</a>. Click <a href="https://help.formspree.io/hc/en-us/articles/360056076314">here</a> for instructions on updating your site's form.</p>
-</blockquote>
-<h2>About</h2>
-<p>This is the <a href="https://startbootstrap.com/themes/agency/">Agency Bootstrap theme</a>, converted to a gem-based Jekyll theme with GitHub Pages support.</p>
-<p>While this has been done before, <a href="https://github.com/y7kim/agency-jekyll-theme">here</a>, <a href="https://github.com/SotiriosVrachas/jekyll-theme-startbootstrap-agency">here</a>, and <a href="https://github.com/laklau/agency-jekyll-theme/">here</a>, these are outdated and have not been updated or maintained for years. I built this theme from the most recent Bootstrap source.</p>
-<p>I also added a lot of new features that go beyond the original theme's capabilities:</p>
+<h1>Picoflow Marketing Site (Eleventy)</h1>
+<p>This repo hosts the Picoflow marketing site built with <a href="https://www.11ty.dev/">Eleventy</a> and a customized version of the Agency Bootstrap theme. All Ruby/Jekyll artifacts have been removed; the site is built and served with Node-only tooling.</p>
+<h2>Prerequisites</h2>
 <ul>
-<li>GitHub Pages support</li>
-<li><a href="https://github.com/raviriley/agency-jekyll-theme-starter">template repo</a> to get up and running in minutes</li>
-<li>contact form functionality powered by <a href="https://formspree.io">Formspree.io</a></li>
-<li>multiple language support (currently English, Spanish, &amp; German)</li>
-<li>custom pages</li>
-<li>404 page</li>
-<li>legal/Privacy Policy page</li>
-<li>Google Analytics support</li>
-<li>Markdown support</li>
-<li>custom images</li>
-<li>logo support (instead of just title text)</li>
-<li>automatically updating copyright years</li>
-<li>custom navigation bar, even without the header image(s)</li>
-<li>customizable footer</li>
-<li>custom accent color and dark/light colors</li>
-<li>horizontal scrolling support for client section</li>
+<li>Node.js 18+ and npm (Eleventy 2.x target)</li>
 </ul>
-<!--
-- custom colors with automatic gradient generation (coming soon)
-- site title logo text font customization (coming soon)
-- horizontal scrolling support for portfolio section (coming soon)
-- about section (different from the timeline) -->
-<p>The Jekyll structure of this theme includes:</p>
+<h2>Install &amp; Run</h2>
+<pre><code class="language-sh">npm install          # install dependencies
+npm run dev          # local dev server with live reload (http://localhost:8080)
+npm run build        # production build to `_site/`
+</code></pre>
+<h2>Project Layout</h2>
 <ul>
-<li><code>_portfolio</code> files - what generate the portfolio grid. YAML front matter handles all the details</li>
-<li>the <code>page</code> layout allows custom pages, as seen in the legal and 404 pages</li>
-<li><code>sitetext.yml</code> enables complete customization of all site text</li>
-<li><code>navigation.yml</code> enables fully customizable navigation</li>
-<li><code>style.yml</code> enables fully customizable colors, background images, and other style-related things</li>
+<li><code>.eleventy.js</code> — Eleventy config (passthroughs, filters, collections).</li>
+<li><code>_data/</code> — global data; <code>site.js</code> merges <code>sitetext.yml</code>, <code>style.yml</code>, and <code>navigation.yml</code>.</li>
+<li><code>_includes/</code> — reusable fragments; <code>_layouts/</code> — page layouts.</li>
+<li><code>portfolio/</code>, <code>qna/</code> — markdown content collections.</li>
+<li><code>assets/</code> — images, CSS, JS copied through to the build.</li>
+<li><code>_site/</code> — generated output (safe to delete/regenerate).</li>
 </ul>
-<p><strong>If you enjoy this theme, please consider <a href="https://www.paypal.me/raviriley">supporting me</a> to continue developing and maintaining it.</strong></p>
-<div align="center">
-<p><a href="https://www.paypal.me/raviriley"><img src="https://cdn.rawgit.com/twolfson/paypal-github-button/1.0.0/dist/button.svg" alt="Support via PayPal"></a></p>
-</div>
-<h2>Installation</h2>
-<p>There are three ways to install this theme:</p>
-<ol>
-<li>As a gem-based theme</li>
-<li>Use the <a href="https://github.com/raviriley/agency-jekyll-theme-starter">starter template</a> (best for GitHub Pages)</li>
-<li>As a remote theme</li>
-</ol>
-<h4>1. Gem-based Theme Installation</h4>
-<p>Replace the contents of your <code>_config.yml</code> file with the sample <a href="https://raw.githubusercontent.com/raviriley/agency-jekyll-theme/master/_config.yml">_config.yml</a>.</p>
-<p>Install the gem with:</p>
-<pre><code class="language-sh">$ bundle add jekyll-agency
-</code></pre>
-<p>Or manually.</p>
-<ol>
-<li>Add this line to your Jekyll site's <code>Gemfile</code>:<pre><code class="language-ruby">gem &quot;jekyll-agency&quot;
-</code></pre>
-</li>
-<li>Then execute:<pre><code class="language-sh">$ bundle install
-</code></pre>
-</li>
-</ol>
-<h4>2. Using the <a href="https://github.com/raviriley/agency-jekyll-theme-starter">Starter Template</a></h4>
-<p>This is the fastest and easiest way to get up and running on GitHub Pages.</p>
-<p>Simply generate your own repository by clicking the button below. Then replace the sample content with your own and configure for your needs.</p>
-<div align="center">
-<p><a href="https://github.com/raviriley/agency-jekyll-theme-starter/generate"><img src="https://img.shields.io/badge/Generate-Use_this_template-2ea44f?style=for-the-badge" alt="Use this template"></a></p>
-</div>
-<h4>3. Remote Theme Installation</h4>
-<p>Replace your <code>_config.yml</code> file with the starter <a href="https://raw.githubusercontent.com/raviriley/agency-jekyll-theme-starter/master/_config.yml">_config.yml</a>.</p>
-<p>Replace your <code>Gemfile</code> with the starter <a href="https://raw.githubusercontent.com/raviriley/agency-jekyll-theme-starter/master/Gemfile">Gemfile</a>.</p>
-<p>Then install gems.</p>
-<pre><code class="language-sh">$ bundle install
-</code></pre>
-<!--
-## Documentation and Usage
-
-**TODO:** Write usage instructions here. Describe available layouts, includes, or assets.
-
-navheader is used only for the home page. nav is used everywhere else.
-
-Layouts:
-
-Includes:
-
--->
-<h2>Contributing</h2>
-<p>This project is intended to be a welcoming space for collaboration. If you have an idea, suggestion, feature request, etc., feel free to open an issue or pull request.</p>
-<p>For bug reports, follow the provided template.</p>
-<h4>Improvements - Up for Grabs</h4>
-<ul>
-<li>[x] multiple language support thanks to <a href="https://github.com/rbenitezpagan">@rbenitezpagan</a>
-<ul>
-<li>[x] Spanish thanks to <a href="https://github.com/rbenitezpagan">@rbenitezpagan</a></li>
-<li>[x] German thanks to <a href="https://github.com/bkfirmen">@bkfirmen</a></li>
-<li>[ ] Chinese</li>
-<li>[ ] Arabic</li>
-<li>[ ] etc</li>
-</ul>
-</li>
-<li>[ ] customizable background coloring for each section</li>
-</ul>
-<h2>Development</h2>
-<p>To set up your environment to develop this theme, clone this repo or your fork.</p>
-<pre><code class="language-sh">$ git clone https://github.com/raviriley/agency-jekyll-theme.git
-$ cd agency-jekyll-theme
-</code></pre>
-<p>Then run:</p>
-<pre><code class="language-sh">$ bundle install
-</code></pre>
-<p>To test the theme, run this. (Using the <code>--trace</code> flag for verbose errors.)</p>
-<pre><code class="language-sh">$ bundle exec jekyll serve --trace
-</code></pre>
-<p>Then open your browser at:</p>
-<ul>
-<li>http://localhost:4000</li>
-</ul>
-<p>Add pages, documents, data, etc. like normal to test the theme's contents. As you make modifications, your site will regenerate and you should see the changes in the browser after a refresh.</p>
+<h2>Deployment</h2>
+<p>Run <code>npm run build</code> in CI/CD and publish the <code>_site/</code> directory to your static host (Netlify, Vercel, GitHub Pages, S3/CloudFront, etc.). No Ruby or Jekyll steps are required.</p>
 <h2>License</h2>
-<p>The theme is available as open source under the terms of the <a href="https://opensource.org/licenses/MIT">MIT License</a>.</p>
-<!--
-
-## Example Implementations
-
-- [CV Enterprises](https://cventerprises.org)
-- [Mortazavi Lab at UC Irvine](https://mortazavilab.github.io/)
-
--->
+<p>MIT — see <code>license.md</code> for details.</p>
