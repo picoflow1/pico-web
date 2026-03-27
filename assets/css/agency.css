@@ -44,11 +44,13 @@ h6 {
   flex-wrap: wrap;
 }
 .demo-title .demo-by {
-  font-size: 0.55em;
+  font-size: 0.42em;
   text-transform: none !important;
   letter-spacing: 0;
   font-weight: 500;
   line-height: 1;
+  display: inline-block;
+  margin-top: 4px;
 }
 .demo-title-logo {
   height: 48px;

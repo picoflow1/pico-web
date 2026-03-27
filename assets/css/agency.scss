@@ -42,3 +42,31 @@ $contact-image: "{{ site.data.style.contact-image }}";
 @import "layout/team.scss";
 @import "layout/contact.scss";
 @import "layout/footer.scss";
+
+// Demos section heading tweaks (keep caption small and not uppercased)
+.page-section h2.section-heading.demo-title {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.demo-title .demo-by {
+  font-size: 0.42em;
+  text-transform: none !important;
+  letter-spacing: 0;
+  font-weight: 500;
+  line-height: 1;
+  display: inline-block;
+  margin-top: 4px;
+}
+.demo-title-logo {
+  height: 48px;
+  background-color: var(--demo-bg, transparent);
+  width: auto;
+}
+@media (max-width: 575.98px) {
+  .demo-title-logo {
+    height: 40px;
+  }
+}
