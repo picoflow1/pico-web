@@ -112,6 +112,12 @@ en: &DEFAULT_EN
     section: qna
     closebutton: "Close"
 
+  compare:
+    title: "Compare"
+    text: "PicoFlow and LangGraph architecture contrast"
+    section: compare
+    button: "PicoFlow vs LangGraph"
+
   about:
     title: "About Us"
     text: "our story"

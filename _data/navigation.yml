@@ -17,6 +17,8 @@ en: &DEFAULT_EN
       section: demos
     - title: "Q&A"
       section: qna
+    - title: "Compare"
+      section: compare
     - title: "About"
       section: about
     - title: "Contact"

@@ -1,0 +1,43 @@
+<!-- Compare Section -->
+{% if site.locale and site.locale != "" and site.locale != nil %}
+{% assign compare = site.data.sitetext[site.locale].compare %}
+{% else %}
+{% assign compare = site.data.sitetext.compare %}
+{% endif %}
+<section class="page-section compare-section" id="{{ compare.section | default: "compare" }}">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 text-center">
+        <h2 class="section-heading text-uppercase">{{ compare.title | default: "Compare" }}</h2>
+        <h3 class="section-subheading text-muted text-center">{{ compare.text | markdownify }}</h3>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12 text-center">
+        <div class="compare-widget">
+          <button class="btn btn-primary compare-open" type="button" data-toggle="modal" data-target="#compareModal">
+            <i class="fas fa-balance-scale" aria-hidden="true"></i>
+            {{ compare.button | default: "PicoFlow vs LangGraph" }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="modal fade compare-modal" id="compareModal" tabindex="-1" role="dialog" aria-labelledby="compareModalLabel" aria-hidden="true">
+  <div class="modal-dialog compare-modal-dialog" role="document">
+    <div class="modal-content compare-modal-content">
+      <div class="modal-header compare-modal-header">
+        <h5 class="modal-title" id="compareModalLabel">{{ compare.button | default: "PicoFlow vs LangGraph" }}</h5>
+        <button type="button" class="close compare-modal-close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body compare-modal-body">
+        <iframe class="compare-frame" src="{{ 'picoflow-langgraph/' | relative_url }}" title="PicoFlow and LangGraph architecture contrast" loading="lazy"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- End Compare Section -->
