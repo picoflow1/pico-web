@@ -52,13 +52,13 @@ Commercial use includes, but is not limited to:
 
 To use the Software commercially, purchase one of the following licenses:
 
-### Team License — $199/month or $1,990/year
+### Team License — $99/month
 - Unlimited users within a single legal entity
 - Up to 3 production deployment instances (e.g., dev, staging, production)
 - Commercial production use
 - Email support (2 business day response)
 
-### Business License — $799/month or $7,990/year
+### Business License — Call for Pricing
 - Unlimited users within a single legal entity
 - Unlimited production instances across any environments or cloud regions
 - May power customer-facing SaaS products and services
