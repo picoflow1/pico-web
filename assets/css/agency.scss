@@ -90,15 +90,20 @@ $contact-image: "{{ site.data.style.contact-image }}";
   letter-spacing: 0;
   white-space: normal;
 }
+.compare-modal {
+  padding-right: 0 !important;
+}
 .compare-modal-dialog {
-  max-width: min(1180px, calc(100vw - 32px));
-  height: calc(100vh - 32px);
+  width: calc(100vw - 32px);
+  max-width: 1180px;
+  height: var(--compare-modal-height, calc(100vh - 32px));
   margin: 16px auto;
 }
 .compare-modal-content {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   height: 100%;
+  max-height: 100%;
   overflow: hidden;
   border: 0;
   border-radius: 8px;
@@ -124,9 +129,9 @@ $contact-image: "{{ site.data.style.contact-image }}";
   text-shadow: none;
 }
 .compare-modal-body {
-  flex: 1 1 auto;
   min-height: 0;
   padding: 0;
+  overflow: hidden;
   background-color: #fffaf0;
 }
 .compare-frame {
@@ -135,6 +140,7 @@ $contact-image: "{{ site.data.style.contact-image }}";
   height: 100%;
   border: 0;
   background-color: #fffaf0;
+  overflow: auto;
 }
 @media (max-width: 575.98px) {
   .compare-open {
@@ -142,8 +148,9 @@ $contact-image: "{{ site.data.style.contact-image }}";
     padding: 16px;
   }
   .compare-modal-dialog {
+    width: calc(100vw - 16px);
     max-width: calc(100vw - 16px);
-    height: calc(100vh - 16px);
+    height: var(--compare-modal-height, calc(100vh - 16px));
     margin: 8px auto;
   }
 }

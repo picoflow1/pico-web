@@ -35,9 +35,34 @@
         </button>
       </div>
       <div class="modal-body compare-modal-body">
-        <iframe class="compare-frame" src="{{ 'picoflow-langgraph/' | relative_url }}" title="PicoFlow and LangGraph architecture contrast" loading="lazy"></iframe>
+        <iframe class="compare-frame" src="{{ 'picoflow-langgraph/' | relative_url }}" title="PicoFlow and LangGraph architecture contrast" loading="lazy" scrolling="yes"></iframe>
       </div>
     </div>
   </div>
 </div>
+<script>
+  (function () {
+    var modal = document.getElementById("compareModal");
+    if (!modal) return;
+
+    function updateCompareModalSize() {
+      var isSmall = window.matchMedia("(max-width: 575.98px)").matches;
+      var margin = isSmall ? 16 : 32;
+      var viewportHeight =
+        (window.visualViewport && window.visualViewport.height) ||
+        window.innerHeight ||
+        document.documentElement.clientHeight;
+      var height = Math.max(360, Math.floor(viewportHeight - margin));
+      modal.style.setProperty("--compare-modal-height", height + "px");
+    }
+
+    updateCompareModalSize();
+    window.addEventListener("resize", updateCompareModalSize);
+    window.addEventListener("orientationchange", updateCompareModalSize);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", updateCompareModalSize);
+    }
+    modal.addEventListener("shown.bs.modal", updateCompareModalSize);
+  })();
+</script>
 <!-- End Compare Section -->
