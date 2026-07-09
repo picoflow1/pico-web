@@ -47,7 +47,7 @@ en: &DEFAULT_EN
         emoji: "🦞"
         links:
           - text: "Git Repository"
-            url: "https://github.com/picoflowio/pico-demo"
+            url: "https://github.com/picoflowio/pico-demo/tree/main/src/myflow/basic-flow"
             class: "btn-outline-dark"
             icon: "fab fa-github"
           - text: "Tutorial"
@@ -60,7 +60,7 @@ en: &DEFAULT_EN
         emoji: ""
         links:
           - text: "Git Repository"
-            url: "https://github.com/picoflowio/pico-demo"
+            url: "https://github.com/picoflowio/pico-demo/tree/main/src/myflow/hotel-flow"
             class: "btn-outline-dark"
             icon: "fab fa-github"
           - text: "YouTube Video"
@@ -77,20 +77,20 @@ en: &DEFAULT_EN
         emoji: "🦞"
         links:
           - text: "Git Repository"
-            url: "https://github.com/picoflowio/pico-demo"
+            url: "https://github.com/picoflowio/pico-demo/tree/main/src/myflow/medical-flow"
             class: "btn-outline-dark"
             icon: "fab fa-github"
           - text: "Tutorial"
             url: "https://medical-appointment-tutorial.picoflow.io"
             class: "btn-outline-primary"
             icon: "fas fa-book"
-      - title: "TravelAgent"
+      - title: "Travel Agent"
         desc: "A smart agent for booking travel. This agent was reimplemented but based on many similar LangGraph examples."
         icon: fas fa-plane
         emoji: "🦞"
         links:
           - text: "Git Repository"
-            url: "https://github.com/picoflowio/pico-demo"
+            url: "https://github.com/picoflowio/pico-demo/tree/main/src/myflow/travel-flow"
             class: "btn-outline-dark"
             icon: "fab fa-github"
           - text: "YouTube Video"

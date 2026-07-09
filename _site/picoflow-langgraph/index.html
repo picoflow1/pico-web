@@ -152,6 +152,10 @@
         padding-left: 20px !important;
         color: #6a5a22 !important;
       }
+      .toc-level-4 {
+        padding-left: 34px !important;
+        color: #7b6b31 !important;
+      }
 
       main.article {
         min-width: 0;
@@ -179,6 +183,11 @@
         margin: 30px 0 10px;
         color: #3b2a00;
         font-size: 20px;
+      }
+      .article h4 {
+        margin: 24px 0 8px;
+        color: #3b2a00;
+        font-size: 17px;
       }
       .article p {
         margin: 0 0 16px;
@@ -379,6 +388,18 @@
         >
         <a class="toc-level-2" href="#parallel-and-batch-difference"
           >Parallel And Batch Difference</a
+        >
+        <a class="toc-level-3" href="#picoflow-two-concurrency-mechanisms"
+          >Picoflow's Two Concurrency Mechanisms</a
+        >
+        <a class="toc-level-4" href="#flow-level-batch-concurrency"
+          >Flow-Level Batch Concurrency</a
+        >
+        <a class="toc-level-4" href="#step-level-nested-fan-out"
+          >Step-Level Nested Fan-Out</a
+        >
+        <a class="toc-level-3" href="#langgraph-graph-level-parallelism"
+          >LangGraph Graph-Level Parallelism</a
         >
         <a class="toc-level-2" href="#developer-experience"
           >Developer Experience</a
@@ -782,6 +803,10 @@
           </li>
           <li>sub-step execution with <code>runStep(InContextStep)</code></li>
           <li>
+            nested concurrent sub-step execution with
+            <code>runSteps(...)</code>
+          </li>
+          <li>
             tool validation loops, such as rejecting <code>John Doe</code> or
             invalid addresses
           </li>
@@ -814,6 +839,23 @@
           construct. It is not graph fan-out; it is concurrent orchestration
           implemented by a flow coordinator that spawns independent flow runs
           through HTTP and aggregates their results.
+        </p>
+        <p>
+          The public
+          <a
+            href="https://github.com/picoflowio/pico-demo/tree/main/src/myflow/basic-flow"
+            >basic-flow demo source</a
+          >
+          also demonstrates a newer step-level concurrent fan-out path.
+          <code>NameStep</code> still calls
+          <code>runStep(InContextStep)</code> to execute one nested step in
+          context. Inside <code>InContextStep.onEnter()</code>, however, the
+          step calls <code>runSteps(...)</code> with
+          <code>ConcurStep1</code> and <code>ConcurStep2</code>. The base
+          <code>Step.runSteps(...)</code> implementation creates one nested
+          activation per request and awaits them with <code>Promise.all</code>,
+          so a step can fan out to multiple concurrent child steps and then
+          save their returned results back into its own state.
         </p>
         <h2 id="invoiceflow-as-non-chatbot-application">
           InvoiceFlow As Non-Chatbot Application
@@ -1315,10 +1357,22 @@ graph.addConditionalEdges(&quot;WeatherStep&quot;, route);</code></pre>
         <h2 id="parallel-and-batch-difference">
           Parallel And Batch Difference
         </h2>
+        <h3 id="picoflow-two-concurrency-mechanisms">
+          Picoflow's Two Concurrency Mechanisms
+        </h3>
         <p>
-          Picoflow supports parallel processing through its
-          <code>_concurrent</code> flow mode and the underlying
-          <code>concurrentSteps(...)</code> construct.
+          Picoflow has two separate concurrency mechanisms in the basic demo:
+          flow-level batch concurrency for launching independent flow
+          executions, and step-level nested fan-out for launching multiple child
+          steps from within one active step. They are related, but they operate
+          at different scopes and should be described separately.
+        </p>
+        <h4 id="flow-level-batch-concurrency">
+          Flow-Level Batch Concurrency
+        </h4>
+        <p>
+          The first mechanism is Picoflow's <code>_concurrent</code> flow mode
+          and the underlying <code>concurrentSteps(...)</code> construct.
           <code>Flow.run(...)</code> checks <code>config._concurrent</code>; if
           true, it calls <code>spawnSteps()</code> instead of the normal
           active-step path. <code>concurrentSteps(...)</code> batches items,
@@ -1326,6 +1380,39 @@ graph.addConditionalEdges(&quot;WeatherStep&quot;, route);</code></pre>
           and lets each spawned flow run with its own config. The parent flow
           collects responses through callbacks.
         </p>
+        <h4 id="step-level-nested-fan-out">
+          Step-Level Nested Fan-Out
+        </h4>
+        <p>
+          The second mechanism is more local: concurrent fan-out inside a
+          running step. <code>Step.runStep(...)</code> runs one nested child
+          step under the current step's active context.
+          <code>Step.runSteps(...)</code> generalizes that pattern to multiple
+          child step requests, activates each nested step, runs it with its own
+          optional user message, and waits for all child results with
+          <code>Promise.all</code>.
+        </p>
+        <p>
+          In the
+          <a
+            href="https://github.com/picoflowio/pico-demo/tree/main/src/myflow/basic-flow"
+            >basic-flow demo</a
+          >,
+          <code>InContextStep.onEnter()</code> calls
+          <code>runSteps([...])</code> to launch
+          <code>ConcurStep1</code> and <code>ConcurStep2</code> concurrently,
+          then stores both returned values with
+          <code>saveState({ concurStep1, concurStep2 })</code>.
+          <code>ConcurStep2</code> further demonstrates that nested fan-out can
+          compose by calling <code>runSteps(...)</code> from its own
+          <code>onEnter()</code>. This is different from
+          <code>_concurrent</code>: it remains inside the current flow session
+          and current parent step context instead of spawning separate flow
+          requests through <code>SelfClient</code>.
+        </p>
+        <h3 id="langgraph-graph-level-parallelism">
+          LangGraph Graph-Level Parallelism
+        </h3>
         <p>
           LangGraph parallelism is part of graph execution. Multiple outgoing
           edges can schedule multiple destination nodes in the next super-step.
@@ -1338,10 +1425,16 @@ graph.addConditionalEdges(&quot;WeatherStep&quot;, route);</code></pre>
         </p>
         <ul>
           <li>
-            Picoflow parallelism is flow-coordinator parallelism: a flow opts
-            into <code>_concurrent</code>, runs <code>spawnSteps()</code>, and
-            uses <code>concurrentSteps(...)</code> to launch multiple
-            independent flow executions.
+            Picoflow flow-level parallelism is coordinator parallelism: a flow
+            opts into <code>_concurrent</code>, runs
+            <code>spawnSteps()</code>, and uses
+            <code>concurrentSteps(...)</code> to launch multiple independent
+            flow executions.
+          </li>
+          <li>
+            Picoflow step-level parallelism is nested-step fan-out: a step calls
+            <code>runSteps(...)</code> to launch multiple child steps inside
+            the current flow session and collect their results.
           </li>
           <li>
             LangGraph parallelism is graph-scheduler parallelism: parallel work
@@ -1524,6 +1617,10 @@ graph.addConditionalEdges(&quot;WeatherStep&quot;, route);</code></pre>
               </tr>
               <tr>
                 <td><code>_concurrent</code> + <code>concurrentSteps</code></td>
+                <td>Batch-style graph invocation or external job fan-out</td>
+              </tr>
+              <tr>
+                <td><code>Step.runSteps(...)</code></td>
                 <td><code>Send</code> fan-out or parallel outgoing edges</td>
               </tr>
               <tr>
