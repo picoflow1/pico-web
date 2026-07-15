@@ -279,6 +279,17 @@
         border-top: 1px solid rgba(255, 194, 23, 0.3);
       }
 
+      .parallel-summary { margin: 24px 0 30px; padding: 24px; border: 1px solid var(--line); border-radius: 10px; background: #fff8df; overflow-x: auto; }
+      .parallel-summary figure { margin: 0 0 20px; }
+      .parallel-summary img { display: block; width: min(100%, 760px); margin: 0 auto; border: 1px solid var(--line); border-radius: 7px; background: #fff; }
+      .parallel-summary figcaption { margin-top: 10px; color: var(--muted); font-size: 13px; text-align: center; }
+      .parallel-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+      .parallel-card { padding: 18px; border: 1px solid #e3c867; border-radius: 8px; background: var(--paper-2); }
+      .parallel-card-kicker { margin: 0 0 7px; color: #7a4f00; font-size: 11px; font-weight: 800; letter-spacing: .08em; }
+      .parallel-card h4 { margin: 0 0 8px; }.parallel-card p { margin: 0; font-size: 14px; }
+      .parallel-summary table { width: 100%; border-collapse: collapse; margin-top: 22px; font-size: 14px; }
+      .parallel-summary th, .parallel-summary td { padding: 12px; vertical-align: top; text-align: left; border-top: 1px solid var(--line); }
+      .parallel-summary th { background: var(--gold); color: #231905; font-size: 12px; letter-spacing: .04em; }
       @media (max-width: 900px) {
         .hero-inner {
           grid-template-columns: 1fr;
@@ -1355,7 +1366,7 @@ graph.addConditionalEdges(&quot;WeatherStep&quot;, route);</code></pre>
           LangSmith option.
         </p>
         <h2 id="parallel-and-batch-difference">
-          Parallel And Batch Difference
+          Parallelism: Batch vs. Fan-Out
         </h2>
         <h3 id="picoflow-two-concurrency-mechanisms">
           Picoflow's Two Concurrency Mechanisms
@@ -1367,6 +1378,16 @@ graph.addConditionalEdges(&quot;WeatherStep&quot;, route);</code></pre>
           steps from within one active step. They are related, but they operate
           at different scopes and should be described separately.
         </p>
+        <div class="parallel-summary">
+          <figure><img src="/assets/img/parallel.png" alt="Diagram showing PicoFlow parallel execution" /><figcaption>Two scopes, one clear decision: independent flow runs or child steps inside the active flow.</figcaption></figure>
+          <div class="parallel-cards"><section class="parallel-card"><p class="parallel-card-kicker">01 / BATCH</p><h4>Run independent flows</h4><p><code>concurrentSteps(...)</code> coordinates isolated flow executions. Each item carries its own config, can be throttled, and returns a result to the parent.</p></section><section class="parallel-card"><p class="parallel-card-kicker">02 / FAN-OUT</p><h4>Parallelize inside a flow</h4><p><code>runSteps(...)</code> launches child steps from the current parent step and returns their responses for direct aggregation.</p></section></div>
+          <table><thead><tr><th>Architectural question</th><th>PicoFlow</th><th>LangGraph</th></tr></thead><tbody>
+            <tr><td><strong>What starts parallel work?</strong></td><td>Explicit helpers: <code>concurrentSteps</code> and <code>runSteps</code>.</td><td>Graph topology, outgoing edges, or dynamic <code>Send</code> fan-out.</td></tr>
+            <tr><td><strong>Where does context live?</strong></td><td>In the isolated flow run or active parent-step scope.</td><td>Across graph branches that can update graph state.</td></tr>
+            <tr><td><strong>Who resolves the join?</strong></td><td>The parent flow or step aggregates returned results in program logic.</td><td>Reducers may be needed when concurrent branches update the same state key.</td></tr>
+          </tbody></table>
+          <p style="margin:18px 0 0"><strong>The decision is not “can it run in parallel?” It is: where should ownership of context, state, and results live?</strong></p>
+        </div>
         <h4 id="flow-level-batch-concurrency">
           Flow-Level Batch Concurrency
         </h4>
