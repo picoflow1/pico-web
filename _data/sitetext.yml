@@ -71,19 +71,6 @@ en: &DEFAULT_EN
             url: "https://hotel-tutorial.picoflow.io"
             class: "btn-outline-primary"
             icon: "fas fa-book"
-      - title: "Medical Appointment"
-        desc: "Schedule visits and route intake details to care teams."
-        icon: fas fa-notes-medical
-        emoji: "🦞"
-        links:
-          - text: "Git Repository"
-            url: "https://github.com/picoflowio/pico-demo/tree/main/src/myflow/medical-flow"
-            class: "btn-outline-dark"
-            icon: "fab fa-github"
-          - text: "Tutorial"
-            url: "https://medical-appointment-tutorial.picoflow.io"
-            class: "btn-outline-primary"
-            icon: "fas fa-book"
       - title: "Travel Agent"
         desc: "A smart agent for booking travel. This agent was reimplemented but based on many similar LangGraph examples."
         icon: fas fa-plane
