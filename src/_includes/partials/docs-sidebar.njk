@@ -1,0 +1,18 @@
+{% set currentTab = page.url | sectionOf(docsNav.tabs) %}
+<aside class="sidebar" aria-label="{{ currentTab.label }} navigation">
+  {% for group in currentTab.groups %}
+  {% set containsCurrent = group | groupHasUrl(page.url) %}
+  <details class="sidebar__group" {% if containsCurrent or (currentTab.key != "tutorials" and group.items.length <= 6) %}open{% endif %}>
+    <summary><span class="sidebar__chevron" aria-hidden="true"></span>{{ group.label }}</summary>
+    <ul class="sidebar__list">
+      {% for item in group.items %}
+      <li><a class="sidebar__link" href="{{ item.url }}" {% if item.url == page.url %}aria-current="page"{% endif %}>{{ item.title }}</a></li>
+      {% endfor %}
+    </ul>
+  </details>
+  {% endfor %}
+  <div class="sidebar__external">
+    <a class="sidebar__link" href="/">picoflow.io &#8599;</a>
+    <a class="sidebar__link" href="{{ site.linkedin }}">LinkedIn &#8599;</a>
+  </div>
+</aside>

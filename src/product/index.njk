@@ -1,0 +1,239 @@
+---
+layout: layouts/marketing.njk
+title: How PicoFlow works for conversational AI
+description: "PicoFlow is a runtime for reliable, multi-turn conversational AI with explicit steps, typed tools, and one durable session document."
+---
+
+<section class="section product-hero" aria-labelledby="product-title">
+  <div class="shell product-hero__grid">
+    <div class="product-hero__content">
+      <p class="eyebrow">Product / How it works</p>
+      <h1 class="section-heading product-hero__title" id="product-title">Put reliable business logic around every customer conversation.</h1>
+      <p class="product-hero__lede">PicoFlow lets application developers compose nested, sequential, parallel, and tool-driven work as purposeful steps. Its durable session runtime makes multi-turn customer conversations especially simple to build, inspect, and maintain.</p>
+      <div class="product-hero__actions">
+        <a class="button button--primary" href="/docs/get-started/">Start with the docs <span aria-hidden="true">→</span></a>
+        <a class="button button--secondary" href="/docs/get-started/first-flow/">Build a first flow</a>
+      </div>
+      <ul class="product-hero__facts" aria-label="PicoFlow highlights">
+        <li>Code-first runtime</li>
+        <li>One flow per session</li>
+        <li>Self-hosted session storage</li>
+      </ul>
+    </div>
+
+    <aside class="product-hero__summary" aria-labelledby="product-summary-title">
+      <p class="product-hero__summary-kicker" id="product-summary-title">The operating model</p>
+      <ol class="product-hero__summary-list">
+        <li><strong>Model intent</strong><span>Tools turn it into structured input.</span></li>
+        <li><strong>Your code decides</strong><span>Validate, stay, route, or respond directly.</span></li>
+        <li><strong>The session persists</strong><span>Resume with the active stage, context, and history intact.</span></li>
+      </ol>
+      <p class="product-hero__summary-note">The model participates in the conversation. Your application remains the control plane.</p>
+    </aside>
+  </div>
+</section>
+
+<section class="section section--soft product-overview" id="how-it-works" aria-labelledby="flow-title">
+  <div class="shell">
+    <div class="product-section-intro">
+      <p class="eyebrow">A deliberate turn loop</p>
+      <h2 class="section-heading" id="flow-title">A flow is a durable cursor through a customer conversation.</h2>
+      <p>Every request reconstructs the flow from its saved session, runs the current step, and stores the outcome. There is one current step for the next user turn—not a hidden prompt chain to untangle later.</p>
+    </div>
+
+    <figure class="product-flow" aria-labelledby="flow-diagram-title">
+      <figcaption class="product-flow__caption" id="flow-diagram-title">One PicoFlow turn</figcaption>
+      <ol class="product-flow__stages">
+        <li class="product-flow__stage product-flow__stage--request">
+          <span class="product-flow__number" aria-hidden="true">01</span>
+          <div>
+            <strong>Request</strong>
+            <span>The client sends a message and optional session ID.</span>
+          </div>
+        </li>
+        <li class="product-flow__connector" aria-hidden="true">→</li>
+        <li class="product-flow__stage product-flow__stage--step">
+          <span class="product-flow__number" aria-hidden="true">02</span>
+          <div>
+            <strong>Active Step</strong>
+            <span>Build its prompt, memory, model settings, and available tools.</span>
+          </div>
+        </li>
+        <li class="product-flow__connector" aria-hidden="true">→</li>
+        <li class="product-flow__stage product-flow__stage--decision">
+          <span class="product-flow__number" aria-hidden="true">03</span>
+          <div>
+            <strong>Tool + code</strong>
+            <span>Validate data and return <code>stay()</code>, <code>go()</code>, or <code>direct()</code>.</span>
+          </div>
+        </li>
+        <li class="product-flow__connector" aria-hidden="true">→</li>
+        <li class="product-flow__stage product-flow__stage--session">
+          <span class="product-flow__number" aria-hidden="true">04</span>
+          <div>
+            <strong>Session document</strong>
+            <span>Save state, memory, logs, token counts, and the next active step.</span>
+          </div>
+        </li>
+      </ol>
+      <dl class="product-flow__legend">
+        <div>
+          <dt>Flow</dt>
+          <dd>A per-request application object that registers the stages and resolves the session.</dd>
+        </div>
+        <div>
+          <dt>Step</dt>
+          <dd>The local boundary for one customer interaction: prompt, tools, state, validation, and routing.</dd>
+        </div>
+        <div>
+          <dt>Session</dt>
+          <dd>The durable record that lets the next HTTP request continue safely from the saved cursor.</dd>
+        </div>
+      </dl>
+    </figure>
+  </div>
+</section>
+
+<section class="section product-capabilities" aria-labelledby="capabilities-title">
+  <div class="shell">
+    <div class="product-section-intro">
+      <p class="eyebrow">Built for application control</p>
+      <h2 class="section-heading" id="capabilities-title">The parts that make a conversation operable.</h2>
+    </div>
+
+    <div class="product-capability-grid">
+      <article class="product-capability">
+        <p class="product-capability__number">01</p>
+        <h3>Explicit steps</h3>
+        <p>Use a step for a meaningful interaction: collect an address, compare options, request approval, or produce a structured result. A step can keep its own prompt, memory namespace, model override, tools, and persisted JSON state.</p>
+        <a href="/docs/concepts/step-lifecycle/">Understand the step lifecycle <span aria-hidden="true">→</span></a>
+      </article>
+
+      <article class="product-capability">
+        <p class="product-capability__number">02</p>
+        <h3>One durable session</h3>
+        <p>Each session holds exactly one flow envelope: its current step, context, memory, step state, token accounting, and structured logs. Stores support SQLite, MongoDB, and Cosmos DB, as well as memory for local work.</p>
+        <a href="/docs/concepts/session-document/">Inspect the session document <span aria-hidden="true">→</span></a>
+      </article>
+
+      <article class="product-capability">
+        <p class="product-capability__number">03</p>
+        <h3>Tools with code-level validation</h3>
+        <p>Expose a Zod-described tool to the model, then validate its arguments in a handler before state changes or side effects occur. Tool handlers return semantic transitions, so routing stays explicit in your code.</p>
+        <a href="/docs/guides/tools/">Author a tool handler <span aria-hidden="true">→</span></a>
+      </article>
+
+      <article class="product-capability">
+        <p class="product-capability__number">04</p>
+        <h3>Runtime safety signals</h3>
+        <p>The engine validates model selections before a turn begins, checks a resumed session belongs to the requested flow, serializes local turns per session, and uses revision checks to surface concurrent writes rather than silently overwrite them.</p>
+        <a href="/docs/guides/concurrency/">Read about session conflicts <span aria-hidden="true">→</span></a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section--soft product-code-section" aria-labelledby="code-title">
+  <div class="shell product-code-grid">
+    <div class="product-code-section__intro">
+      <p class="eyebrow">A small, inspectable boundary</p>
+      <h2 class="section-heading" id="code-title">Let the model propose. Let your step decide.</h2>
+      <p>A model can call a tool to capture an email address. The handler owns validation, persistence, and the next stage. If the input is recoverable, the flow stays in the current step and gives the model precise feedback.</p>
+      <ul class="product-checklist">
+        <li><code>getPrompt()</code> describes the conversation for this stage.</li>
+        <li><code>defineTool()</code> supplies a structured contract to the model.</li>
+        <li><code>saveState()</code> persists accepted business data.</li>
+        <li><code>stay()</code> and <code>go()</code> make the transition explicit.</li>
+      </ul>
+      <a class="button button--secondary" href="/docs/get-started/first-flow/">Read the complete first-flow guide</a>
+    </div>
+
+    <div class="product-code" aria-label="TypeScript PicoFlow step example">
+      <div class="product-code__bar">
+        <span>collect-email-step.ts</span>
+        <span>TypeScript</span>
+      </div>
+      {% set productCode %}
+import {
+  Flow, Step, TerminateSessionStep,
+  Tool, go, stay,
+} from "@picoflow/core";
+import { z } from "zod";
+
+export class CollectEmailStep extends Step {
+  getPrompt() {
+    return "Ask for the customer's account email.";
+  }
+
+  defineTool() {
+    return [{
+      name: "capture_email",
+      description: "Validate and store an account email",
+      schema: z.object({ email: z.string() }),
+    }];
+  }
+
+  @Tool
+  async capture_email(args: Record<string, any>) {
+    const email = String(args.email ?? "").trim().toLowerCase();
+
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      return stay("That address is invalid. Ask again.");
+    }
+
+    this.saveState({ email });
+    return go(TerminateSessionStep).withPrompt(
+      `Confirm that support will reply to ${email}.`,
+    );
+  }
+}
+
+export class SupportFlow extends Flow {
+  protected defineSteps() {
+    return [
+      new CollectEmailStep(this).useMemory("support"),
+      new TerminateSessionStep(this).useMemory("end"),
+    ];
+  }
+}
+      {% endset %}
+      <pre class="hljs"><code class="hljs language-typescript">{{ productCode | highlightTs | safe }}</code></pre>
+    </div>
+  </div>
+</section>
+
+<section class="section product-runtime" aria-labelledby="runtime-title">
+  <div class="shell product-runtime__grid">
+    <div>
+      <p class="eyebrow">The runtime carries the hard parts</p>
+      <h2 class="section-heading" id="runtime-title">Your flow code stays close to the business decision.</h2>
+      <p>PicoFlow creates a new Flow instance for each request, restores the saved session when one exists, resolves the current step, runs the model and tool loop, then writes the resulting document with its current revision. That gives every turn a clear lifecycle and a durable trail for operations.</p>
+    </div>
+    <div class="product-runtime__list" role="list">
+      <div class="product-runtime__item" role="listitem">
+        <strong>Before the turn</strong>
+        <span>Validate flow and provider configuration, then load or create the session.</span>
+      </div>
+      <div class="product-runtime__item" role="listitem">
+        <strong>During the turn</strong>
+        <span>Track tool calls, transitions, warnings, errors, and token use alongside the conversation.</span>
+      </div>
+      <div class="product-runtime__item" role="listitem">
+        <strong>After the turn</strong>
+        <span>Persist the current stage and durable context with compare-and-swap protection.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--closing product-closing" aria-labelledby="closing-title">
+  <div class="shell product-closing__content">
+    <p class="eyebrow">Start from a working model</p>
+    <h2 class="section-heading" id="closing-title">Build the conversation as an application, not an accident.</h2>
+    <p>Start with a small conversational flow, then add durable state, typed tools, and the storage your deployment needs. The documentation follows the same Flow → Step → Session model shown here.</p>
+    <div class="product-closing__actions">
+      <a class="button button--primary" href="/docs/get-started/">Get started <span aria-hidden="true">→</span></a>
+      <a class="button button--secondary" href="/docs/concepts/flow-lifecycle/">Explore the runtime lifecycle</a>
+    </div>
+  </div>
+</section>

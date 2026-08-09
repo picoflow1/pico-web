@@ -1,1003 +1,413 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-  <head>
-  
-
+<head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="Site description">
-  <meta name="author" content="Don Young">
-  <link rel="canonical" href="/">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#171717">
+<title>A TypeScript runtime for multi-turn AI assistants | PicoFlow</title>
+<meta name="description" content="PicoFlow is a TypeScript runtime for multi-turn AI assistants. Each conversation stage is a class, each transition is a return statement, and every session is a durable, revision-checked document.">
+<link rel="canonical" href="https://www.picoflow.io/">
+<link rel="icon" href="/assets/img/logo2.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css?family=Dancing+Script:400,700&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PicoFlow">
+<meta property="og:title" content="A TypeScript runtime for multi-turn AI assistants | PicoFlow">
+<meta property="og:description" content="PicoFlow is a TypeScript runtime for multi-turn AI assistants. Each conversation stage is a class, each transition is a return statement, and every session is a durable, revision-checked document.">
+<meta property="og:url" content="https://www.picoflow.io/">
+<meta property="og:image" content="https://www.picoflow.io/assets/img/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PicoFlow — a TypeScript runtime for multi-turn AI assistants">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/assets/css/site.css">
 
-  <title>picoflow.io</title>
-  <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"SoftwareApplication","name":"PicoFlow","applicationCategory":"DeveloperApplication","operatingSystem":"Node.js 22.5+","softwareVersion":"1.1.1","description":"PicoFlow is a TypeScript runtime for multi-turn AI assistants. Conversation stages are classes, transitions are return values, and every session is a durable, revision-checked document.","url":"https://www.picoflow.io","downloadUrl":"https://www.npmjs.com/package/@picoflow/core","programmingLanguage":"TypeScript","offers":{"@type":"Offer","price":"0","priceCurrency":"USD","description":"Free for personal evaluation. Production use requires a commercial licence.","url":"https://www.picoflow.io/license/"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is PicoFlow, and how is it different from LangGraph?","acceptedAnswer":{"@type":"Answer","text":"LangGraph gives you graph and state primitives; you still build the durable session, the store adapters, the concurrency policy, and the HTTP envelope around it. PicoFlow ships that layer and asks you to write conversation stages as ordinary TypeScript classes. Both can orchestrate nested, sequential, parallel, and tool-driven work — the difference is which layer your team ends up owning. See the scoped comparison, including where LangGraph is the better choice ."}},{"@type":"Question","name":"Is PicoFlow open source?","acceptedAnswer":{"@type":"Answer","text":"No. PicoFlow is a commercially licensed runtime distributed as the @picoflow/core npm package . Personal evaluation is free, and production use requires commercial terms. If a permissively licensed dependency is a hard requirement for your organisation, LangGraph is the better choice and we would rather you know that now than after a proof of concept. See licensing ."}},{"@type":"Question","name":"Does PicoFlow stream responses?","acceptedAnswer":{"@type":"Answer","text":"No. A turn is one HTTP request and one complete JSON response; there is no server-sent events, token streaming, or partial-response API in the runtime today. If your interface needs token-by-token output, PicoFlow does not serve that surface yet — better to learn it on this page than after a prototype."}},{"@type":"Question","name":"What does PicoFlow need to run?","acceptedAnswer":{"@type":"Answer","text":"Node.js 22.5 or newer, TypeScript with NodeNext resolution, legacy decorators ( experimentalDecorators and emitDecoratorMetadata ), and Zod 4. The published 1.1.1 package is ESM-only: a CommonJS application cannot require(\"@picoflow/core\") and has to reach it through a dynamic import() . It is designed to sit inside application frameworks such as NestJS. See installation ."}},{"@type":"Question","name":"Is PicoFlow built on LangChain?","acceptedAnswer":{"@type":"Answer","text":"Yes, and we would rather say so than have you find it in a lockfile. @picoflow/core depends on @langchain/core and the LangChain provider packages, and a few LangChain types surface in the class you subclass — MessageContent , ToolCall , and DynamicStructuredTool all appear on Step . Persisted memory holds serialised LangChain messages. PicoFlow does not replace LangChain; it adds the durable session, step cursor, tool dispatch, and storage layer above it. That is also why the LangGraph comparison is about which layer you own rather than which library is faster."}},{"@type":"Question","name":"What happens to my application if PicoFlow goes away?","acceptedAnswer":{"@type":"Answer","text":"A fair question for a closed-source runtime with one published release. What you keep: session documents are plain JSON in a database you control, and your flows are ordinary TypeScript classes holding your prompts, validation, tools, and business rules. What you would rebuild: the tool-dispatch loop, the durable step cursor, the store adapters, and the revision checks — broadly the layer the LangGraph comparison measures. We publish that measurement partly so the exit cost is legible before you commit."}},{"@type":"Question","name":"Can PicoFlow pause a conversation for human approval?","acceptedAnswer":{"@type":"Answer","text":"At turn boundaries, yes. The support tutorial models an approval hold with ordinary step state, two explicit tools, and a restore hook that releases the hold after a timeout. There is no mid-execution interrupt primitive: the run status has no paused state, and a turn that fails partway through the tool loop is not resumed. If you need to suspend work inside a node and resume the same thread later, LangGraph's interrupt() with a checkpointer is the stronger mechanism. Read the full comparison ."}},{"@type":"Question","name":"Which model providers and local models are supported?","acceptedAnswer":{"@type":"Answer","text":"Built-in adapters cover OpenAI, Azure OpenAI, Anthropic, Google, DeepSeek, Moonshot, Z.AI, Ollama, and OpenRouter, plus a custom adapter for any OpenAI-compatible or internal endpoint. Models and parameters are selected per flow or per step, while credentials stay in application bootstrap configuration. See providers and model selection ."}},{"@type":"Question","name":"How do I test and evaluate a non-deterministic agent?","acceptedAnswer":{"@type":"Answer","text":"Use deterministic scripted models for transition and persistence checks, then add live scenarios or a model judge for response quality. The test guide shows how to assert the response, session ID, active step, run status, and persisted business state together. Read the testing guide ."}},{"@type":"Question","name":"Where does my data go? Does PicoFlow receive prompts, session data, or telemetry?","acceptedAnswer":{"@type":"Answer","text":"Nothing leaves your infrastructure. Prompts and session documents stay between your application, the model provider you configure, and the session store you choose. The runtime ships no telemetry and no tracing or metrics integration that could carry data out. The license token is verified offline — an Ed25519 signature check against a public key compiled into the package, performed on the first model call and cached for the life of the process. It makes no network request. Contact us for deployment-specific data-processing and residency questions."}},{"@type":"Question","name":"Can I run PicoFlow entirely in my own cloud or VPC?","acceptedAnswer":{"@type":"Answer","text":"Yes. PicoFlow is an npm runtime embedded in your Node.js application, so you can deploy it in your own cloud, VPC, or air-gapped infrastructure. Choose the session store that matches the deployment: memory for local work, SQLite for durable single-host use, or MongoDB/Cosmos DB for shared multi-instance deployments. See the persistence guide ."}},{"@type":"Question","name":"Can I run several instances behind a load balancer?","acceptedAnswer":{"@type":"Answer","text":"Yes, backed by SQLite on a shared filesystem, MongoDB, or Cosmos DB — never the memory store, which cannot coordinate separate processes. One caveat worth budgeting for: the FIFO turn lock is per process, so if two turns for the same session land on different instances, both will call the model and only one will be allowed to save. Correctness is protected by the revision check; the duplicated model call is not free. Read the concurrency guide ."}},{"@type":"Question","name":"What happens when a model, tool, or database call fails?","acceptedAnswer":{"@type":"Answer","text":"Failures return through the flow's error contract, while persisted state and revision checks protect the session from being silently overwritten. Provider retry attempts are explicit, and PicoFlow does not automatically replay a losing turn because it may already have caused an external side effect. Read the error-handling guide ."}},{"@type":"Question","name":"How is PicoFlow licensed, and what does it cost?","acceptedAnswer":{"@type":"Answer","text":"Personal evaluation is free: request a key on the licensing page and it is normally returned the same working day. Production is licensed per application and priced against the deployment rather than seat count. There is no public price list — a quote needs a short conversation about where and how it runs."}}]}]}</script>
 
-  <!-- Bootstrap core CSS -->
-  <link href="/assets/css/bootstrap.min.css" rel="stylesheet" />
 
-  <!-- Custom fonts for this template -->
-  <link href="/assets/css/all.min.css" rel="stylesheet" type="text/css">
-  
-    
-      <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
-    
-      <link href="https://fonts.googleapis.com/css?family=Dancing+Script:400,700" rel="stylesheet" type="text/css">
-    
-      <link href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic,700italic" rel="stylesheet" type="text/css">
-    
-      <link href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700" rel="stylesheet" type="text/css">
-    
-  
-  <!-- Custom styles for this theme -->
-  <!--<link href="assets/css/agency.min.css" rel="stylesheet">-->
-  <link href="/assets/css/agency.css" rel="stylesheet" />
-
-  <!-- Page container change top padding when nav shrinks -->
-  
 </head>
-
-
-  <body id="page-top">
-
-      <!-- Navigation -->
-<nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
-  <div class="container">
-    <a class="navbar-brand js-scroll-trigger" href="#page-top"><img
-        height="50"
-        src="/assets/img/logo2.png"
-        style="margin-right: 10px"
-      />picoflow.io
+<body class="marketing-body">
+  <a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="site-header__inner shell">
+    <a class="brand" href="/" aria-label="PicoFlow home">
+      <img class="brand__logo" src="/assets/img/logo2.png" alt="" width="38" height="38">
+      <span class="brand__name">picoflow.io</span>
     </a>
-    <button
-      class="navbar-toggler navbar-toggler-right"
-      type="button"
-      data-toggle="collapse"
-      data-target="#navbarResponsive"
-      aria-controls="navbarResponsive"
-      aria-expanded="false"
-      aria-label="Toggle navigation"
-    >
-      Menu
-      <i class="fas fa-bars"></i>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarResponsive">
-      <ul class="navbar-nav text-uppercase ml-auto">
-         
-        <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#services"
-            >Solutions</a
-          ></li>
-        
-        <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#demos"
-            >Demos</a
-          ></li>
-        
-        <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#qna"
-            >Q&A</a
-          ></li>
-        
-        <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#compare"
-            >Compare</a
-          ></li>
-        
-        <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#about"
-            >About</a
-          ></li>
-        
-        <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#contact"
-            >Contact</a
-          ></li>
-         
-      </ul>
-    </div>
-  </div>
-</nav>
-<!-- End Navigation -->
-
-<!-- Header -->
-
-<header class="masthead">
-  <div class="container">
-    <div class="intro-text"><div class="intro-lead-in">
-        <p>🥇 Conversational Agentic Framework</p>
-
-      </div><div class="intro-heading text-uppercase">
-        <p>Botify Your Business</p>
-
-      </div><a
-        class="btn btn-primary btn-xl text-uppercase js-scroll-trigger"
-        href="#services"
-        >Explore</a
-      >
-      <br />
-      <br />
-
-      <div class="text-white mt-3">
-        <i class="fas fa-hand-point-right text-primary"></i>
-        <a href="/#qna" class="home-button js-scroll-trigger">
-          Work with OpenClaw now 🦞
-        </a>
-      </div>
-
-      <div class="text-white mt-3">
-        <i class="fas fa-hand-point-right text-primary"></i>
-        <a href="/#qna" class="home-button js-scroll-trigger">
-          Free Personal Licence Key
-        </a>
-      </div>
-
-      <div class="text-white mt-3">
-        <i class="fas fa-hand-point-right text-primary"></i>
-        <a href="https://www.npmjs.com/package/@picoflow/core"
-          >npm library v1.1.1 released. Major updates!</a
-        >
-      </div></div>
+    <nav class="site-nav" aria-label="Primary navigation">
+      
+      <a href="/product/" >How it works</a>
+      
+      <a href="/compare/langgraph/" >vs LangGraph</a>
+      
+      <a href="/docs/" >Docs</a>
+      
+      <a href="/license/" >Licensing</a>
+      
+      <a href="/contact/" >Contact</a>
+      
+    </nav>
+    <a class="button button--small button--gold header-cta" href="/docs/get-started/">Start building <span aria-hidden="true">→</span></a>
   </div>
 </header>
 
-<!-- End Header -->
-
-
-<!-- Services -->
-
-  <section class="page-section" id="services">
-    <div class="container">
-	
-      <div class="row">
-        <div class="col-lg-12 text-center">
-          <h2 class="section-heading text-uppercase">Solutions</h2>
-          
-		  <h3 class="section-subheading text-muted"></h3>
-		  
-        </div>
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+  <div class="shell hero__grid">
+    <div>
+      <p class="eyebrow">TypeScript runtime · @picoflow/core</p>
+      <h1 id="hero-title">Build multi&#8209;turn AI assistants, not session engines.</h1>
+      <p class="hero__lede">Every assistant needs the same machinery: a tool loop, a durable cursor over conversation stages, session storage, and safe concurrent writes. PicoFlow ships that. You write the stages.</p>
+      <div class="hero__actions">
+        <a class="button button--gold" href="/docs/get-started/">Start building <span aria-hidden="true">→</span></a>
+        <a class="button button--ghost" href="#evidence">See the LangGraph comparison</a>
       </div>
-	  
-      <div class="row text-center">
-	  
-        <div class="col-md-4">
-          <span class="fa-stack fa-4x">
-            <i class="fas fa-circle fa-stack-2x text-primary"></i>
-            <i class="fas fa-robot fa-stack-1x fa-inverse"></i>
-          </span>
-          <h4 class="service-heading"><p>Customer's Bots</p>
-</h4>
-          <div class="text-muted"><p>Among all agentic flow solutions, creating a complex customer-facing bot chat can be the most challenging. This type of flow aims to collect information from customers in order to achieve business objectives. In fact, many companies start to replace or supplement their UI applications with bot chats. Our PicoFlow framework is 2-3X more productive in creating chatbots for business than LangGraph!
-Watch this demss below<i class="fas fa-hand-point-down text-primary"></i></p>
-</div>
-        </div>
-	  
-        <div class="col-md-4">
-          <span class="fa-stack fa-4x">
-            <i class="fas fa-circle fa-stack-2x text-primary"></i>
-            <i class="fas fa-sitemap fa-stack-1x fa-inverse"></i>
-          </span>
-          <h4 class="service-heading"><p>Business Flows</p>
-</h4>
-          <div class="text-muted"><p>Injecting AI into existing business flows is one of the most pressing activities. PicoFlow can easily orchestrate a business flow with judicious addition of AI capabilities using the latest context engineering techniques. PicoFlow provides observability, traceability and replayability in production to mitigate probabilistic hallucination by LLM.</p>
-</div>
-        </div>
-	  
-        <div class="col-md-4">
-          <span class="fa-stack fa-4x">
-            <i class="fas fa-circle fa-stack-2x text-primary"></i>
-            <i class="fas fa-search-plus fa-stack-1x fa-inverse"></i>
-          </span>
-          <h4 class="service-heading"><p>RAG</p>
-</h4>
-          <div class="text-muted"><p>We have experience in multi-faceted RAG techniques including various chunking strategies: overlapping/recursive/late-chunking/summarization, re-ranker, and Graph-assisted RAG.</p>
-</div>
-        </div>
-	  
-      </div>
-	  
+      <p class="hero__caption"><strong>The same hotel-booking assistant:</strong> 472 lines on PicoFlow, 1,397 lines built directly on LangGraph. <a href="#evidence">Both implementations are in the demo repo.</a></p>
     </div>
-  </section>
-
-<!-- End Services -->
-<!-- Demos Section -->
-
-<section class="page-section" id="demos" style="--demo-bg: #9e9a9a; background-color: var(--demo-bg);">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-12 text-center">
-        <h2 class="section-heading text-uppercase demo-title">
-          <span>Demos</span>
-          <small class="demo-by text-muted">by picoClaw</small>
-          <img src="/assets/img/picoclaw.png" class="demo-title-logo" alt="PicoFlow claw logo" />
-        </h2>
-        
-        <h3 class="section-subheading text-muted">See PicoFlow in action. OpenClaw creates these Demos marked by 🦞.</h3>
-        
-      </div>
-    </div>
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3 justify-content-center">
+    <div class="code-card hero__code" aria-label="A PicoFlow step, in TypeScript">
+      <div class="code-card__bar"><span>hotel-flow/explore-step.ts</span><span>TypeScript</span></div>
       
-      <div class="col d-flex">
-        <div class="card w-100 h-100 shadow-sm border-0 p-3">
-          <div class="text-center mb-3">
-             <div class="d-inline-flex align-items-center justify-content-center mb-2">
-                <span class="fa-stack fa-2x">
-                  <i class="fas fa-circle fa-stack-2x text-primary"></i>
-                  <i class="fas fa-seedling fa-stack-1x fa-inverse"></i>
-                </span>
-                
-                <span class="fs-2 ms-2" aria-hidden="true">🦞</span>
-                
-             </div>
-             <h5 class="card-title mb-1">Basic Demo</h5>
-             <p class="card-text text-muted small mb-0">Show many PicoFlow techniques.</p>
-          </div>
-          <div class="d-grid gap-2">
-            
-            
-            
-            
-            
-            <a href="https://github.com/picoflowio/pico-demo/tree/main/src/myflow/basic-flow" class="btn btn-sm btn-outline-dark d-flex align-items-center justify-content-center">
-              <i class="fab fa-github mr-2"></i> Git
-            </a>
-            
-            
-            
-            
-            
-            <a href="https://basic-tutorial.picoflow.io" class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center">
-              <i class="fas fa-book mr-2"></i> Docs
-            </a>
-            
-          </div>
-        </div>
-      </div>
-      
-      <div class="col d-flex">
-        <div class="card w-100 h-100 shadow-sm border-0 p-3">
-          <div class="text-center mb-3">
-             <div class="d-inline-flex align-items-center justify-content-center mb-2">
-                <span class="fa-stack fa-2x">
-                  <i class="fas fa-circle fa-stack-2x text-primary"></i>
-                  <i class="fas fa-hotel fa-stack-1x fa-inverse"></i>
-                </span>
-                
-                <span class="fs-2 ms-2" aria-hidden="true"></span>
-                
-             </div>
-             <h5 class="card-title mb-1">Hotel Reservation</h5>
-             <p class="card-text text-muted small mb-0">Complete reservation flow example.</p>
-          </div>
-          <div class="d-grid gap-2">
-            
-            
-            
-            
-            
-            <a href="https://github.com/picoflowio/pico-demo/tree/main/src/myflow/hotel-flow" class="btn btn-sm btn-outline-dark d-flex align-items-center justify-content-center">
-              <i class="fab fa-github mr-2"></i> Git
-            </a>
-            
-            
-            
-            
-            
-            <a href="https://youtu.be/0c8iU4boep4" class="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center">
-              <i class="fab fa-youtube mr-2"></i> YouTube
-            </a>
-            
-            
-            
-            
-            
-            <a href="https://hotel-tutorial.picoflow.io" class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center">
-              <i class="fas fa-book mr-2"></i> Docs
-            </a>
-            
-          </div>
-        </div>
-      </div>
-      
-      <div class="col d-flex">
-        <div class="card w-100 h-100 shadow-sm border-0 p-3">
-          <div class="text-center mb-3">
-             <div class="d-inline-flex align-items-center justify-content-center mb-2">
-                <span class="fa-stack fa-2x">
-                  <i class="fas fa-circle fa-stack-2x text-primary"></i>
-                  <i class="fas fa-plane fa-stack-1x fa-inverse"></i>
-                </span>
-                
-                <span class="fs-2 ms-2" aria-hidden="true">🦞</span>
-                
-             </div>
-             <h5 class="card-title mb-1">Travel Agent</h5>
-             <p class="card-text text-muted small mb-0">A smart agent for booking travel. This agent was reimplemented but based on many similar LangGraph examples.</p>
-          </div>
-          <div class="d-grid gap-2">
-            
-            
-            
-            
-            
-            <a href="https://github.com/picoflowio/pico-demo/tree/main/src/myflow/travel-flow" class="btn btn-sm btn-outline-dark d-flex align-items-center justify-content-center">
-              <i class="fab fa-github mr-2"></i> Git
-            </a>
-            
-            
-            
-            
-            
-            <a href="https://youtu.be/ORtKyt0YQ94" class="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center">
-              <i class="fab fa-youtube mr-2"></i> YouTube
-            </a>
-            
-          </div>
-        </div>
-      </div>
-      
-      <div class="col d-flex">
-        <div class="card w-100 h-100 shadow-sm border-0 p-3">
-          <div class="text-center mb-3">
-             <div class="d-inline-flex align-items-center justify-content-center mb-2">
-                <span class="fa-stack fa-2x">
-                  <i class="fas fa-circle fa-stack-2x text-primary"></i>
-                  <i class="fas fa-comments fa-stack-1x fa-inverse"></i>
-                </span>
-                
-                <span class="fs-2 ms-2" aria-hidden="true">🦞</span>
-                
-             </div>
-             <h5 class="card-title mb-1">UiDemo</h5>
-             <p class="card-text text-muted small mb-0">a React ChatBot UI to connect to picoflows</p>
-          </div>
-          <div class="d-grid gap-2">
-            
-            
-            
-            
-            
-            <a href="https://github.com/picoflowio/chat-ui.git" class="btn btn-sm btn-outline-dark d-flex align-items-center justify-content-center">
-              <i class="fab fa-github mr-2"></i> Git
-            </a>
-            
-          </div>
-        </div>
-      </div>
-      
-    </div>
-  </div>
-</section>
-
-<!-- End Demos Section -->
-
-<!-- Q&A Section -->
-
-<section class="bg-light page-section" id="qna">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-12 text-center">
-        <h2 class="section-heading text-uppercase"><p>Q&amp;A</p>
-</h2>
-        <h3 class="section-subheading text-muted text-center"><p>Frequently Asked Questions</p>
-</h3>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-lg-12">
-        <div class="accordion" id="qnaAccordion">
-          
-          <div class="card mb-3" id="qna-1">
-            <div class="card-header" id="heading1">
-              <h5 class="mb-0">
-                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapse1" aria-expanded="false" aria-controls="collapse1">
-                  <i class="fas fa-question-circle"></i> What is PicoFlow and how is it different from LangGraph?
-                </button>
-              </h5>
-            </div>
-            <div id="collapse1" class="collapse" aria-labelledby="heading1" data-parent="#qnaAccordion">
-              <div class="card-body text-left">
-                <p>PicoFlow is a developer-friendly yet highly advanced Agentic framework designed to drastically accelerate the process of Botifying business flows. Unlike <a href="https://www.langchain.com/langgraph">LangGraph</a>, PicoFlow is specifically optimized for creating customer-facing bots and business flow orchestration, offering 2-3X higher productivity. PicoFlow provides built-in observability, traceability, and replay-ability features to help mitigate probabilistic hallucination issues in production environments. You can checkout the <a href="/comparison/">comparison chart</a></p>
-
-                
-              </div>
-            </div>
-          </div>
-          
-          <div class="card mb-3" id="qna-2">
-            <div class="card-header" id="heading2">
-              <h5 class="mb-0">
-                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
-                  <i class="fas fa-question-circle"></i> What technology stacks is picoflow buit on?
-                </button>
-              </h5>
-            </div>
-            <div id="collapse2" class="collapse" aria-labelledby="heading2" data-parent="#qnaAccordion">
-              <div class="card-body text-left">
-                <p>The PicoFlow Agentic Framework is currently available in JavaScript, chosen to align with the large and established microservices developer ecosystem. By integrating directly with <a href="https://nestjs.com">NestJS</a>, we enable Node.js developers to rapidly create production-ready Agentic endpoints with minimal friction. We expect a future Python version will be available. We also use the basic abstraction of LangChain to interface with LLMs</p>
-
-                
-              </div>
-            </div>
-          </div>
-          
-          <div class="card mb-3" id="qna-3">
-            <div class="card-header" id="heading3">
-              <h5 class="mb-0">
-                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
-                  <i class="fas fa-question-circle"></i> How quickly can developers become productive with PicoFlow?
-                </button>
-              </h5>
-            </div>
-            <div id="collapse3" class="collapse" aria-labelledby="heading3" data-parent="#qnaAccordion">
-              <div class="card-body text-left">
-                <p>One of PicoFlow's primary goals is to enable average developers—without deep AI training—to be productive within just days. The framework is designed with developer-friendliness in mind, featuring intuitive APIs and comprehensive documentation that makes it easy to get started quickly while still providing advanced capabilities for complex use cases.</p>
-
-                
-              </div>
-            </div>
-          </div>
-          
-          <div class="card mb-3" id="qna-4">
-            <div class="card-header" id="heading4">
-              <h5 class="mb-0">
-                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
-                  <i class="fas fa-question-circle"></i> What RAG techniques does your team have experience with?
-                </button>
-              </h5>
-            </div>
-            <div id="collapse4" class="collapse" aria-labelledby="heading4" data-parent="#qnaAccordion">
-              <div class="card-body text-left">
-                <p>Our team has extensive experience with multi-faceted RAG techniques including various chunking strategies such as overlapping, recursive, late-chunking, and summarization. We also work with re-rankers to improve retrieval quality and Graph-assisted RAG for more sophisticated knowledge representation and retrieval patterns.</p>
-
-                
-              </div>
-            </div>
-          </div>
-          
-          <div class="card mb-3" id="qna-5">
-            <div class="card-header" id="heading5">
-              <h5 class="mb-0">
-                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
-                  <i class="fas fa-question-circle"></i> Is picoflow Agentic Framework open source, or how to get a hold of it?
-                </button>
-              </h5>
-            </div>
-            <div id="collapse5" class="collapse" aria-labelledby="heading5" data-parent="#qnaAccordion">
-              <div class="card-body text-left">
-                <p>picoflow Agentic Framework is not open source yet. The library can be downloaded from <a href="https://www.npmjs.com/package/@picoflow/core">npm</a>. A sophisticated demo can be downloaded from <a href="https://github.com/picoflowio/hotel-demo">Hotel Reservation</a></p>
-
-                
-              </div>
-            </div>
-          </div>
-          
-          <div class="card mb-3" id="qna-6">
-            <div class="card-header" id="heading6">
-              <h5 class="mb-0">
-                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapse6" aria-expanded="false" aria-controls="collapse6">
-                  <i class="fas fa-question-circle"></i> Is picoflow.io looking for strategic partnership?
-                </button>
-              </h5>
-            </div>
-            <div id="collapse6" class="collapse" aria-labelledby="heading6" data-parent="#qnaAccordion">
-              <div class="card-body text-left">
-                <p>We are prioritizing our effort in working with strategic partners. We can offer business a one-stop solution to creating reliable yet sophisticated bot flows with our services and software. Better yet, we can do a quick prototye for you before you decide to commit to using our products and services. <a href="mailto:contact@picoflow.io?subject=Partnership%20Inquiry">email us</a>.</p>
-
-                
-              </div>
-            </div>
-          </div>
-          
-          <div class="card mb-3" id="qna-7">
-            <div class="card-header" id="heading7">
-              <h5 class="mb-0">
-                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapse7" aria-expanded="false" aria-controls="collapse7">
-                  <i class="fas fa-question-circle"></i> Is picoflow looking for private investment?
-                </button>
-              </h5>
-            </div>
-            <div id="collapse7" class="collapse" aria-labelledby="heading7" data-parent="#qnaAccordion">
-              <div class="card-body text-left">
-                <p>We believe <a href="http://picoflow.io">picoflow.io</a> is better for building complex chabots than Langchain. We are currently welcoming early investors to expand our business. Fell free to <a href="mailto:contact@picoflow.io?subject=Investor%20Inquiry">email us</a>.</p>
-
-                
-              </div>
-            </div>
-          </div>
-          
-          <div class="card mb-3" id="qna-8">
-            <div class="card-header" id="heading8">
-              <h5 class="mb-0">
-                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapse8" aria-expanded="false" aria-controls="collapse8">
-                  <i class="fas fa-question-circle"></i> How is PicoFlow licensed?
-                </button>
-              </h5>
-            </div>
-            <div id="collapse8" class="collapse" aria-labelledby="heading8" data-parent="#qnaAccordion">
-              <div class="card-body text-left">
-                <p><strong>Picoflow Software License Agreement (v1.0)</strong> — personal use is free; commercial use requires a paid tier:</p>
-<ul>
-<li><strong>Free Personal Use:</strong> One individual, non-commercial, open-source or academic; no warranty/SLA.</li>
-<li><strong>Team – $99/mo:</strong> Unlimited users in one org; up to 3 production instances; commercial rights; email support (≤2 business days).</li>
-<li><strong>Business – Call for Pricing:</strong> Unlimited production instances/regions; customer-facing SaaS allowed; priority email+Slack (≤1 business day); quarterly architecture review.</li>
-<li><strong>Enterprise – custom:</strong> Multi-entity coverage; optional white-label/OEM; custom SLA/BAA/DPA; dedicated engineer.</li>
-<li><strong>Keys:</strong> <code>PICOFLOW_KEY</code> per org; Team keys allow 3 concurrent instances, Business/Enterprise unlimited; audits permitted.</li>
-<li><strong>Data &amp; Privacy:</strong> No data sent to Picoflow; runtime talks only to your LLM provider and your DB; startup-only license check.</li>
-<li><strong>Restrictions:</strong> No reverse engineering, removal of notices, redistribution, or building a competing framework.</li>
-<li><strong>Warranty &amp; Liability:</strong> 90-day material-conformance warranty for paid tiers; otherwise “AS IS”; liability capped at fees paid in prior 12 months (zero for free tier).</li>
-<li><strong>Termination:</strong> Commercial subscriptions auto-renew; misuse or non-payment can terminate rights; upon termination cease use immediately.</li>
-</ul>
-
-                
-                <button type="button" class="btn btn-sm btn-primary mt-3" data-toggle="modal" data-target="#licenseModal">
-                  View Full License
-                </button>
-                
-              </div>
-            </div>
-          </div>
-          
-          <div class="card mb-3" id="qna-9">
-            <div class="card-header" id="heading9">
-              <h5 class="mb-0">
-                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapse9" aria-expanded="false" aria-controls="collapse9">
-                  <i class="fas fa-question-circle"></i> Where is the free personal license key?
-                </button>
-              </h5>
-            </div>
-            <div id="collapse9" class="collapse" aria-labelledby="heading9" data-parent="#qnaAccordion">
-              <div class="card-body text-left">
-                <p>A valid key through 09/30/2026 is:</p>
-<pre><code>PICOFLOW_KEY=AQFqO6pyar2igAAAjfAr04seEa1KyDVscX316zH5I6H1DltciAbrtpvC7Tj-_T54959y6gjRpIZ3vVaiPXL7wSpq4A8qwx57f8bFwjNcmhZ-xTQK
-</code></pre>
-
-                
-              </div>
-            </div>
-          </div>
-          
-          <div class="card mb-3" id="qna-openclaw10">
-            <div class="card-header" id="heading10">
-              <h5 class="mb-0">
-                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapse10" aria-expanded="false" aria-controls="collapse10">
-                  <i class="fas fa-question-circle"></i> 🦞 How does picflow work with OpenClaw
-                </button>
-              </h5>
-            </div>
-            <div id="collapse10" class="collapse" aria-labelledby="heading10" data-parent="#qnaAccordion">
-              <div class="card-body text-left">
-                <p>OpenClaw drives PicoFlow across the whole bot lifecycle:</p>
-<ul>
-  <li><strong>Interactive build:</strong> OpenClaw uses PicoFlow skills to gather requirements and co-build flows with the developer.</li>
-  <li><strong>Live proxying:</strong> During iteration, OpenClaw proxies chat traffic to and from the PicoFlow runtime.</li>
-  <li><strong>Test capture:</strong> It turns completed sessions into reusable regression test cases.</li>
-  <li><strong>Auto-construction vision:</strong> A curated “PicoFlow builder” instruction set plus rich examples lets OpenClaw draft new flows automatically.</li>
-  <li><strong>Ship & monitor:</strong> OpenClaw can commit flows to Git for deployment and monitor production by reading documents written to the document DB.</li>
-</ul>
-
-                
-              </div>
-            </div>
-          </div>
-          
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- License Modal -->
-<div
-  class="modal fade"
-  id="licenseModal"
-  tabindex="-1"
-  role="dialog"
-  aria-labelledby="licenseModalTitle"
-  aria-hidden="true"
->
-  <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="licenseModalTitle">
-          Picoflow Software License Agreement (v1.0)
-        </h5>
-        <button
-          type="button"
-          class="close"
-          data-dismiss="modal"
-          aria-label="Close"
-        >
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body text-left">
-        <pre
-          class="small mb-0"
-          style="white-space: pre-wrap; word-break: break-word"
-        >
-# Picoflow Software License Agreement
-
-**Version 1.0 — Effective upon download, installation, or use**
-
-Copyright © 2026 Picoflow.io, Inc. All rights reserved.
-
----
-
-## IMPORTANT — READ BEFORE USING
-
-By downloading, installing, activating, or using the Picoflow software framework ("Software"), you ("Licensee") agree to be bound by the terms of this License Agreement ("Agreement"). If you do not agree, do not use the Software.
-
----
-
-## 1. FREE PERSONAL USE LICENSE
-
-The Software is free to use for **personal, non-commercial purposes only**.
-
-Personal use means:
-- Individual use by a single person for hobby, learning, or personal projects
-- Open-source projects that generate no revenue
-- Academic or research use with no commercial application
-- Evaluation and prototyping — prior to any commercial deployment
-
-**This free license is strictly limited to personal use. Any commercial use requires a paid license (see Section 2).**
-
----
-
-## 2. WHAT COUNTS AS COMMERCIAL USE
-
-Commercial use includes, but is not limited to:
-
-- Deploying the Software in a product or service that generates revenue — directly or indirectly
-- Using the Software within a business, startup, or organization — regardless of size or profit status
-- Providing services to clients, customers, or employers using the Software
-- Embedding the Software in a product sold, licensed, or distributed to others
-- Using the Software to automate business workflows, handle customer interactions, or support internal business operations
-- Any use where the Software contributes to generating economic value
-
-**If you are unsure whether your use qualifies as commercial, it does. Contact sales@picoflow.io.**
-
----
-
-## 3. COMMERCIAL LICENSE TIERS
-
-To use the Software commercially, purchase one of the following licenses:
-
-### Team License — $99/month
-- Unlimited users within a single legal entity
-- Up to 3 production deployment instances (e.g., dev, staging, production)
-- Commercial production use
-- Email support (2 business day response)
-
-### Business License — call for pricing
-- Unlimited users within a single legal entity
-- Unlimited production instances across any environments or cloud regions
-- May power customer-facing SaaS products and services
-- Priority email + Slack support (1 business day response)
-- Quarterly architectural review
-
-### Enterprise License — Custom Pricing
-- Multi-entity and subsidiary coverage
-- White-label and OEM rights
-- Custom SLA, BAA/DPA, dedicated support engineer
-- Contact sales@picoflow.io
-
----
-
-## 4. RESTRICTIONS (ALL USERS)
-
-Regardless of license tier, Licensee may not:
-
-- Reverse engineer, decompile, or disassemble any obfuscated portions of the Software
-- Remove or alter any copyright, trademark, or proprietary notices
-- Redistribute, sublicense, sell, or transfer the Software or any rights therein to any third party
-- Use the Software to build a competing AI orchestration framework or product
-
----
-
-## 5. LICENSE KEYS
-
-Commercial licenses are activated via a **PICOFLOW_KEY** provided upon purchase:
-
-- Keys are issued per organization and may not be shared externally
-- Team keys support up to 3 concurrent instances; Business and Enterprise keys are unlimited
-- Licensor may audit license usage with reasonable notice
-- Report compromised keys immediately to support@picoflow.io
-
----
-
-## 6. DATA & PRIVACY
-
-Picoflow is built around data sovereignty:
-
-- **The Software does not collect, transmit, or store any end-user data.** All session state and conversation data resides exclusively within Licensee's own database (MongoDB, CosmosDB, or compatible).
-- At runtime, the Software connects only to Licensee's configured LLM provider and Licensee's own database. No data passes through Picoflow.io servers.
-- License key validation at startup does not transmit any session, conversation, or user data.
-- Licensee is solely responsible for compliance with applicable data protection laws (GDPR, CCPA, HIPAA, etc.) within their own infrastructure.
-- Enterprise customers may request a Data Processing Agreement (DPA) or Business Associate Agreement (BAA).
-
----
-
-## 7. INTELLECTUAL PROPERTY
-
-7.1 The Software and all associated materials are and remain the exclusive intellectual property of Picoflow.io, Inc.
-
-7.2 Applications, AI flows, and products built **using** the Software remain the sole intellectual property of Licensee. Picoflow.io, Inc. makes no claim to Licensee's work.
-
----
-
-## 8. LIMITED WARRANTY
-
-Licensor warrants that the Software will perform materially in accordance with its published documentation for 90 days from purchase ("Warranty Period") for paid licenses. The free personal use tier is provided **"AS IS"** with no warranty of any kind.
-
-**EXCEPT AS SET FORTH ABOVE, LICENSOR EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.**
-
----
-
-## 9. LIMITATION OF LIABILITY
-
-TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW:
-
-- Licensor's total liability shall not exceed fees paid by Licensee in the **12 months preceding the claim**. For free (personal use) licenses, liability is zero.
-- Licensor is not liable for indirect, incidental, special, consequential, or punitive damages, including loss of profits or data.
-- Licensor is not liable for the behavior or outputs of any LLM or AI model used with the Software, or for decisions made by AI agents built using the Software.
-
----
-
-## 10. TERM & TERMINATION
-
-10.1 Personal use licenses are perpetual for the version downloaded, subject to compliance with this Agreement.
-
-10.2 Commercial subscriptions auto-renew unless cancelled at least **30 days** before renewal via billing@picoflow.io.
-
-10.3 Licensor may terminate any license immediately upon:
-- Commercial use without a valid paid license
-- Material breach not cured within 30 days
-- Non-payment of fees
-- Use of the Software in violation of applicable law
-
-10.4 Upon termination, Licensee must immediately cease all use of the Software.
-
----
-
-## 11. GOVERNING LAW & DISPUTES
-
-This Agreement is governed by the laws of the State of Delaware, United States. Disputes unresolved through good-faith negotiation within 30 days shall be submitted to binding arbitration under AAA Commercial Arbitration Rules.
-
----
-
-## 12. GENERAL
-
-- **Entire Agreement.** This Agreement supersedes all prior agreements regarding the Software.
-- **Amendments.** Licensor may update this Agreement with 30 days' notice. Continued use constitutes acceptance.
-- **Severability.** If any provision is unenforceable, remaining provisions continue in full force.
-- **Assignment.** Licensee may not assign this Agreement without prior written consent from Licensor.
-
----
-
-## CONTACT
-
-**Picoflow.io, Inc.**
-sales@picoflow.io — Licensing & commercial inquiries
-support@picoflow.io — Technical support
-billing@picoflow.io — Billing and renewals
-legal@picoflow.io — Legal and compliance
-
-Website: https://www.picoflow.io
-
----
-
-*Picoflow Software License Agreement v1.0 — © 2026 Picoflow.io, Inc. All rights reserved.*
-        </pre>
-        <div class="mt-3">
-          <a
-            class="btn btn-outline-primary btn-sm"
-            href="/picoflow-license/"
-            target="_blank"
-            rel="noopener"
-            >Open as full page</a
-          >
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- End License Modal -->
-
-<!-- End Q&A Section -->
-
-<!-- Compare Section -->
-
-
-
-<section class="page-section compare-section" id="compare">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-12 text-center">
-        <h2 class="section-heading text-uppercase">Compare</h2>
-        <h3 class="section-subheading text-muted text-center"><p>PicoFlow and LangGraph architecture contrast</p>
-</h3>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-lg-12 text-center">
-        <div class="compare-widget">
-          <button class="btn btn-primary compare-open" type="button" data-toggle="modal" data-target="#compareModal">
-            <i class="fas fa-balance-scale" aria-hidden="true"></i>
-            PicoFlow vs LangGraph
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="modal fade compare-modal" id="compareModal" tabindex="-1" role="dialog" aria-labelledby="compareModalLabel" aria-hidden="true">
-  <div class="modal-dialog compare-modal-dialog" role="document">
-    <div class="modal-content compare-modal-content">
-      <div class="modal-header compare-modal-header">
-        <h5 class="modal-title" id="compareModalLabel">PicoFlow vs LangGraph</h5>
-        <button type="button" class="close compare-modal-close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body compare-modal-body">
-        <iframe class="compare-frame" src="/picoflow-langgraph/" title="PicoFlow and LangGraph architecture contrast" loading="lazy" scrolling="yes"></iframe>
-      </div>
-    </div>
-  </div>
-</div>
-<script>
-  (function () {
-    var modal = document.getElementById("compareModal");
-    if (!modal) return;
-
-    function updateCompareModalSize() {
-      var isSmall = window.matchMedia("(max-width: 575.98px)").matches;
-      var margin = isSmall ? 16 : 32;
-      var viewportHeight =
-        (window.visualViewport && window.visualViewport.height) ||
-        window.innerHeight ||
-        document.documentElement.clientHeight;
-      var height = Math.max(360, Math.floor(viewportHeight - margin));
-      modal.style.setProperty("--compare-modal-height", height + "px");
-    }
-
-    updateCompareModalSize();
-    window.addEventListener("resize", updateCompareModalSize);
-    window.addEventListener("orientationchange", updateCompareModalSize);
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", updateCompareModalSize);
-    }
-    modal.addEventListener("shown.bs.modal", updateCompareModalSize);
-  })();
-</script>
-<!-- End Compare Section -->
-
-<!-- About -->
-
-<section class="page-section" id="about">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-12 text-center">
-        <h2 class="section-heading text-uppercase">About Us</h2>
-        <h3 class="section-subheading text-muted text-center">our story</h3>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-lg-8 mx-auto">
-        <div class="large text-muted text-left"><p>For over 3+ years, we have been at the forefront of developing cutting-edge AI solutions. Long before terms like Agentic Framework and Context Engineering became mainstream, we were already employing a variety of advanced techniques. Only recently have these methods been formally recognized under these names. We've also successfully leveraged popular Agentic frameworks, such as LangGraph, in our projects. Agentic frameworks are versatile, with different patterns designed to address unique challenges. One of the most common—and complex—use cases is developing customer-facing bots that either complement or fully replace UI flows. While LangGraph remains our go-to framework for implementing these solutions, we've identified numerous areas where improvements can be made.</p>
-</div><div class="large text-muted text-left" style="margin-top: 20px;"><p>Our primary goal in working with Agentic frameworks is to enable average developers—without deep AI training—to be productive within just days. With this in mind, we're proud to introduce PicoFlow: a developer-friendly yet highly advanced Agentic framework designed to drastically accelerate the process of <u>Botifying Business Flows</u><sup>TM</sup>, making it significantly faster than any existing solution. For more details, check out our <a class="js-scroll-trigger" href="#demos">tutorial sections!</a></p>
-</div></div>
-    </div>
-  </div>
-</section>
-
-<!-- End About -->
-
-<!-- Contact -->
-
-<section class="page-section" id="contact">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-12 text-center">
-        <h2 class="section-heading text-uppercase">
-          <p>Contact Us</p>
-</h2>
-        <h3 class="section-subheading text-muted text-center">T: 360-818-4535</h3>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-lg-12">
-        <div id="contactForm">
-          <div class="row">
-            <div class="col-md-8 offset-md-2">
-              <div class="form-group">
-                <textarea class="form-control" id="message"
-                  placeholder="Message*"
-                  rows="8" required="required"></textarea>
-                <p class="help-block text-danger"></p>
-              </div>
-            </div>
-            <div class="clearfix"></div>
-            <div class="col-lg-12 text-center">
-              <div id="success"></div>
-              <button id="sendMessageButton" class="btn btn-primary btn-xl text-uppercase"
-                type="button" onclick="sendEmail()">Send Message</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<script>
-function sendEmail() {
-  var message = document.getElementById('message').value;
-  
-  if (!message || message.trim() === '') {
-    alert('Please enter a message.');
-    return;
+      <pre class="hljs"><code class="hljs language-typescript">
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ExploreStep</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Step</span> {
+  <span class="hljs-title function_">getPrompt</span>(<span class="hljs-params"></span>) {
+    <span class="hljs-keyword">return</span> <span class="hljs-string">`<span class="hljs-subst">${HotelPrompt.Role}</span>
+      Collect dates, then call capture_choices.`</span>;
   }
-  
-  var email = 'contact@picoflow.io';
-  var subject = 'Contact Form Submission';
-  var body = encodeURIComponent(message);
-  
-  window.location.href = 'mailto:' + email + '?subject=' + encodeURIComponent(subject) + '&body=' + body;
+
+  <span class="hljs-title function_">defineTool</span>(): <span class="hljs-title class_">ToolType</span>[] {
+    <span class="hljs-keyword">return</span> [{
+      <span class="hljs-attr">name</span>: <span class="hljs-string">&quot;capture_choices&quot;</span>,
+      <span class="hljs-attr">description</span>: <span class="hljs-string">&quot;Capture hotel search criteria&quot;</span>,
+      <span class="hljs-attr">schema</span>: z.<span class="hljs-title function_">object</span>({ <span class="hljs-attr">json</span>: z.<span class="hljs-title function_">string</span>() }),
+    }];
+  }
+
+  <span class="hljs-meta">@Tool</span>
+  <span class="hljs-keyword">protected</span> <span class="hljs-keyword">async</span> <span class="hljs-title function_">capture_choices</span>(
+    <span class="hljs-attr">args</span>: { <span class="hljs-attr">json</span>: <span class="hljs-built_in">string</span> },
+  ): <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-title class_">ToolResponseType</span>&gt; {
+    <span class="hljs-keyword">const</span> hotels = <span class="hljs-keyword">await</span> <span class="hljs-title class_">Pricing</span>.<span class="hljs-title function_">search</span>(args.<span class="hljs-property">json</span>);
+
+    <span class="hljs-keyword">if</span> (!hotels.<span class="hljs-property">length</span>) {
+      <span class="hljs-keyword">return</span> <span class="hljs-title function_">stay</span>(<span class="hljs-string">&quot;No match. Ask for wider criteria.&quot;</span>);
+    }
+    <span class="hljs-keyword">return</span> <span class="hljs-title function_">go</span>(<span class="hljs-title class_">PresentStep</span>).<span class="hljs-title function_">withState</span>({ hotels });
+  }
 }
-</script>
-<!-- End Contact -->
+      </code></pre>
+    </div>
+  </div>
+</section>
 
+<section class="compat-strip" aria-label="Supported providers and session stores">
+  <div class="shell compat-strip__inner">
+    <p class="compat-strip__item"><span>Models</span><b>OpenAI · Anthropic · Google · Azure OpenAI · DeepSeek · Moonshot · Z.AI · Ollama · OpenRouter</b></p>
+    <p class="compat-strip__item"><span>Sessions</span><b>Memory · SQLite · MongoDB · Cosmos DB</b></p>
+    <p class="compat-strip__item"><span>Runtime</span><b>Node.js 22.5+ · ESM · Zod 4 · fits NestJS</b></p>
+  </div>
+</section>
 
+<section class="section section--white" id="evidence" aria-labelledby="evidence-title">
+  <div class="shell">
+    <p class="eyebrow">Why not just use LangGraph?</p>
+    <h2 class="section-heading" id="evidence-title">The same assistant, built twice, in one repository.</h2>
+    <p class="section-lede">The demo repo contains one hotel-reservation assistant implemented on PicoFlow and again directly on LangGraph. Both pass the same 14-turn conversation: collect dates, search a catalog, present priced results, compare hotels, return to booking, confirm. Here is what each implementation actually contains.</p>
 
-	  <!-- Footer -->
-<footer class="footer" id="footer">
-  <div class="container">
-    
-    <div class="row align-items-center">
-      <div class="col-md-4">
-        <span class="copyright"
-          >Copyright &copy; picoflow.io 2026</span
-        >
-      </div>
-      <!-- Social Media -->
-      <div class="col-md-4">
-        <ul class="list-inline social-buttons">
-          
-          <li class="list-inline-item">
-            
-            <a href="https://www.linkedin.com/company/picoflow-io">
-              <i class="fab fa-linkedin-in"></i>
-            </a>
-            
-          </li>
-          
+    <div class="artifact-compare">
+      <article class="artifact artifact--pico">
+        <h3>HotelFlow on PicoFlow</h3>
+        <ul class="artifact__files">
+          <li><code>hotel-flow.ts</code><span>51</span></li>
+          <li><code>explore-step.ts</code><span>135</span></li>
+          <li><code>present-step.ts</code><span>129</span></li>
+          <li><code>compare-step.ts</code><span>157</span></li>
         </ul>
+        <p class="artifact__total"><span>Total</span><b>472</b></p>
+        <p class="artifact__note">Four domain modules. The session document, step cursor, tool dispatch, storage adapters, and concurrency checks come from the runtime.</p>
+      </article>
+      <article class="artifact artifact--direct">
+        <h3>The same flow, direct on LangGraph</h3>
+        <ul class="artifact__files">
+          <li><code>hotel-langgraph.ts</code><span>1,063</span></li>
+          <li><code>hotel-session-store.ts</code><span>218</span></li>
+          <li><code>hotel-langgraph.state.ts</code><span>90</span></li>
+          <li><code>hotel-types.ts</code><span>26</span></li>
+        </ul>
+        <p class="artifact__total"><span>Total</span><b>1,397</b></p>
+        <p class="artifact__note">One 1,063-line graph module, plus a hand-written session store with its own memory, SQLite, and MongoDB adapters.</p>
+      </article>
+    </div>
+
+    <div class="artifact-takeaway">
+      <p><strong>The 218-line session store is the real point.</strong> Line counts are a weak proxy, and we would not ask you to buy a runtime over them. What the counts expose is <em>which layer you end up owning</em>. A direct graph gives you topology and state primitives; the durable session, the store adapters, the revision checks, and the HTTP envelope are still yours to write and maintain — once per assistant.</p>
+      <p class="artifact-takeaway__caveat">Counts are <code>wc -l</code> on the application boundary of both implementations, framework source excluded on each side, chart helpers excluded on each side. It is one honest data point from one codebase, not a benchmark. The full-project delta is smaller (2,083 vs 2,847 lines) and we publish that number too.</p>
+      <div class="hero__actions">
+        <a class="button button--ink" href="/compare/langgraph/">Read the full decision guide</a>
+        <a class="button button--outline" href="/docs/get-started/why-picoflow/">See every measurement</a>
       </div>
     </div>
-    
+  </div>
+</section>
+
+<section class="section section--soft" aria-labelledby="pillars-title">
+  <div class="shell">
+    <p class="eyebrow">What the runtime owns</p>
+    <h2 class="section-heading" id="pillars-title">Four things you would otherwise write again for every assistant.</h2>
+    <div class="pillers">
+      
+      <article class="pillar"><p class="pillar__number">01</p><h3>The tool loop</h3><p>Define a tool once with a Zod schema, decorate a handler with @Tool, and the runtime dispatches the model&#39;s call to it. No name-matching switch statement, no manual message assembly, no re-prompting logic to maintain.</p></article>
+      
+      <article class="pillar"><p class="pillar__number">02</p><h3>The session document</h3><p>One JSON document per conversation holds the active step, step state, memory namespaces, token totals, and structured logs. It is versioned, so you can migrate a schema without silently restarting in-flight conversations.</p></article>
+      
+      <article class="pillar"><p class="pillar__number">03</p><h3>The storage layer</h3><p>Memory, SQLite, MongoDB, and Cosmos DB adapters ship with the runtime and implement the same compare-and-swap contract. Swap stores with an environment variable instead of writing a fourth adapter by hand.</p></article>
+      
+      <article class="pillar"><p class="pillar__number">04</p><h3>Concurrent-write safety</h3><p>Turns for one session are serialised in-process by a FIFO lock, and every store rejects a stale revision with a conflict error. Two browser tabs cannot silently overwrite each other&#39;s turn.</p></article>
+      
+    </div>
+  </div>
+</section>
+
+<section class="section section--soft" aria-labelledby="boundary-title">
+  <div class="shell split-feature">
+    <div>
+      <p class="eyebrow">Where the business rule lives</p>
+      <h2 class="section-heading" id="boundary-title">The model proposes. Your code decides.</h2>
+      <p class="section-lede">A model can call a tool, but your handler validates the argument, writes state, and returns the next stage. Routing is a return value in a typed method — not an instruction buried in prompt prose that you cannot unit test.</p>
+      <ul class="boundary-list">
+        <li><code>stay()</code> keeps the current step active and hands corrective feedback back to the model.</li>
+        <li><code>go(Step)</code> moves the durable cursor and optionally seeds the next step's state.</li>
+        <li><code>direct()</code> answers the user immediately, with no second model call.</li>
+      </ul>
+      <div class="hero__actions"><a class="button button--ink" href="/docs/get-started/first-flow/">Build a first flow</a><a class="button button--light" href="/docs/guides/tools/">Read the tools guide</a></div>
+    </div>
+    <div class="code-card" aria-label="Registering a flow with PicoFlow">
+      <div class="code-card__bar"><span>app.module.ts</span><span>TypeScript</span></div>
+      
+      <pre class="hljs"><code class="hljs language-typescript">
+<span class="hljs-title class_">FlowEngine</span>.<span class="hljs-title function_">create</span>({
+  <span class="hljs-attr">flows</span>: [<span class="hljs-title class_">HotelFlow</span>, <span class="hljs-title class_">SupportFlow</span>],
+  <span class="hljs-attr">providers</span>: <span class="hljs-title class_">ModelProvider</span>.<span class="hljs-title function_">createBuiltinAdapters</span>({
+    <span class="hljs-attr">openai</span>: { <span class="hljs-attr">apiKey</span>: process.<span class="hljs-property">env</span>.<span class="hljs-property">OPENAI_API_KEY</span> },
+    <span class="hljs-attr">anthropic</span>: { <span class="hljs-attr">apiKey</span>: process.<span class="hljs-property">env</span>.<span class="hljs-property">ANTHROPIC_API_KEY</span> },
+  }),
+});
+
+<span class="hljs-comment">// One endpoint serves every flow.</span>
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> engine.<span class="hljs-title function_">run</span>({
+  <span class="hljs-attr">flowName</span>: <span class="hljs-string">&quot;HotelFlow&quot;</span>,
+  <span class="hljs-attr">userMessage</span>: <span class="hljs-string">&quot;I need a room in Portland&quot;</span>,
+  sessionId,
+});
+      </code></pre>
+    </div>
+  </div>
+</section>
+
+<section class="section section--white package-section" aria-labelledby="package-title">
+  <div class="shell package-card">
+    <div class="package-card__copy">
+      <a class="release-badge" href="/docs/releases/">Latest release · v1.1.1 <span aria-hidden="true">↗</span></a>
+      <h2 class="section-heading" id="package-title">Build with <code>@picoflow/core</code>.</h2>
+      <p class="package-card__lede">A breaking release that puts multi-turn conversations, explicit transitions, durable sessions, and provider selection behind one runtime.</p>
+      <p class="package-card__licence"><strong>Source-available, commercially licensed.</strong> PicoFlow is not open source. Personal evaluation is free with the test key in the <a href="/license/">licensing page</a>; production deployments need commercial terms.</p>
+      <div class="package-card__actions">
+        <a class="button button--gold" href="/docs/get-started/">Read the docs <span aria-hidden="true">→</span></a>
+        <a class="button button--ghost" href="https://www.npmjs.com/package/@picoflow/core">View on npm <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+    <div class="package-card__install" aria-label="Install PicoFlow Core">
+      <div class="package-card__install-top"><span>npm package</span><span>v1.1.1</span></div>
+      <code class="package-card__command">npm install @picoflow/core</code>
+      <div class="package-card__details">
+        <span>Node.js &gt;= 22.5</span>
+        <a href="/docs/releases/">Read the release notes <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--ink" aria-labelledby="cases-title">
+  <div class="shell">
+    <p class="eyebrow">Built for customer conversations</p>
+    <h2 class="section-heading" id="cases-title">Assistants that remember, validate, and move a customer forward.</h2>
+    <p class="section-lede">Steps compose nested, sequential, parallel, and tool-driven work in ordinary TypeScript — you get graph-level orchestration without modelling your application as a graph. Both tutorials below are built from flows that ship in the demo repository.</p>
+    <div class="use-cases">
+      
+      <article class="use-case"><p class="use-case__tag">Booking and guided sales</p><h3>Conversations that lead to a decision</h3><p>Collect intent, validate information, call your systems, compare options, and resume exactly where the customer conversation paused.</p><a href="/docs/tutorials/hotel-flow/">Explore HotelFlow</a></article>
+      
+      <article class="use-case"><p class="use-case__tag">Support and account service</p><h3>Conversations that safely reach resolution</h3><p>Route requests, place approval holds, track durable case state, and hand work between customer-facing stages without hand-building a session engine.</p><a href="/docs/tutorials/support-flow/">Explore SupportFlow</a></article>
+      
+    </div>
+  </div>
+</section>
+
+<section class="section section--soft" aria-labelledby="fit-title">
+  <div class="shell">
+    <p class="eyebrow">Is PicoFlow the right fit?</p>
+    <h2 class="section-heading" id="fit-title">Choose PicoFlow for a conversation with clear stages.</h2>
+    <div class="fit-check">
+      <article class="fit-check__choice fit-check__choice--picoflow">
+        <h3>Use PicoFlow for</h3>
+        <ul>
+          <li>Customer support, booking, onboarding, guided sales, and account-service assistants.</li>
+          <li>Multi-turn conversations that need durable state, validation, tools, and a reliable next step.</li>
+          <li>Teams that want repeated conversation infrastructure to be shared across several assistants.</li>
+        </ul>
+      </article>
+      <article class="fit-check__choice">
+        <h3>Start with LangGraph when</h3>
+        <ul>
+          <li>Your team prefers graph and state primitives as the primary authoring model.</li>
+          <li>You need direct ownership of graph state, reducers, checkpointing, or execution shape.</li>
+          <li>Your platform already owns the session and operations layer around the graph.</li>
+          <li>You need a permissively licensed dependency.</li>
+        </ul>
+      </article>
+    </div>
+    <a class="evidence__link" href="/compare/langgraph/">Read the PicoFlow and LangGraph decision guide →</a>
+  </div>
+</section>
+
+<section class="section faq-section" id="qna" aria-labelledby="faq-title">
+  <div class="shell faq-layout">
+    <div class="faq-intro">
+      <p class="eyebrow">Straight answers</p>
+      <h2 class="section-heading" id="faq-title">Answers before you commit a team to a new runtime.</h2>
+      <p class="section-lede">What PicoFlow is, what it needs, and what it does not do yet — including streaming, interrupts, and the licence, because those are cheaper to learn here than after a prototype.</p>
+      <a class="button button--ink" href="/contact/">Talk to the PicoFlow team</a>
+    </div>
+    <div class="faq-list">
+      
+      <div class="faq-group">
+        <p class="faq-group__label">Start here</p>
+        
+        <details class="faq-item" open>
+          <summary>What is PicoFlow, and how is it different from LangGraph?<span class="faq-item__icon" aria-hidden="true">+</span></summary>
+          <div class="faq-item__answer">LangGraph gives you graph and state primitives; you still build the durable session, the store adapters, the concurrency policy, and the HTTP envelope around it. PicoFlow ships that layer and asks you to write conversation stages as ordinary TypeScript classes. Both can orchestrate nested, sequential, parallel, and tool-driven work — the difference is which layer your team ends up owning. <a href="/compare/langgraph/">See the scoped comparison, including where LangGraph is the better choice</a>.</div>
+        </details>
+        
+        <details class="faq-item" >
+          <summary>Is PicoFlow open source?<span class="faq-item__icon" aria-hidden="true">+</span></summary>
+          <div class="faq-item__answer">No. PicoFlow is a commercially licensed runtime distributed as the <a href="https://www.npmjs.com/package/@picoflow/core">@picoflow/core npm package</a>. Personal evaluation is free, and production use requires commercial terms. If a permissively licensed dependency is a hard requirement for your organisation, LangGraph is the better choice and we would rather you know that now than after a proof of concept. <a href="/license/">See licensing</a>.</div>
+        </details>
+        
+        <details class="faq-item" >
+          <summary>Does PicoFlow stream responses?<span class="faq-item__icon" aria-hidden="true">+</span></summary>
+          <div class="faq-item__answer">No. A turn is one HTTP request and one complete JSON response; there is no server-sent events, token streaming, or partial-response API in the runtime today. If your interface needs token-by-token output, PicoFlow does not serve that surface yet — better to learn it on this page than after a prototype.</div>
+        </details>
+        
+        <details class="faq-item" >
+          <summary>What does PicoFlow need to run?<span class="faq-item__icon" aria-hidden="true">+</span></summary>
+          <div class="faq-item__answer">Node.js 22.5 or newer, TypeScript with <code>NodeNext</code> resolution, legacy decorators (<code>experimentalDecorators</code> and <code>emitDecoratorMetadata</code>), and Zod 4. The published 1.1.1 package is ESM-only: a CommonJS application cannot <code>require("@picoflow/core")</code> and has to reach it through a dynamic <code>import()</code>. It is designed to sit inside application frameworks such as NestJS. <a href="/docs/get-started/installation/">See installation</a>.</div>
+        </details>
+        
+      </div>
+      
+      <div class="faq-group">
+        <p class="faq-group__label">Evaluating PicoFlow</p>
+        
+        <details class="faq-item" >
+          <summary>Is PicoFlow built on LangChain?<span class="faq-item__icon" aria-hidden="true">+</span></summary>
+          <div class="faq-item__answer">Yes, and we would rather say so than have you find it in a lockfile. <code>@picoflow/core</code> depends on <code>@langchain/core</code> and the LangChain provider packages, and a few LangChain types surface in the class you subclass — <code>MessageContent</code>, <code>ToolCall</code>, and <code>DynamicStructuredTool</code> all appear on <code>Step</code>. Persisted memory holds serialised LangChain messages. PicoFlow does not replace LangChain; it adds the durable session, step cursor, tool dispatch, and storage layer above it. That is also why the LangGraph comparison is about which layer you own rather than which library is faster.</div>
+        </details>
+        
+        <details class="faq-item" >
+          <summary>What happens to my application if PicoFlow goes away?<span class="faq-item__icon" aria-hidden="true">+</span></summary>
+          <div class="faq-item__answer">A fair question for a closed-source runtime with one published release. What you keep: session documents are plain JSON in a database you control, and your flows are ordinary TypeScript classes holding your prompts, validation, tools, and business rules. What you would rebuild: the tool-dispatch loop, the durable step cursor, the store adapters, and the revision checks — broadly the layer the <a href="/compare/langgraph/">LangGraph comparison</a> measures. We publish that measurement partly so the exit cost is legible before you commit.</div>
+        </details>
+        
+        <details class="faq-item" >
+          <summary>Can PicoFlow pause a conversation for human approval?<span class="faq-item__icon" aria-hidden="true">+</span></summary>
+          <div class="faq-item__answer">At turn boundaries, yes. The support tutorial models an approval hold with ordinary step state, two explicit tools, and a restore hook that releases the hold after a timeout. There is no mid-execution interrupt primitive: the run status has no paused state, and a turn that fails partway through the tool loop is not resumed. If you need to suspend work inside a node and resume the same thread later, LangGraph's <code>interrupt()</code> with a checkpointer is the stronger mechanism. <a href="/docs/resources/interrupts-replay-and-operations/">Read the full comparison</a>.</div>
+        </details>
+        
+        <details class="faq-item" >
+          <summary>Which model providers and local models are supported?<span class="faq-item__icon" aria-hidden="true">+</span></summary>
+          <div class="faq-item__answer">Built-in adapters cover OpenAI, Azure OpenAI, Anthropic, Google, DeepSeek, Moonshot, Z.AI, Ollama, and OpenRouter, plus a custom adapter for any OpenAI-compatible or internal endpoint. Models and parameters are selected per flow or per step, while credentials stay in application bootstrap configuration. <a href="/docs/concepts/models-and-providers/">See providers and model selection</a>.</div>
+        </details>
+        
+        <details class="faq-item" >
+          <summary>How do I test and evaluate a non-deterministic agent?<span class="faq-item__icon" aria-hidden="true">+</span></summary>
+          <div class="faq-item__answer">Use deterministic scripted models for transition and persistence checks, then add live scenarios or a model judge for response quality. The test guide shows how to assert the response, session ID, active step, run status, and persisted business state together. <a href="/docs/guides/testing/">Read the testing guide</a>.</div>
+        </details>
+        
+      </div>
+      
+      <div class="faq-group">
+        <p class="faq-group__label">Running it in production</p>
+        
+        <details class="faq-item" >
+          <summary>Where does my data go? Does PicoFlow receive prompts, session data, or telemetry?<span class="faq-item__icon" aria-hidden="true">+</span></summary>
+          <div class="faq-item__answer">Nothing leaves your infrastructure. Prompts and session documents stay between your application, the model provider you configure, and the session store you choose. The runtime ships no telemetry and no tracing or metrics integration that could carry data out. The license token is verified offline — an Ed25519 signature check against a public key compiled into the package, performed on the first model call and cached for the life of the process. It makes no network request. <a href="/contact/">Contact us</a> for deployment-specific data-processing and residency questions.</div>
+        </details>
+        
+        <details class="faq-item" >
+          <summary>Can I run PicoFlow entirely in my own cloud or VPC?<span class="faq-item__icon" aria-hidden="true">+</span></summary>
+          <div class="faq-item__answer">Yes. PicoFlow is an npm runtime embedded in your Node.js application, so you can deploy it in your own cloud, VPC, or air-gapped infrastructure. Choose the session store that matches the deployment: memory for local work, SQLite for durable single-host use, or MongoDB/Cosmos DB for shared multi-instance deployments. <a href="/docs/guides/persistence/">See the persistence guide</a>.</div>
+        </details>
+        
+        <details class="faq-item" >
+          <summary>Can I run several instances behind a load balancer?<span class="faq-item__icon" aria-hidden="true">+</span></summary>
+          <div class="faq-item__answer">Yes, backed by SQLite on a shared filesystem, MongoDB, or Cosmos DB — never the memory store, which cannot coordinate separate processes. One caveat worth budgeting for: the FIFO turn lock is per process, so if two turns for the same session land on different instances, both will call the model and only one will be allowed to save. Correctness is protected by the revision check; the duplicated model call is not free. <a href="/docs/guides/concurrency/">Read the concurrency guide</a>.</div>
+        </details>
+        
+        <details class="faq-item" >
+          <summary>What happens when a model, tool, or database call fails?<span class="faq-item__icon" aria-hidden="true">+</span></summary>
+          <div class="faq-item__answer">Failures return through the flow's error contract, while persisted state and revision checks protect the session from being silently overwritten. Provider retry attempts are explicit, and PicoFlow does not automatically replay a losing turn because it may already have caused an external side effect. <a href="/docs/guides/error-handling/">Read the error-handling guide</a>.</div>
+        </details>
+        
+        <details class="faq-item" >
+          <summary>How is PicoFlow licensed, and what does it cost?<span class="faq-item__icon" aria-hidden="true">+</span></summary>
+          <div class="faq-item__answer">Personal evaluation is free: request a key on the <a href="/license/">licensing page</a> and it is normally returned the same working day. Production is licensed per application and priced against the deployment rather than seat count. There is no public price list — a quote needs a short conversation about where and how it runs.</div>
+        </details>
+        
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+<section class="cta-band" aria-labelledby="cta-title">
+  <div class="shell cta-band__inner"><div><h2 id="cta-title">Start with a real conversational assistant, not a generic agent demo.</h2><p>Follow the quickstart, then walk through a full hotel-booking or customer-support conversation at your own pace.</p></div><div class="hero__actions"><a class="button button--ink" href="/docs/get-started/">Read the quickstart</a><a class="button button--light" href="/docs/tutorials/">Browse tutorials</a></div></div>
+</section>
+
+  </main>
+  <footer class="site-footer">
+  <div class="shell site-footer__grid">
+    <div>
+      <a class="brand brand--footer" href="/" aria-label="PicoFlow home">
+        <img class="brand__logo" src="/assets/img/logo2.png" alt="" width="38" height="38">
+        <span class="brand__name">picoflow.io</span>
+      </a>
+      <p class="site-footer__summary">Durable, step-oriented flows for AI conversations that have real work to finish.</p>
+    </div>
+    <div class="site-footer__links">
+      <div>
+        <p class="site-footer__label">Product</p>
+        <a href="/product/">How it works</a>
+        <a href="/compare/langgraph/">PicoFlow vs LangGraph</a>
+        <a href="/license/">Licensing</a>
+      </div>
+      <div>
+        <p class="site-footer__label">Developers</p>
+        <a href="/docs/">Documentation</a>
+        <a href="/docs/get-started/">Quickstart</a>
+        <a href="/docs/releases/">Release notes</a>
+        <a href="https://github.com/picoflowio/pico-demo">Demo source</a>
+      </div>
+      <div>
+        <p class="site-footer__label">Company</p>
+        <a href="/contact/">Contact</a>
+        <a href="https://www.linkedin.com/company/picoflow-io">LinkedIn</a>
+        <a href="mailto:contact@picoflow.io">contact@picoflow.io</a>
+      </div>
+    </div>
+  </div>
+  <div class="shell site-footer__bottom">
+    <span>© 2026 PicoFlow. Built for production conversations.</span>
   </div>
 </footer>
 
-<!-- End Footer -->
-
-
-	  <!-- Bootstrap core JavaScript -->
-	  <script src="/assets/js/jquery.min.js"></script>
-	  <script src="/assets/js/bootstrap.bundle.min.js"></script>
-
-	  <!-- Plugin JavaScript -->
-	  <script src="/assets/js/jquery.easing.min.js"></script>
-
-	  <!-- Contact form JavaScript -->
-	  <script src="/assets/js/jqBootstrapValidation.js"></script>
-	  <script src="/assets/js/contact_me.js"></script>
-
-	  <!-- Custom scripts for this template -->
-	  <script src="/assets/js/agency.min.js"></script>
-
-  </body>
+</body>
 </html>

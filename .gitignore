@@ -1,25 +1,4 @@
-# compiled output
-/dist
-/node_modules
-/build
-/ignore
-/cli/license/node_modules
-/cli/license/dist
-/export
-
-/py/__pycache__
-
-# OS
+node_modules/
+_site/
 .DS_Store
 
-# IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
-# dotenv environment variable files
-.env
-
-yarn.lock

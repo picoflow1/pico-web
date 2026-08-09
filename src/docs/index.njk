@@ -1,0 +1,80 @@
+---
+title: PicoFlow
+permalink: /docs/
+---
+<div class="home">
+	<div class="hero">
+		<div class="hero__brand">
+			<img class="hero__logo" src="/assets/img/logo2.png" alt="" width="72" height="72">
+			<h1 class="hero__title">picoflow.io</h1>
+		</div>
+		<p class="hero__lede">{{ site.description }}</p>
+		<div class="hero__actions">
+			<a class="btn btn--primary" href="/docs/get-started/">Get started</a>
+			<a class="btn btn--ghost" href="/docs/tutorials/">Follow a tutorial</a>
+			<a class="btn btn--ghost" href="/docs/reference/">API reference</a>
+		</div>
+	</div>
+
+	<h2>Build your first conversational assistant</h2>
+	<div class="cards cards--3">
+		<a class="card" href="/docs/get-started/first-flow/">
+			<span class="card__title">Your first conversational flow</span>
+			<span class="card__body">Define a <code>Flow</code>, register one <code>Step</code>, wire a provider, and send the first customer message. About five minutes.</span>
+		</a>
+		<a class="card" href="/docs/concepts/">
+			<span class="card__title">Core concepts</span>
+			<span class="card__body">Flows, steps, the session document, and the four kinds of data a step can hold.</span>
+		</a>
+		<a class="card" href="/docs/tutorials/basic-flow/">
+			<span class="card__title">Multi-turn assistant tutorial</span>
+			<span class="card__body">Eighteen lessons that walk a real conversational assistant from bootstrap to end-to-end tests.</span>
+		</a>
+		<a class="card" href="/docs/guides/">
+			<span class="card__title">Guides</span>
+			<span class="card__body">Task-oriented answers for building, composing, and operating flows in production.</span>
+		</a>
+		<a class="card" href="/docs/reference/">
+			<span class="card__title">Reference</span>
+			<span class="card__body">Normative contracts for <code>Flow</code>, <code>Step</code>, response builders, decorators, and the runtime.</span>
+		</a>
+		<a class="card" href="/docs/resources/">
+			<span class="card__title">Compare PicoFlow and LangGraph</span>
+			<span class="card__body">A measured comparison built from the same hotel booking assistant implemented twice.</span>
+		</a>
+	</div>
+
+	<h2>What a step looks like</h2>
+	<div class="prose">
+		{% set dobCode %}
+export class DOBStep extends Step {
+  public defineTool(): ToolType[] {
+    return [{
+      name: "dob",
+      description: "Capture a valid date of birth.",
+      schema: z.object({
+        year:  z.number().int().min(1900).max(2100),
+        month: z.number().int().min(1).max(12),
+        day:   z.number().int().min(1).max(31),
+      }),
+    }];
+  }
+
+  @Tool
+  protected async dob(args: Record<string, any>): Promise<ToolResponseType> {
+    if (!isRealCalendarDate(args)) {
+      // stay(...) keeps this step active and corrects the model.
+      return stay("That date is not valid. Ask again in M/D/YYYY format.");
+    }
+    this.saveState({ year: args.year, month: args.month, day: args.day });
+    // go(...) advances the durable conversation cursor.
+    return go(AddressStep);
+  }
+}
+		{% endset %}
+		<pre class="hljs"><code class="hljs language-typescript">{{ dobCode | highlightTs | safe }}</code></pre>
+		<p>Routing is a value returned from ordinary application code, not a rule buried in
+		prompt prose. The transition, the validation, and the persisted state all live
+		in one place you can read, test, and step through in a debugger.</p>
+	</div>
+</div>

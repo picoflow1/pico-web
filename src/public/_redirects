@@ -1,0 +1,10 @@
+/comparison/ /compare/langgraph/ 301
+/picoflow-langgraph/ /compare/langgraph/ 301
+/picoflow-license/ /license/ 301
+/legal/ /license/ 301
+/get-started/* /docs/get-started/:splat 301
+/concepts/* /docs/concepts/:splat 301
+/tutorials/* /docs/tutorials/:splat 301
+/guides/* /docs/guides/:splat 301
+/reference/* /docs/reference/:splat 301
+/resources/* /docs/resources/:splat 301

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  {% include "partials/head.njk" %}
+  <link rel="stylesheet" href="/assets/css/tokens.css">
+  <link rel="stylesheet" href="/assets/css/app.css">
+</head>
+<body class="docs-body">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true">
+  {% set currentTab = (page.url | sectionOf(docsNav.tabs)) or docsNav.tabs[0] %}
+  <header class="app-header">
+    <div class="app-header__top">
+      <label for="nav-toggle" class="nav-toggle__btn" title="Toggle navigation"><span aria-hidden="true">&#9776;</span> Menu</label>
+      <a class="brand" href="/docs/">
+        <img class="brand__logo" src="/assets/img/logo2.png" alt="" width="34" height="34">
+        <span class="brand__name">picoflow.io</span>
+      </a>
+      <span class="brand__sep" aria-hidden="true"></span>
+      <span class="brand__kicker">Docs</span>
+      <div class="header-actions">
+        <a class="header-link" href="/">PicoFlow home</a>
+        <a class="header-link" href="{{ site.repository }}">Demo source</a>
+        <a class="header-cta" href="/docs/get-started/">Get started</a>
+      </div>
+    </div>
+    <nav class="product-tabs" aria-label="Documentation sections">
+      {% for tab in docsNav.tabs %}
+      <a class="product-tabs__link" href="{{ tab.url }}" {% if page.url != "/docs/search/" and currentTab and currentTab.key == tab.key %}aria-current="page"{% endif %}>{{ tab.label }}</a>
+      {% endfor %}
+      <a class="product-tabs__link" href="/docs/search/" {% if page.url == "/docs/search/" %}aria-current="page"{% endif %}>Search</a>
+    </nav>
+  </header>
+  {% if page.url == "/docs/" %}
+  <main id="main">{{ content | safe }}</main>
+  {% else %}
+  {% set headings = content | toc %}
+  {% set flatPages = currentTab | flattenNav %}
+  {% set prev = flatPages | prevPage(page.url) %}
+  {% set next = flatPages | nextPage(page.url) %}
+  <div class="app-shell">
+    {% include "partials/docs-sidebar.njk" %}
+    <main class="main" id="main">
+      <article class="content">
+        <p class="eyebrow">{{ eyebrow or currentTab.label }}</p>
+        <h1 class="page-title">{{ title }}</h1>
+        {% if lede %}<p class="page-lede">{{ lede }}</p>{% endif %}
+        <div class="prose">{{ content | safe }}</div>
+        {% if prev or next %}
+        <nav class="pager" aria-label="Page navigation">
+          {% if prev %}<a class="pager__link pager__link--prev" href="{{ prev.url }}"><span class="pager__dir">Previous</span><span class="pager__title">{{ prev.title }}</span></a>{% endif %}
+          {% if next %}<a class="pager__link pager__link--next" href="{{ next.url }}"><span class="pager__dir">Next</span><span class="pager__title">{{ next.title }}</span></a>{% endif %}
+        </nav>
+        {% endif %}
+      </article>
+    </main>
+    <nav class="toc" aria-label="On this page">
+      {% if headings.length %}
+      <p class="toc__title">On this page</p>
+      <ul class="toc__list">{% for heading in headings %}<li class="toc__item toc__item--h{{ heading.level }}"><a class="toc__link" href="#{{ heading.id }}">{{ heading.text }}</a></li>{% endfor %}</ul>
+      {% endif %}
+      {% if source %}
+      <div class="toc__foot"><span class="toc__foot-label">Source of truth</span>{% for path in source | splitList %}<code class="toc__foot-path">{{ path }}</code>{% endfor %}</div>
+      {% endif %}
+    </nav>
+  </div>
+  {% endif %}
+  <footer class="app-footer">
+    <span>© {{ site.year }} {{ site.title }}. Documentation is sourced from the demo flows and runtime contracts.</span>
+    <a href="/">picoflow.io</a>
+    <a href="/contact/">Contact</a>
+  </footer>
+  {% if page.url == "/docs/search/" %}<script src="/assets/js/docs-search.js" defer></script>{% endif %}
+</body>
+</html>
