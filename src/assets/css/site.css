@@ -65,6 +65,9 @@ body { margin: 0; font-family: var(--sans); }
 .eyebrow { margin: 0 0 15px; color: #a7822b; font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: .11em; text-transform: uppercase; }
 .hero .eyebrow { color: var(--gold-bright); }
 .hero h1 { max-width: 690px; margin: 0; font-size: clamp(40px, 4.2vw, 60px); letter-spacing: -.06em; line-height: 1.02; text-wrap: balance; }
+.hero__title-main { display: inline; }
+.hero__title-main { font-size: .84em; }
+.hero__title-detail { display: inline-block; color: #bdb8af; font-size: .58em; line-height: 1.08; letter-spacing: -.045em; }
 .page-hero h1 { text-wrap: balance; }
 .hero__term { white-space: nowrap; }
 .hero__lede { max-width: 620px; margin: 25px 0 0; color: #d0cbc2; font-size: clamp(18px, 2vw, 21px); line-height: 1.5; }
