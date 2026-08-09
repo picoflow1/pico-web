@@ -13,14 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: pico-site/package-lock.json
+          cache-dependency-path: package-lock.json
       - name: Install dependencies
-        working-directory: pico-site
         run: npm ci
       - name: Build and verify
-        working-directory: pico-site
         run: npm run build
