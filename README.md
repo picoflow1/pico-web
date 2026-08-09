@@ -45,4 +45,4 @@ The docs search is deliberately small and privacy-friendly: its static index is 
 
 ## Deployment
 
-`.github/workflows/site.yml` validates every pull request and push to `main`. It deliberately does not publish; connect `_site/` to the team's chosen static host (or add a host-specific deployment workflow) after DNS and repository ownership are confirmed.
+`.github/workflows/site.yml` validates pull requests and publishes `_site/` to GitHub Pages on pushes to `main`. The repository's Pages source must be set to `GitHub Actions`, and the custom domain should point to the Pages site.
