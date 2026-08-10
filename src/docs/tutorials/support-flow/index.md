@@ -12,7 +12,8 @@ return policy, compute the exact refund, or create a billing ticket; the model n
 gets to invent eligibility, money, or an outcome.
 
 The implementation lives in `picoflow-demo/src/myflow/support-flow/`, and its
-turn-by-turn scenario lives in `picoflow-demo/test/support-flow/`.
+turn-by-turn scenario lives in `picoflow-demo/test/support-flow/`. Browse the
+[SupportFlow source on GitHub](https://github.com/picoflowio/pico-demo/tree/main/src/myflow/support-flow).
 
 ## What SupportFlow is
 

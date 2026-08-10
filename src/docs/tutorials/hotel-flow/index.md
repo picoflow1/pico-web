@@ -11,7 +11,8 @@ book — expressed as four registered steps that move a single durable cursor
 between them while keeping business state on the step that owns it.
 
 The implementation lives in `picoflow-demo/src/myflow/hotel-flow/`. Its fourteen-turn
-deterministic scenario lives in `picoflow-demo/test/hotel-flow/`.
+deterministic scenario lives in `picoflow-demo/test/hotel-flow/`. Browse the
+[HotelFlow source on GitHub](https://github.com/picoflowio/pico-demo/tree/main/src/myflow/hotel-flow).
 
 ## What HotelFlow is
 

@@ -12,7 +12,8 @@ job finishes inside one `POST /ai/run`, and the response body is the extracted
 invoice rather than a chat envelope.
 
 The implementation lives in `picoflow-demo/src/myflow/invoice-flow/`, and its
-end-to-end spec in `picoflow-demo/test/invoice-flow/`.
+end-to-end spec in `picoflow-demo/test/invoice-flow/`. Browse the
+[InvoiceFlow source on GitHub](https://github.com/picoflowio/pico-demo/tree/main/src/myflow/invoice-flow).
 
 ## What InvoiceFlow is
 
