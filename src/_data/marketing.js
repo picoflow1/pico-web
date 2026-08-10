@@ -63,7 +63,7 @@ export default {
         },
         {
           question: "What does PicoFlow need to run?",
-          answer: "Node.js 22.5 or newer, TypeScript with <code>NodeNext</code> resolution, legacy decorators (<code>experimentalDecorators</code> and <code>emitDecoratorMetadata</code>), and Zod 4. The published 1.1.1 package is ESM-only: a CommonJS application cannot <code>require(\"@picoflow/core\")</code> and has to reach it through a dynamic <code>import()</code>. It is designed to sit inside application frameworks such as NestJS. <a href=\"/docs/get-started/installation/\">See installation</a>.",
+          answer: "Node.js 22.5 or newer, TypeScript with <code>NodeNext</code> resolution, legacy decorators (<code>experimentalDecorators</code> and <code>emitDecoratorMetadata</code>), and Zod 4. The published 1.1.2 package supports both ESM <code>import</code> and CommonJS <code>require(\"@picoflow/core\")</code> applications. It is designed to sit inside application frameworks such as NestJS. <a href=\"/docs/get-started/installation/\">See installation</a>.",
         },
       ],
     },

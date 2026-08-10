@@ -5,7 +5,42 @@ lede: Published changes to @picoflow/core, with migration steps and compatibilit
 source: picoflow/README.md, picoflow/npmlib/package.json
 ---
 
-<div class="callout callout--tip"><span class="callout__title">Latest stable release</span><p><code>@picoflow/core@1.1.1</code> was published on <time datetime="2026-08-05">August 5, 2026</time>. Pin this version while you evaluate the runtime and review the breaking changes below.</p></div>
+<div class="callout callout--tip"><span class="callout__title">Latest stable release</span><p><code>@picoflow/core@1.1.2</code> was published on <time datetime="2026-08-09">August 9, 2026</time>. Pin this version while you evaluate the runtime and review the changes below.</p></div>
+
+## 1.1.2 — August 9, 2026
+
+PicoFlow 1.1.2 is a compatibility and runtime-refinement release following the
+Flow / Step architecture introduced in 1.1.1. It makes the package usable from
+both ESM and CommonJS applications and exposes more of the provider/runtime
+contract to application code.
+
+### Highlights
+
+- The published package now includes both ESM (`import`) and CommonJS (`require`) entries.
+- The model catalog is exported for applications that need to inspect or validate available model selections.
+- The last-response utility is exported for response inspection at application boundaries.
+- Provider adapter registration, model selection, grouped tool handlers, and response handling have been refined for the current Flow / Step runtime.
+
+### Upgrade
+
+```bash
+npm install @picoflow/core@1.1.2
+```
+
+Review your provider registrations and run the flow contract and end-to-end
+tests after upgrading. Applications that were using a local staging build should
+rebuild the library before rebuilding the demo or service that consumes it.
+
+### Compatibility
+
+| Requirement | 1.1.2 behavior |
+| --- | --- |
+| Node.js | `>=22.5` |
+| Module format | ESM and CommonJS package entries are published. |
+| TypeScript setup | Use `module: "NodeNext"`, `moduleResolution: "NodeNext"`, and explicit `.js` extensions on relative imports in ESM TypeScript source. |
+| Zod | `zod@4` is required; the published runtime uses `4.4.3`. |
+| LangChain core | The published runtime uses `@langchain/core@1.2.3`. |
+| License | A valid `PICOFLOW_KEY` is required when a real model/tool turn executes. |
 
 ## 1.1.1 — August 5, 2026
 

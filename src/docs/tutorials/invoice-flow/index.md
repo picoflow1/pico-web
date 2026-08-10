@@ -82,7 +82,7 @@ step, that re-entry fires no lifecycle hooks: no `onExit`, no `onEnter`, no
 
 | Step | File | Memory namespace | Model override | What it demonstrates |
 | --- | --- | --- | --- | --- |
-| `NoToolStep` | `no-tool-step.ts` | class default, `NoToolStep` | none, uses flow default `google` / `gemini-2.5-flash` | The minimum viable step — `getPrompt()` plus `onResponse()` — plus `Prompt.replace2()` and `StringUtil.parseJson` |
+| `NoToolStep` | `no-tool-step.ts` | class default, `NoToolStep` | none, uses flow default `google` / `gemini-2.5-flash` | Response-driven structured work: prompt the model for JSON, then let `onResponse()` parse, validate, save, and route without relying on a model-selected tool call |
 | `ExtractInvoiceStep` | `extract-invoice.ts` | `invoice3` | `google` / `gemini-3.1-pro-preview`, `temperature: 0` | File upload, a hand-built multimodal message, self re-entry, and a raw JSON response with a content type |
 
 `temperature: 0` on the extractor is deliberate. Extraction should be
@@ -110,7 +110,7 @@ reproducible; a value read off an invoice is not a creative decision.
 | `flow.markCompleted()` without a terminal step | yes |
 | Self re-entry with `go(Self).withMessage(...)` | yes |
 | Batch fan-out with `spawnSteps()` + `concurrentSteps()` | yes |
-| Routing from `onResponse()` with no tools at all | yes |
+| Response-driven structured work and routing from `onResponse()` with no tools | yes |
 | Memory compaction | no |
 | Multi-tool batching, structured output, nested execution | no |
 | A registered terminal step | no, it is commented out |
@@ -121,8 +121,9 @@ reproducible; a value read off an invoice is not a creative decision.
    that runs to completion instead of waiting on user turns, and choosing a
    non-OpenAI default.
 2. [A step with no tools](/docs/tutorials/invoice-flow/no-tool-step/) —
-   `getPrompt()` to `onResponse()` to `go(...).withState(...)`, plus
-   `Prompt.replace2()` and `StringUtil.parseJson`.
+   response-driven structured work: prompt the model for JSON, then use
+   `onResponse()` as the application-controlled response handler instead of
+   relying on a model-selected tool call.
 3. [Example-as-schema prompting](/docs/tutorials/invoice-flow/example-as-schema/) —
    pinning an output shape with a full example payload, and when to use a real
    schema instead.

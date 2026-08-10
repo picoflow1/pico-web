@@ -1,14 +1,33 @@
 ---
 title: 2. A step with no tools
 eyebrow: InvoiceFlow tutorial
-lede: NoToolStep has thirty lines, no tool definitions, and no lifecycle overrides. It builds a prompt, reads the model's reply, and routes. That is the whole minimum contract.
+lede: >
+  NoToolStep has thirty lines, no tool definitions, and no lifecycle overrides. It
+  uses a structured response as an application-controlled alternative to
+  model-selected tool calling: prompt, receive, validate, and route in
+  onResponse().
 source: picoflow-demo/src/myflow/invoice-flow/no-tool-step.ts, picoflow-demo/src/myflow/invoice-flow/prompt/nt-prompt.md
 ---
 
-Tools are how a model asks your application to do something. When there is
-nothing to do — when the model's text *is* the result — a step needs neither
-`defineTool()` nor a `@Tool` handler. `NoToolStep` is that case, and it is the
-smallest useful step in the demo.
+Tools are one way a model asks your application to do something: the model must
+first decide to emit a tool call, and only then does PicoFlow dispatch the
+handler. That selection is not equally reliable across providers and model
+sizes. A smaller model can follow a strong instruction and still answer in
+prose instead of emitting the requested tool call, which means the handler
+never runs.
+
+`NoToolStep` demonstrates the important alternative. Ask the model for a
+small, explicit structure, receive that structure as the normal model reply,
+and let `onResponse()` become the response handler: parse or accept the object,
+validate it, save it, run application logic if needed, and return the next
+transition. There is no tool-selection decision for the model to miss.
+
+This is not merely a way to write a step with fewer lines. It is a different
+control channel. Instead of **model chooses a tool → tool handler runs**, the
+application owns the path: **model returns data → `onResponse()` decides what
+that data is allowed to do**. For stages whose real output is a command,
+classification, extraction, or routing decision, this can replace tool calling
+entirely.
 
 ## The goal
 
@@ -17,6 +36,8 @@ smallest useful step in the demo.
 - Substitute an object into a prompt with `Prompt.replace2()`, and know how it
   differs from `Prompt.replace()`.
 - Parse a model reply defensively with `StringUtil.parseJson`.
+- Recognise when a structured response handled by `onResponse()` is more
+  reliable than waiting for a model-selected tool call.
 
 ## The whole step
 
@@ -92,6 +113,71 @@ branch the *model* has to evaluate: the zip code is randomised in
 `getPrompt()`, so roughly half of all runs produce today's date and the other
 half produce `2023-01-01`. Run the flow twice and you can see the substitution
 actually reaching the model.
+
+## The important technique: response-driven structured work
+
+The prompt is asking for a data structure, not asking the model to call a tool:
+
+```text
+if the 'internal_address.zip' ===97006, set 'current_date' to today's date;
+else set it to 2023-01-01;
+output 'current_date' in JSON format
+```
+
+That distinction matters whenever a workflow depends on a model reliably
+submitting a value. With a tool-based design, the model has to select the tool,
+construct valid arguments, and emit the provider's tool-call message. If it
+does not select the tool, `toolHandle`-style application code is never reached.
+
+With a response-driven design, every ordinary model completion reaches
+`onResponse()`:
+
+```ts
+public async onResponse(
+  llmResult: string | object,
+): Promise<LastResponseType> {
+  const value =
+    typeof llmResult === "string"
+      ? StringUtil.parseJson<JsonValue>(llmResult)
+      : (llmResult as JsonValue);
+
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return go(NoToolStep).withPrompt(
+      "Return only the requested JSON object with year, month, and day.",
+    );
+  }
+
+  // Validate domain fields here before making a side effect or transition.
+  this.saveState({ current_date: value });
+  return go(ExtractInvoiceStep).withState({ from_previous: value });
+}
+```
+
+The application, rather than the model, owns the decision after the response
+arrives. `onResponse()` can reject malformed data, issue a corrective prompt,
+call a service directly, save state, choose a step, or return a final response.
+That makes it analogous to a tool handler in responsibility, while avoiding the
+unreliable **tool selection** step.
+
+There are two versions of this technique in the examples:
+
+| Response contract | What arrives in `onResponse()` | Trade-off |
+| --- | --- | --- |
+| Prompted JSON + `StringUtil.parseJson` | Text that the application parses | Works broadly, but syntax and field correctness must be validated by application code. This is the exact `NoToolStep` pattern. |
+| `structOutputSchema()` + `onResponse()` | A parsed object | The provider enforces more of the shape, while `onResponse()` still owns domain validation, side effects, and routing. See [BasicFlow's structured-output lesson](/docs/tutorials/basic-flow/structured-output/). |
+
+The pattern is strongest when the model's job is to produce one structured
+decision or payload. It does not make external work happen by itself: if the
+step must fetch a file, update an order, or charge a card, `onResponse()` must
+call the application service and handle its result, or a tool handler remains a
+good boundary. The key question is whether you need the model to *choose an
+operation* or only to *return the data that your code will interpret*.
+
+For smaller models, this distinction is often decisive. A prompt can tell the
+model exactly what structure to return, and the application can make the final
+decision even when the model fails to follow the ideal format. A tool-only
+design has no equivalent recovery path when the model simply answers without
+calling the tool.
 
 ## replace2 against replace
 
@@ -248,16 +334,19 @@ The first writes to `NoToolStep`'s own state; the second writes to
 
 ## Why it is written this way
 
-A step earns a tool when the application has to *do* something — validate, look
-something up, write to a database, decide a branch on data the model cannot
-see. A step that only needs the model's own output does not, and adding a tool
-in that case buys a schema round trip and an extra model turn for nothing.
+A step earns a tool when the model must choose an application operation and the
+operation benefits from the tool-call protocol. A step that only needs the
+model's own output — or needs the application to interpret a structured model
+decision — does not have to expose a tool at all. Adding a tool in that case
+introduces another model decision and gives smaller models another way to fail.
 
-The trade is real, though. Without a tool schema you have no structural
-guarantee at all: the model can return prose, a fenced object, or an apology,
-and `parseJson` will hand you `null` for two of the three. Use a tools-free
-step when a `null` is cheap to handle, and reach for a tool schema — or
-`structOutputSchema()`, covered in the BasicFlow track — when it is not.
+The trade is real, though. Without a provider-enforced schema the model can
+return prose, a fenced object, or an apology, and `parseJson` will hand you
+`null` for two of the three. Treat parsing and domain validation as part of the
+response-handler contract. Use a prompted response when portability and
+application control matter most; use `structOutputSchema()` when the provider's
+structured-output support is available; use a tool when the model must invoke a
+real application operation through the tool protocol.
 
 ## Common mistakes
 

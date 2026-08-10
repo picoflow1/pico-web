@@ -19,9 +19,8 @@ npm install @picoflow/core
 yarn add @picoflow/core
 ```
 
-The published package version is 1.1.1. Version 1.1.1 contains breaking changes relative
-to earlier releases, so pin it explicitly rather than floating a caret range while you are
-still learning the API surface.
+The published package version is 1.1.2. Pin it explicitly rather than floating a caret
+range while you are still learning the API surface.
 
 ## Runtime requirements
 
@@ -31,12 +30,11 @@ The published `package.json` declares:
 | --- | --- | --- |
 | `type` | `module` | The package is ESM. |
 | `engines.node` | `>=22.5` | Older Node releases are unsupported. |
-| `exports["."]` | `import` and `default` only, both pointing at `dist/picoflow.mjs` | There is no CommonJS entry point. |
+| `exports["."]` | `import` points at `dist/picoflow.mjs`; `require` points at `dist/picoflow.cjs` | Both ESM and CommonJS applications are supported. |
 
 ### The package is ESM
 
-`@picoflow/core` publishes exactly one entry condition, and it resolves to an `.mjs`
-bundle. There is no `require` condition in its `exports` map. In practice this means:
+`@picoflow/core` publishes ESM and CommonJS entry conditions. In practice this means:
 
 - Your own package must set `"type": "module"`, or your files must use the `.mts`/`.mjs`
   extensions.
@@ -48,11 +46,8 @@ bundle. There is no `require` condition in its `exports` map. In practice this m
 import { HotelFlow } from "./myflow/hotel-flow/hotel-flow.js";
 ```
 
-- A CommonJS consumer cannot `require("@picoflow/core")`. It has to reach the package
-  through a dynamic `await import("@picoflow/core")`, which forces the surrounding
-  function to be async and rules out top-level use in a synchronous module.
-
-<div class="callout callout--warning"><span class="callout__title">Warning</span><p>The library <code>README.md</code> states that PicoFlow supports both ESM and CommonJS applications. The published <code>package.json</code> for <code>@picoflow/core</code> 1.1.1 exposes only an ESM entry (<code>"type": "module"</code>, and an <code>exports</code> map with <code>import</code> and <code>default</code> conditions that both resolve to <code>dist/picoflow.mjs</code>). Treat the package as ESM-only until a <code>require</code> condition appears in the manifest.</p></div>
+- CommonJS applications can use `require("@picoflow/core")` through the published
+  `require` export.
 
 ### Decorators
 
@@ -80,7 +75,7 @@ PicoFlow declares its LangChain and Zod dependencies directly rather than as pee
 your application code shares those types across the boundary, so version drift shows up as
 confusing type errors rather than clean resolution failures.
 
-| Package | Version PicoFlow 1.1.1 depends on | Why your code sees it |
+| Package | Version PicoFlow 1.1.2 depends on | Why your code sees it |
 | --- | --- | --- |
 | `zod` | 4.4.3 | `defineTool()` returns `ToolType[]`, whose `schema` field is typed as `z.ZodObject`. You author those schemas. |
 | `@langchain/core` | 1.2.3 | Memory holds LangChain messages. `withMessage(...)`, `HumanMessageEx`, `AiMessageEx` and `structOutputSchema()` all sit on LangChain types. |
