@@ -101,7 +101,7 @@ only the default cursor; `initialStep()` overrides it here.
 
 | Step | File | Memory | Model | What it demonstrates |
 | --- | --- | --- | --- | --- |
-| `WeatherStep` | `weather-step.ts` | class default | `openai` / `gpt-5`, `reasoning.effort: "low"` | An MCP-backed tool, incremental `saveState`, `stay()` as a corrective loop, and a `@Tools(["get_weather"])` batch handler |
+| `WeatherStep` | `weather-step.ts` | class default | `openai` / `gpt-5`, `reasoning.effort: "low"` | A deterministic local fixture, incremental `saveState`, `stay()` as a corrective loop, and a `@Tools(["get_weather"])` batch handler |
 | `NameStep` | `name-step.ts` | `default` | flow default | Zod tool schema, rejecting input in code, transient state, and nested `runStep()` |
 | `AddressStep` | `address-step.ts` | `default` | flow default | Validation delegated to a plain TS module, and `go().withPrompt().withState()` |
 | `DOBStep` | `dob-step.ts` | `default` | `openai` / `gpt-5.1`, `reasoning.effort: "low"` | Reading another step's state into a prompt template |
@@ -153,8 +153,8 @@ Read them in order. Lessons 1 to 8 are the fundamentals; 9 to 14 are composition
     kinds of data and what survives persistence.
 15. [Memory namespaces and model overrides](/docs/tutorials/basic-flow/memory-and-models/)
     — sharing or isolating history, and per-step models.
-16. [MCP tools and @Tools batching](/docs/tutorials/basic-flow/mcp-and-multi-tool/) — an
-    MCP server behind a handler, and group tool dispatch.
+16. [@Tools batching](/docs/tutorials/basic-flow/mcp-and-multi-tool/) — group tool
+    dispatch around a deterministic local fixture.
 17. [Sessions, migration, batch mode](/docs/tutorials/basic-flow/sessions-and-batch/) —
     conditional entry, restore policy, and `concurrentSteps()`.
 18. [Testing a flow end to end](/docs/tutorials/basic-flow/testing/) — scenario-driven

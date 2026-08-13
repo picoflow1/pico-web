@@ -137,7 +137,7 @@ protected async get_weather_batch(
     return stay("Provide LA and NYC exactly once so their weather can be compared.");
   }
 
-  const weather = await callCityTemperatureMcpTool(cityNames);
+  const weather = getCityTemperatures(cityNames);
   if (
     weather.length !== cityNames.length ||
     weather.some((entry) => entry?.temperature === null || entry?.temperature === undefined)
@@ -190,5 +190,5 @@ the group handles the combined case, the individual handler covers the rest.
 | Side effect happens twice | The handler performed work before validating, then returned `stay(...)` and was called again on the retry turn |
 
 Related: [Defining and handling tools](/docs/guides/tools/),
-[MCP tools and @Tools batching](/docs/tutorials/basic-flow/mcp-and-multi-tool/), and
+[@Tools batching](/docs/tutorials/basic-flow/mcp-and-multi-tool/), and
 [@Tool and @Tools](/docs/reference/decorators/).

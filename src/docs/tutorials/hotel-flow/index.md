@@ -91,7 +91,7 @@ anywhere. Those three edges are collapsed into one arrow above.
 
 | Step | File | Memory namespace | Model override | What it demonstrates |
 | --- | --- | --- | --- | --- |
-| `ExploreStep` | `explore-step.ts` | `hotel-explore` (summarised) | `openai` / `gpt-5.1`, `reasoning.effort: "low"` | A task-list prompt file, a mutable JSON scaffold, one capture tool, a real backend call, and `go().withState()` against `stay()` |
+| `ExploreStep` | `explore-step.ts` | `hotel-explore` (summarised) | `openai` / `gpt-5.1`, `reasoning.effort: "low"` | A task-list prompt file, a mutable JSON scaffold, typed capture criteria, an MCP-backed search, and `go().withState()` against `stay()` |
 | `PresentStep` | `present-step.ts` | class default, `PresentStep` | `openai` / `gpt-4o`, `temperature: 0.5` | `onEnter()` memory erasure, `onCrossing()` seeding, a three-way branch, and `withPrompt()` handoff |
 | `CompareStep` | `compare-step.ts` | class default, `CompareStep` | `openai` / `gpt-5.1`, `reasoning.effort: "low"` | `direct()` responses, cross-step state reads, and a return transition |
 | `TerminateSessionStep` | framework | `end` | none, uses flow default `gpt-4o` | The built-in terminal step and the `_prompt` handoff |
@@ -107,6 +107,7 @@ point of lesson 3.
 | --- | --- |
 | `backend/hotel-catalog.ts` | Loads `data/hotels.json` once and filters by amenities, room type, and distance |
 | `backend/pricing-engine.ts` | Enumerates stay dates, applies month, holiday, room, and weekend multipliers, filters by nightly budget, and totals |
+| `tools/hotel-pricing-mcp-*.ts` | Typed local stdio MCP service and client adapter for hotel search |
 | `gen-chart.ts` | Flattens hotel records and renders the Markdown comparison table |
 | `data/hotels.json` | Thirty-two Portland-area hotel records with amenities, room types, a `level` base price, and distances |
 | `prompt/hotel-prompt.ts` | Loads `role.md` as a reusable partial |
@@ -119,7 +120,7 @@ point of lesson 3.
 ## What this track does and does not cover
 
 HotelFlow was written to make four things unavoidable: large externalised
-prompts, your own backend behind a tool, memory compaction, and answering
+prompts, a typed MCP-backed business operation, memory compaction, and answering
 without a model call. It is silent on everything else.
 
 | Feature | In HotelFlow? |
@@ -145,8 +146,8 @@ read the [InvoiceFlow track](/docs/tutorials/invoice-flow/).
    entry point.
 2. [Big prompts as spec files](/docs/tutorials/hotel-flow/prompt-files/) —
    `Prompt.file()`, prompt composition, and the mutable JSON scaffold.
-3. [Calling your own backend](/docs/tutorials/hotel-flow/backend-tools/) — keeping
-   domain logic in plain classes behind a single capture tool.
+3. [MCP-backed hotel search](/docs/tutorials/hotel-flow/backend-tools/) — typed
+   criteria, an MCP service boundary, and PicoFlow-owned routing.
 4. [Memory compaction and erasure](/docs/tutorials/hotel-flow/memory-compaction/) —
    `enableSummary()`, the compaction thresholds, and `eraseMemory()`.
 5. [Branch, forward, and return](/docs/tutorials/hotel-flow/branch-and-return/) —

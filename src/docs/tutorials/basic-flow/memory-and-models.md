@@ -293,5 +293,4 @@ development, rather than on the turn that happens to reach `DOBStep`.
 ## Next
 
 `WeatherStep` has not been examined yet.
-[16. MCP tools and @Tools batching](/docs/tutorials/basic-flow/mcp-and-multi-tool/) takes it
-apart.
+[16. @Tools batching](/docs/tutorials/basic-flow/mcp-and-multi-tool/) takes it apart.

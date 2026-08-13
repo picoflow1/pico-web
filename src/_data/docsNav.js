@@ -146,7 +146,7 @@ export default {
 							url: "/docs/tutorials/basic-flow/memory-and-models/",
 						},
 						{
-							title: "16. MCP tools and @Tools batching",
+							title: "16. @Tools batching",
 							url: "/docs/tutorials/basic-flow/mcp-and-multi-tool/",
 						},
 						{
@@ -172,7 +172,7 @@ export default {
 							url: "/docs/tutorials/hotel-flow/prompt-files/",
 						},
 						{
-							title: "3. Calling your own backend",
+							title: "3. MCP-backed hotel search",
 							url: "/docs/tutorials/hotel-flow/backend-tools/",
 						},
 						{

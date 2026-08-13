@@ -269,6 +269,6 @@ handler decides whether to accept it.
 
 ## Next
 
-[3. Calling your own backend](/docs/tutorials/hotel-flow/backend-tools/) follows the
-captured JSON into `capture_choices` and into two plain TypeScript classes that
-know nothing about PicoFlow.
+[3. MCP-backed hotel search](/docs/tutorials/hotel-flow/backend-tools/) follows the
+typed criteria into `capture_choices`, PicoFlow-owned routing, and the pricing
+MCP service.

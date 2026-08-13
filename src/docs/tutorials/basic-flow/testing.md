@@ -185,7 +185,7 @@ assertions only work because `AddressStep` persists the **parsed** object rather
 raw string, and `city_LA: 72` only works because `WeatherStep` normalised the alias
 before building the state key.
 
-`72` and `83` are the MCP server's fixed answers, so they are safe constants:
+`72` and `83` are the deterministic local fixture's fixed answers, so they are safe constants:
 
 ```ts
 if (normalized === "nyc") return 83;
