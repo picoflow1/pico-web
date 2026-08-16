@@ -197,7 +197,7 @@ release does not understand.
 9. Test migration from every supported historical version, repeated migration, reset
    behaviour, the returned session ID, and the first resumed user turn.
 
-<div class="callout callout--warning"><span class="callout__title">onSessionDoc() is not a hook</span><p><code>BasicFlow</code> contains a leftover <code>onSessionDoc(sessionDoc, isNew)</code> method. Nothing in PicoFlow calls it. If you copied that pattern, move the logic into <code>onRestoreSessionDoc()</code> — the code you have is silently dead.</p></div>
+<div class="callout callout--warning"><span class="callout__title">Use the restore hook</span><p><code>onSessionDoc()</code> is not a PicoFlow hook. Put session compatibility, migration, and reset logic in <code>onRestoreSessionDoc()</code>, whose return value determines whether the loaded document is restored or replaced.</p></div>
 
 ## Failure modes
 

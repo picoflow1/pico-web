@@ -202,19 +202,6 @@ protected async onRestoreSessionDoc(
 Keep the migration idempotent. The hook can run again on the next request if the write
 fails.
 
-## A hook that does not exist
-
-<div class="callout callout--danger"><span class="callout__title">Dead code in the demo</span><p><code>BasicFlow</code> defines this method:</p><pre><code class="language-typescript">protected async onSessionDoc(
-  sessionDoc: SessionType,
-  isNew: boolean,
-): Promise&lt;boolean&gt; {
-  if (sessionDoc.version &lt; 1.14) {
-    return false;
-  } else {
-    return isNew;
-  }
-}</code></pre><p>There is no <code>onSessionDoc</code> hook in the PicoFlow core. Nothing calls this method, and removing it changes no behaviour. Version gating on restore belongs in <code>onRestoreSessionDoc()</code>.</p></div>
-
 The version comparison is worth a second look even so, because the mistake in it is easy
 to repeat. `K.sessionDocVersion` is a **number**, currently `1.5`. Written as a decimal,
 `1.5 < 1.14` is `false` — 1.5 is the larger number. If you read `1.14` as "version 1,
@@ -361,8 +348,6 @@ normal registered step; nothing about it knows it is usually reached from a batc
   the subsequent save fails.
 - **Encoding a two-part version in a float.** `1.14 < 1.5` numerically. Compare with
   `isSessionCurrent(doc)` or explicit constants.
-- **Adding a hook the framework does not call.** `onSessionDoc` in the demo is dead
-  code. Check the `Flow` base class before overriding.
 - **Running batch mode without `SELF_URL`.** `SelfClient` has no base URL and every item
   fails, silently, into the coordinator's error log.
 - **Calling `goto()` from a nested frame in `spawnSteps`.** The coordinator's `goto` is
