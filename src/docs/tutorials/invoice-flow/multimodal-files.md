@@ -101,6 +101,14 @@ with `stay(...)`, which is what a production version should do.
 ## Upload, attach, re-enter
 
 ```ts
+private uploadedFileCleanup?: () => Promise<void>;
+
+private async cleanupUploadedFile(): Promise<void> {
+  const cleanup = this.uploadedFileCleanup;
+  this.uploadedFileCleanup = undefined;
+  if (cleanup) await cleanup();
+}
+
 @Tool
 protected async fetch_file(
   args: Record<string, any>,
@@ -109,8 +117,10 @@ protected async fetch_file(
   const localPath = path.join(__dirname, fileName);
   this.saveState({ fileName: localPath });
   try {
+    await this.cleanupUploadedFile();
     const fileMgr = new LLMFileManager(this.getLLMType());
     const result = await fileMgr.uploadFile(localPath);
+    this.uploadedFileCleanup = result.cleanup;
     const id = fileMgr.getFileId(result);
     const userMsg = new HumanMessage({
       content: [
@@ -129,7 +139,21 @@ protected async fetch_file(
     // go(...) re-enters this step so the model can read the attached invoice file.
     return go(ExtractInvoiceStep).withMessage(userMsg);
   } catch (_error) {
+    await this.cleanupUploadedFile();
     throw new Error(`read file ${fileName} failed`);
+  }
+}
+
+@Tool
+protected async capture_json(
+  args: Record<string, any>,
+): Promise<ToolResponseType> {
+  try {
+    this.saveState({ json: args?.json });
+    this.flow.markCompleted();
+    return direct(args?.json).withContentType(HttpContentType.Json);
+  } finally {
+    await this.cleanupUploadedFile();
   }
 }
 ```
@@ -162,7 +186,7 @@ translation. MIME type is inferred from the file extension, so `.png`, `.jpg`,
 `getFileId(result)` extracts the provider's id from that part — the field name
 differs per provider, and this is the abstraction over that.
 
-<div class="callout callout--note"><span class="callout__title">Uploaded files are not cleaned up</span><p><code>FileContentPart</code> carries an optional <code>cleanup()</code>. The demo never calls it. For OpenAI in particular the uploaded file persists until deleted. If documents are confidential or storage is billed, call <code>cleanup()</code> in a <code>finally</code> block or a session finaliser.</p></div>
+<div class="callout callout--note"><span class="callout__title">Clean up after extraction</span><p><code>FileContentPart</code> carries an optional <code>cleanup()</code>. Keep that callback across the self-reentry and invoke it in <code>capture_json</code>'s <code>finally</code> block, after the model has consumed the attachment. For OpenAI in particular, the uploaded file persists until deleted.</p></div>
 
 ### The message is built by hand
 
@@ -289,7 +313,8 @@ requirement into two lines of application code.
   not move, so neither fires.
 - **Forgetting to tell the model not to re-fetch.** Without it, `fetch_file`
   loops.
-- **Never calling `cleanup()`.** Uploaded provider files outlive the session.
+- **Cleaning up before the model reads the attachment.** The upload must survive
+  the self-reentry; clean it up in the extraction tool's `finally` block.
 
 ## Next
 

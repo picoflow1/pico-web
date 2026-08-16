@@ -115,7 +115,7 @@ document will produce a plausible invoice if you do not tell it not to.
   "po_number": "24-WGM-035",
   "payment_terms": "40% Deposit, 60% Before Dispatch",
   "banking_info": {
-    "banking_instutition": "Bank of America",
+    "banking_institution": "Bank of America",
     "wire": {
       "banking_account": "87654321098",
       "banking_routing": "026009593",
@@ -176,7 +176,7 @@ example is unambiguous by construction, and it is checked by the second fixture
 in the repository: `data/evergreen.json` is the expected extraction of
 `data/Evergreen.png` and has exactly the same keys.
 
-<div class="callout callout--tip"><span class="callout__title">Keep a typo if the schema has one</span><p>The example spells the key <code>banking_instutition</code>. Because the example <em>is</em> the schema, the extractor will emit that spelling, and so will anything downstream that was built against it. Fix it in the example and the fixture together, or not at all.</p></div>
+<div class="callout callout--tip"><span class="callout__title">Keep the example and fixture aligned</span><p>The example and the Evergreen fixture use the canonical key <code>banking_institution</code>. Keep both files aligned when changing the extraction shape so the prompt example and fixture describe the same contract.</p></div>
 
 ## What this does not give you
 
