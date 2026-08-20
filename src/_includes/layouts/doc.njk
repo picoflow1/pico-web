@@ -60,7 +60,7 @@
       <ul class="toc__list">{% for heading in headings %}<li class="toc__item toc__item--h{{ heading.level }}"><a class="toc__link" href="#{{ heading.id }}">{{ heading.text }}</a></li>{% endfor %}</ul>
       {% endif %}
       {% if source %}
-      <div class="toc__foot"><span class="toc__foot-label">Source of truth</span>{% for path in source | splitList %}<code class="toc__foot-path">{{ path }}</code>{% endfor %}</div>
+      <div class="toc__foot"><span class="toc__foot-label">Source of truth</span>{% for path in source | splitList %}{% if path | isRepoPath %}<a class="toc__foot-path" href="{{ path | repoUrl }}"><code>{{ path }}</code></a>{% else %}<code class="toc__foot-path">{{ path }}</code>{% endif %}{% endfor %}</div>
       {% endif %}
     </nav>
   </div>

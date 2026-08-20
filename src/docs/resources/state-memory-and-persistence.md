@@ -2,7 +2,7 @@
 title: State, memory, and persistence
 eyebrow: Compare
 lede: The important comparison is not “can either framework persist?” but which durable contract the application owns.
-source: codex/pico-web/picoflow-langgraph.html, picoflow/src/picoflow/types/flow-types.ts, picoflow/src/picoflow/session/session-store.ts, pico-demo/src/myflow/hotel-langgraph/hotel-langgraph.state.ts, pico-demo/src/myflow/hotel-langgraph/hotel-session-store.ts
+source: picoflow/src/picoflow/types/flow-types.ts, picoflow/src/picoflow/session/session-store.ts, pico-demo/src/myflow/hotel-langgraph/hotel-langgraph.state.ts, pico-demo/src/myflow/hotel-langgraph/hotel-session-store.ts
 ---
 
 Both approaches persist multi-turn state, but their units of persistence differ.

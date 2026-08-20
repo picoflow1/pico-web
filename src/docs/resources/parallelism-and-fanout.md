@@ -2,7 +2,7 @@
 title: Parallelism and fan-out
 eyebrow: Compare
 lede: Both systems can run work concurrently; their main difference is whether concurrency is explicit helper-driven work or graph-scheduled work.
-source: codex/pico-web/picoflow-langgraph.html, picoflow/src/picoflow/flow/flow.ts, picoflow/src/picoflow/flow/step.ts, pico-demo/src/myflow/basic-flow/basic-flow.ts
+source: picoflow/src/picoflow/flow/flow.ts, picoflow/src/picoflow/flow/step.ts, pico-demo/src/myflow/basic-flow/basic-flow.ts
 ---
 
 Concurrency is not a reason by itself to select either framework. The design question is where

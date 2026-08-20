@@ -2,7 +2,7 @@
 title: Architecture and routing
 eyebrow: Compare
 lede: PicoFlow makes the active conversation stage the runtime cursor; LangGraph makes state, nodes, and routes explicit graph concerns.
-source: codex/pico-web/picoflow-langgraph.html, picoflow/src/picoflow/flow/flow.ts, picoflow/src/picoflow/utils/tool-response.ts, pico-demo/src/myflow/hotel-flow/, pico-demo/src/myflow/hotel-langgraph/
+source: picoflow/src/picoflow/flow/flow.ts, picoflow/src/picoflow/utils/tool-response.ts, pico-demo/src/myflow/hotel-flow/, pico-demo/src/myflow/hotel-langgraph/
 ---
 
 The supplied architecture brief is right about the central distinction, after updating its

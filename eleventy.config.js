@@ -112,6 +112,15 @@ export default function (eleventyConfig) {
       .filter(Boolean),
   );
 
+  eleventyConfig.addFilter("isRepoPath", (value) => String(value ?? "").startsWith("pico-demo/"));
+  eleventyConfig.addFilter("repoUrl", (value) => {
+    const repoPath = String(value ?? "");
+    if (!repoPath.startsWith("pico-demo/")) return "";
+    const path = repoPath.slice("pico-demo/".length).replace(/\/$/, "");
+    const kind = !path || path.endsWith("/") || !path.split("/").at(-1).includes(".") ? "tree" : "blob";
+    return `https://github.com/picoflowio/pico-demo/${kind}/main/${encodeURI(path)}`;
+  });
+
   eleventyConfig.addFilter("isActive", (url, pageUrl) => Boolean(url && pageUrl && url === pageUrl));
   eleventyConfig.addFilter("groupHasUrl", (group, url) =>
     (group?.items ?? []).some((item) => item.url === url),

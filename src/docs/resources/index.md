@@ -2,7 +2,7 @@
 title: PicoFlow vs. LangGraph
 eyebrow: Compare
 lede: "A side-by-side evaluation of the same hotel-reservation chatbot built twice: once on PicoFlow, once directly on LangGraph. Code size, modularity, contracts, persistence, debugging, and the risks on both sides."
-source: codex/pico-web/picoflow-langgraph.html, pico-demo/docs/hotel-flow-critical-evaluation.md, picoflow/src/picoflow/, pico-demo/src/myflow/hotel-flow/, pico-demo/src/myflow/hotel-langgraph/
+source: pico-demo/docs/hotel-flow-critical-evaluation.md, picoflow/src/picoflow/, pico-demo/src/myflow/hotel-flow/, pico-demo/src/myflow/hotel-langgraph/
 ---
 
 Both implementations now live side by side in `pico-demo`. They describe the same
@@ -25,13 +25,11 @@ runtime concern once for every flow.
 ## Scope and API baseline
 
 This is a comparison of two applications, not a claim that either framework lacks capabilities
-the other has. It uses the earlier architecture brief at
-`codex/pico-web/picoflow-langgraph.html` as background, but source and current APIs take
-precedence over that historical document.
+the other has. Source and current APIs take precedence over historical documentation.
 
 The PicoFlow side was checked against the local `picoflow` 1.0.23 source and
-`pico-demo/src/myflow/hotel-flow`. The direct side was checked against
-`pico-demo/src/myflow/hotel-langgraph`, which uses `@langchain/langgraph` 1.4.8. Current
+[`pico-demo/src/myflow/hotel-flow`](https://github.com/picoflowio/pico-demo/tree/main/src/myflow/hotel-flow). The direct side was checked against
+[`pico-demo/src/myflow/hotel-langgraph`](https://github.com/picoflowio/pico-demo/tree/main/src/myflow/hotel-langgraph), which uses `@langchain/langgraph` 1.4.8. Current
 LangGraph documentation still provides `StateGraph`, reducers, conditional edges, `Command`,
 `Send`, optional checkpointers, stores, interrupts, and checkpoint history. The direct hotel
 graph intentionally calls `.compile()` with no
