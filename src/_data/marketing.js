@@ -1,7 +1,8 @@
 export default {
   nav: [
+    { label: "Why conversational apps", href: "/why/" },
+    { label: "Use cases", href: "/use-cases/" },
     { label: "How it works", href: "/product/" },
-    { label: "vs LangGraph", href: "/compare/langgraph/" },
     { label: "Docs", href: "/docs/" },
     { label: "Licensing", href: "/license/" },
     { label: "Contact", href: "/contact/" },
@@ -9,39 +10,77 @@ export default {
   pillars: [
     {
       number: "01",
-      title: "The tool loop",
-      body: "Define a tool once with a Zod schema, decorate a handler with @Tool, and the runtime dispatches the model's call to it. No name-matching switch statement, no manual message assembly, no re-prompting logic to maintain.",
+      title: "Durable conversation state",
+      body: "One versioned JSON document per conversation holds the active stage, business state, memory, token totals, and structured logs. A customer can leave and come back; the application resumes exactly where the task paused.",
     },
     {
       number: "02",
-      title: "The session document",
-      body: "One JSON document per conversation holds the active step, step state, memory namespaces, token totals, and structured logs. It is versioned, so you can migrate a schema without silently restarting in-flight conversations.",
+      title: "Connected to real systems",
+      body: "Define a tool once with a Zod schema, decorate a handler with @Tool, and the runtime dispatches the model's call into your code — where it can hit pricing, booking, CRM, and policy systems with validated arguments.",
     },
     {
       number: "03",
-      title: "The storage layer",
-      body: "Memory, SQLite, MongoDB, and Cosmos DB adapters ship with the runtime and implement the same compare-and-swap contract. Swap stores with an environment variable instead of writing a fourth adapter by hand.",
+      title: "Business rules the model cannot skip",
+      body: "Transitions are return values in typed handlers, not instructions buried in prompt prose. Confirmation before commitment, validation before persistence, and escalation paths are enforced by code, not requested of a model.",
     },
     {
       number: "04",
-      title: "Concurrent-write safety",
-      body: "Turns for one session are serialised in-process by a FIFO lock, and every store rejects a stale revision with a conflict error. Two browser tabs cannot silently overwrite each other's turn.",
+      title: "Production storage, not chat history",
+      body: "Memory, SQLite, MongoDB, and Cosmos DB adapters ship with the runtime and implement the same compare-and-swap contract. Swap stores with an environment variable instead of writing another adapter by hand.",
+    },
+    {
+      number: "05",
+      title: "Safe under concurrency",
+      body: "Turns for one session are serialised in-process, and every store rejects a stale revision with a conflict error. Two browser tabs — or a duplicate request — cannot silently overwrite a customer's in-flight task.",
+    },
+    {
+      number: "06",
+      title: "Testable like an application",
+      body: "Scripted deterministic models assert transitions, persistence, and business state; live scenarios and model judges cover response quality. A conversational application gets regression coverage, not vibes.",
     },
   ],
   useCases: [
     {
-      tag: "Booking and guided sales",
-      title: "Conversations that lead to a decision",
-      body: "Collect intent, validate information, call your systems, compare options, and resume exactly where the customer conversation paused.",
+      tag: "Reservations & commerce",
+      title: "Hotel reservation",
+      body: "Understand the request, check availability, capture preferences, present priced options, obtain explicit confirmation, and book. Built as a complete tutorial application.",
       link: "/docs/tutorials/hotel-flow/",
-      linkLabel: "Explore HotelFlow",
+      linkLabel: "Explore the reservation flow",
     },
     {
-      tag: "Support and account service",
-      title: "Conversations that safely reach resolution",
-      body: "Route requests, place approval holds, track durable case state, and hand work between customer-facing stages without hand-building a session engine.",
+      tag: "Support resolution",
+      title: "Customer support that completes",
+      body: "Verify the customer, inspect account data, execute approved actions with holds, and hand off to a human with a complete case record when needed.",
       link: "/docs/tutorials/support-flow/",
-      linkLabel: "Explore SupportFlow",
+      linkLabel: "Explore the support flow",
+    },
+    {
+      tag: "Claims & document intake",
+      title: "Claims and document processing",
+      body: "Collect incident details, receive documents, extract structured facts with AI, validate them deterministically, and route exceptions to human review.",
+      link: "/docs/tutorials/invoice-flow/",
+      linkLabel: "Explore the document flow",
+    },
+    {
+      tag: "Customer onboarding",
+      title: "Onboarding without the form maze",
+      body: "Guide setup in one conversation: gather missing information, verify it, call backend services, handle exceptions, and activate the account.",
+      link: "/use-cases/#onboarding",
+      linkLabel: "See the onboarding pattern",
+    },
+    {
+      tag: "Procurement",
+      title: "Procurement requests with policy",
+      body: "Capture purchase intent, apply vendor and policy rules in code, route approvals, create the request, and track status — without a portal.",
+      link: "/use-cases/#procurement",
+      linkLabel: "See the procurement pattern",
+    },
+    {
+      tag: "Your workflow",
+      title: "The process your customers dread",
+      body: "If a task takes your customers multiple screens, forms, and a support ticket today, it is a candidate for a conversational application.",
+      link: "/demo/",
+      linkLabel: "Book a walkthrough",
     },
   ],
   faqGroups: [
@@ -49,9 +88,13 @@ export default {
       label: "Start here",
       items: [
         {
-          question: "What is PicoFlow, and how is it different from LangGraph?",
-          answer: "LangGraph gives you graph and state primitives; you still build the durable session, the store adapters, the concurrency policy, and the HTTP envelope around it. PicoFlow ships that layer and asks you to write conversation stages as ordinary TypeScript classes. Both can orchestrate nested, sequential, parallel, and tool-driven work \u2014 the difference is which layer your team ends up owning. <a href=\"/compare/langgraph/\">See the scoped comparison, including where LangGraph is the better choice</a>.",
+          question: "What is PicoFlow?",
+          answer: "PicoFlow is a platform for building customer-facing AI conversational applications \u2014 software where the customer's interface is a guided conversation instead of pages and forms. A flow models your business process in TypeScript; the runtime provides the durable session, tool dispatch, validation boundaries, storage, and concurrency safety that make the conversation a production application rather than a chatbot. <a href=\"/why/\">Read why conversational applications</a>.",
           open: true,
+        },
+        {
+          question: "How is this different from a chatbot?",
+          answer: "A chatbot answers questions. A PicoFlow application completes a business process: it collects what it needs, validates it in code, calls your real systems, asks for confirmation before commitments, persists durable state, and escalates to a human with a full record. The conversation is the interface; the flow behind it is ordinary, testable application code. <a href=\"/why/\">See the full comparison</a>.",
         },
         {
           question: "Is PicoFlow open source?",
@@ -71,8 +114,16 @@ export default {
       label: "Evaluating PicoFlow",
       items: [
         {
+          question: "Why not just give a model one big prompt and every tool?",
+          answer: "That architecture is useful for prototypes and low-risk assistance, but for customer-facing business tasks the missing code gets replaced by hidden, less reliable control logic: the prompt becomes an implicit program, safety boundaries become probabilistic, and transactions lose deterministic control. PicoFlow's answer is bounded autonomy \u2014 the model reasons freely within each stage while the flow enforces the business envelope: what must be collected, what needs confirmation, what must never happen. <a href=\"/why/\">Read the full argument</a>.",
+        },
+        {
+          question: "How does PicoFlow compare with agent frameworks like LangGraph?",
+          answer: "Agent frameworks orchestrate model and tool calls; PicoFlow orchestrates applications. It operates at the layer above: modelling the customer-facing business flow, managing durable conversation state, enforcing validation and transitions in code, and shipping the session storage and HTTP boundary you would otherwise build by hand. <a href=\"/compare/langgraph/\">See the scoped technical comparison, including where LangGraph is the better choice</a>.",
+        },
+        {
           question: "Is PicoFlow built on LangChain?",
-          answer: "Yes, and we would rather say so than have you find it in a lockfile. <code>@picoflow/core</code> depends on <code>@langchain/core</code> and the LangChain provider packages, and a few LangChain types surface in the class you subclass \u2014 <code>MessageContent</code>, <code>ToolCall</code>, and <code>DynamicStructuredTool</code> all appear on <code>Step</code>. Persisted memory holds serialised LangChain messages. PicoFlow does not replace LangChain; it adds the durable session, step cursor, tool dispatch, and storage layer above it. That is also why the LangGraph comparison is about which layer you own rather than which library is faster.",
+          answer: "Yes, and we would rather say so than have you find it in a lockfile. <code>@picoflow/core</code> depends on <code>@langchain/core</code> and the LangChain provider packages, and a few LangChain types surface in the class you subclass \u2014 <code>MessageContent</code>, <code>ToolCall</code>, and <code>DynamicStructuredTool</code> all appear on <code>Step</code>. Persisted memory holds serialised LangChain messages. PicoFlow does not replace LangChain; it adds the durable session, step cursor, tool dispatch, and storage layer above it.",
         },
         {
           question: "What happens to my application if PicoFlow goes away?",
@@ -87,7 +138,7 @@ export default {
           answer: "Built-in adapters cover OpenAI, Azure OpenAI, Anthropic, Google, DeepSeek, Moonshot, Z.AI, Ollama, and OpenRouter, plus a custom adapter for any OpenAI-compatible or internal endpoint. Models and parameters are selected per flow or per step, while credentials stay in application bootstrap configuration. <a href=\"/docs/concepts/models-and-providers/\">See providers and model selection</a>.",
         },
         {
-          question: "How do I test and evaluate a non-deterministic agent?",
+          question: "How do I test and evaluate a non-deterministic application?",
           answer: "Use deterministic scripted models for transition and persistence checks, then add live scenarios or a model judge for response quality. The test guide shows how to assert the response, session ID, active step, run status, and persisted business state together. <a href=\"/docs/guides/testing/\">Read the testing guide</a>.",
         },
       ],

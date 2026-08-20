@@ -1,0 +1,103 @@
+---
+layout: layouts/marketing.njk
+title: Use cases for conversational applications
+description: Representative customer-facing workflows built as PicoFlow conversational applications — reservations, support resolution, claims intake, onboarding, procurement, and document processing — each with the proven flow pattern behind it.
+---
+<section class="page-hero">
+  <div class="shell">
+    <p class="eyebrow">Use cases</p>
+    <h1>Business workflows that become conversations.</h1>
+    <p class="page-hero__lede">Every workflow here shares a shape: a customer with an intent, a business process with rules, and systems that must be called correctly. Each pattern shows which parts the AI handles, which parts stay deterministic, and the outcome the application completes.</p>
+    <div class="page-hero__actions">
+      <a class="button button--gold" href="/docs/tutorials/">Open the tutorial applications <span aria-hidden="true">→</span></a>
+      <a class="button button--ghost" href="/contact/">Discuss your workflow</a>
+    </div>
+  </div>
+</section>
+
+<section class="section section--white" aria-labelledby="patterns-title">
+  <div class="shell">
+    <p class="eyebrow">Proven patterns, not blank pages</p>
+    <h2 class="section-heading" id="patterns-title">Use AI for perception and ambiguity. Use explicit steps for decisions.</h2>
+    <p class="section-lede">The engineering knowledge that matters is knowing which responsibilities belong to an LLM and which must be deterministic: where validation lives, how failures recover, and when a human must review. Each pattern below encodes that division for one class of workflow — and the flows are ordinary PicoFlow steps, so a new project starts from a proven envelope instead of inventing its architecture from scratch.</p>
+
+    <div class="pattern-list">
+      <article class="pattern" id="reservations">
+        <div class="pattern__head">
+          <p class="pattern__tag">Reservations &amp; commerce</p>
+          <h3>Hotel reservation</h3>
+        </div>
+        <p class="pattern__stages">Discover → select → quote → confirm → commit → verify</p>
+        <p>Understand the request, check availability, capture preferences, present priced options, and book. The model conducts the conversation; the flow guarantees no booking before explicit confirmation, no double charge, and quoted terms preserved through commit.</p>
+        <a href="/docs/tutorials/hotel-flow/">Built as a complete tutorial — walk through it <span aria-hidden="true">→</span></a>
+      </article>
+
+      <article class="pattern" id="support">
+        <div class="pattern__head">
+          <p class="pattern__tag">Support resolution</p>
+          <h3>Customer support that executes</h3>
+        </div>
+        <p class="pattern__stages">Diagnose → retrieve → propose → authorize → execute → confirm</p>
+        <p>Understand the issue, inspect account data, propose approved actions, place approval holds where policy requires, execute, and confirm. When human help is needed, the hand-off carries the complete case record instead of a transcript dump.</p>
+        <a href="/docs/tutorials/support-flow/">Built as a complete tutorial — walk through it <span aria-hidden="true">→</span></a>
+      </article>
+
+      <article class="pattern" id="claims">
+        <div class="pattern__head">
+          <p class="pattern__tag">Claims &amp; document intake</p>
+          <h3>Claims intake and document processing</h3>
+        </div>
+        <p class="pattern__stages">Intake → classify → extract → validate → route → adjudicate</p>
+        <p>Collect incident details in conversation, receive documents, use AI for perception — classification, OCR, extraction — then apply deterministic validation and business rules in codified steps. Exceptions route to human review instead of silently passing.</p>
+        <a href="/docs/tutorials/invoice-flow/">The document-processing tutorial shows the extraction half <span aria-hidden="true">→</span></a>
+      </article>
+
+      <article class="pattern" id="onboarding">
+        <div class="pattern__head">
+          <p class="pattern__tag">Customer onboarding</p>
+          <h3>Onboarding without the form maze</h3>
+        </div>
+        <p class="pattern__stages">Gather → verify → enrich → approve → activate</p>
+        <p>Guide setup in one conversation: gather missing information, verify identity and eligibility, call backend services, handle exceptions, and activate. Durable session state means an interrupted customer resumes mid-onboarding instead of starting over.</p>
+        <a href="/docs/get-started/first-flow/">Start from the first-flow guide <span aria-hidden="true">→</span></a>
+      </article>
+
+      <article class="pattern" id="procurement">
+        <div class="pattern__head">
+          <p class="pattern__tag">Procurement</p>
+          <h3>Procurement requests with policy</h3>
+        </div>
+        <p class="pattern__stages">Capture intent → policy check → approval → order → reconcile</p>
+        <p>Capture purchase intent conversationally, apply vendor and policy rules deterministically, route approvals with holds, create the request in your systems, and track status. Policy is enforced in typed handlers — not requested of the model.</p>
+        <a href="/docs/tutorials/support-flow/approval-holds/">See how approval holds are modelled <span aria-hidden="true">→</span></a>
+      </article>
+
+      <article class="pattern" id="financial-ops">
+        <div class="pattern__head">
+          <p class="pattern__tag">Financial operations</p>
+          <h3>Extraction, reconciliation, and posting</h3>
+        </div>
+        <p class="pattern__stages">Extract → reconcile → detect anomaly → approve → post</p>
+        <p>Use AI for perception over invoices and statements, normalise into structured facts, reconcile deterministically, surface anomalies for review, and post only after approval. One-shot and batch execution use the same flow model as conversations.</p>
+        <a href="/docs/tutorials/invoice-flow/">Explore the invoice tutorial <span aria-hidden="true">→</span></a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section--soft" aria-labelledby="anatomy-title">
+  <div class="shell">
+    <p class="eyebrow">What every pattern specifies</p>
+    <h2 class="section-heading" id="anatomy-title">A pattern is an engineering playbook, not a prompt snippet.</h2>
+    <div class="pillers">
+      <article class="pillar"><p class="pillar__number">01</p><h3>AI / deterministic boundaries</h3><p>Which stages use an LLM for perception and conversation, and which are codified steps for interpretation, validation, and business decisions.</p></article>
+      <article class="pillar"><p class="pillar__number">02</p><h3>State and checkpoints</h3><p>The durable state each stage requires, the sensitive actions that demand explicit confirmation, and the tool and data-access boundaries around them.</p></article>
+      <article class="pillar"><p class="pillar__number">03</p><h3>Failure and escalation</h3><p>Retry and recovery behaviour, exception detection, and the points where a human must review before the application proceeds.</p></article>
+      <article class="pillar"><p class="pillar__number">04</p><h3>Evaluation scenarios</h3><p>Deterministic transition tests and live scenarios that keep the application honest as prompts, models, and business rules evolve.</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band" aria-labelledby="uc-cta-title">
+  <div class="shell cta-band__inner"><div><h2 id="uc-cta-title">Which workflow costs your customers the most effort today?</h2><p>Start there. Bring the business outcome, the systems it must call, and the rules it must never break — we can help you assess the fit.</p></div><div class="hero__actions"><a class="button button--ink" href="/demo/">Book a demo</a><a class="button button--light" href="/docs/get-started/">Read the quickstart</a></div></div>
+</section>

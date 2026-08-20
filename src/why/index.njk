@@ -1,0 +1,111 @@
+---
+layout: layouts/marketing.njk
+title: Why conversational applications
+description: For many business workflows, the next generation of customer-facing software will not be a collection of screens — it will be a guided conversation backed by a reliable application runtime. Here is the argument, including where open-ended agents fall short.
+---
+<section class="page-hero">
+  <div class="shell">
+    <p class="eyebrow">Why conversational applications</p>
+    <h1>Your next application won't be screens.</h1>
+    <p class="page-hero__lede">For many customer-facing business workflows, it will be a guided conversation backed by a reliable application runtime — one that collects what it needs, applies your business rules, calls your real systems, and completes the task. PicoFlow is that runtime.</p>
+    <div class="page-hero__actions">
+      <a class="button button--gold" href="/docs/get-started/">Build your first conversational application <span aria-hidden="true">→</span></a>
+      <a class="button button--ghost" href="/use-cases/">See the use cases</a>
+    </div>
+  </div>
+</section>
+
+<section class="section section--white" aria-labelledby="friction-title">
+  <div class="shell">
+    <p class="eyebrow">The friction you are shipping today</p>
+    <h2 class="section-heading" id="friction-title">Every screen transfers work to the customer.</h2>
+    <p class="section-lede">Traditional applications make customers navigate pages, menus, forms, search, validation messages, and support queues. The customer has to learn your software before your software will do anything for them. Most of your support volume is the residue of workflows that screens could not finish.</p>
+    <div class="comparison-positioning__grid">
+      <p><strong>A conversational application inverts the effort.</strong> The customer expresses intent in plain language. The application guides the interaction, gathers what it needs, applies business rules, calls real systems, and completes the task — or escalates to a human with a complete record instead of a cold start.</p>
+      <p><strong>This is not a chat layer bolted onto your app.</strong> The conversation <em>is</em> the customer-facing interface. The flow models the business process, and the runtime provides the state, tools, context, validation, and escalation required for production software.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section section--soft" aria-labelledby="agent-title">
+  <div class="shell">
+    <p class="eyebrow">The architectural question</p>
+    <h2 class="section-heading" id="agent-title">“One big prompt and every tool” is not an application.</h2>
+    <p class="section-lede">One school of thought says: give the model a large prompt, expose all your tools, and let it improvise the procedure at runtime. That approach is genuinely useful for prototypes, research, and low-risk assistance. But it does not remove orchestration — it hides it inside the prompt, the tool descriptions, and the model's mood that day. For customer-facing business tasks, the missing code gets replaced by control logic you cannot inspect, test, or guarantee.</p>
+
+    <div class="fit-check">
+      <article class="fit-check__choice">
+        <h3>What breaks at production scale</h3>
+        <ul>
+          <li><strong>The prompt becomes an implicit program</strong> — hard to inspect, version, diff, and review as it grows.</li>
+          <li><strong>A tool list is not a business process.</strong> Exposing search, quote, payment, and cancellation tools does not ensure they run in the right order, under the right conditions.</li>
+          <li><strong>Safety becomes probabilistic.</strong> “Always ask for confirmation” in a prompt is a request, not a guarantee.</li>
+          <li><strong>Transactions need deterministic control</strong> — idempotency, authorization, retries, compensation, recovery after partial failure.</li>
+          <li><strong>Testing becomes incomplete</strong> when the procedure is generated differently across runs and model versions.</li>
+          <li><strong>Cost, latency, and attack surface grow</strong> when the agent can loop freely over every capability.</li>
+        </ul>
+      </article>
+      <article class="fit-check__choice fit-check__choice--picoflow">
+        <h3>The PicoFlow answer: bounded autonomy</h3>
+        <ul>
+          <li>Within each stage, the model reasons, plans, asks questions, and recovers from ordinary ambiguity.</li>
+          <li>The flow defines the business envelope: required information, allowed tools, sensitive-action checkpoints, and transitions.</li>
+          <li>Durable state, validation, retries, and escalation are enforced by the runtime and your typed handlers — in code.</li>
+          <li>The flow is not a script for every turn. It is a contract for the outcome: what must happen, what needs confirmation, and what must never happen.</li>
+          <li>The result is flexible where flexibility helps, and guaranteed where the business demands it.</li>
+        </ul>
+      </article>
+    </div>
+    <p class="section-lede"><strong>A reservation makes it concrete.</strong> An unconstrained agent may often find the correct booking path. The production requirement is stronger: it must not book before explicit confirmation, must not charge twice, must re-check availability, must preserve the quoted terms, and must recover correctly if booking succeeds but confirmation delivery fails. Those are application guarantees, not instructions to a model.</p>
+  </div>
+</section>
+
+<section class="section section--white" aria-labelledby="division-title">
+  <div class="shell">
+    <p class="eyebrow">The division of responsibility</p>
+    <h2 class="section-heading" id="division-title">How much should the model decide? How much must the application control?</h2>
+    <div class="comparison-table-wrap" role="region" aria-label="Open-ended agent and orchestrated PicoFlow application comparison" tabindex="0">
+      <table class="comparison-table comparison-table--duo">
+        <thead>
+          <tr><th scope="col">Open-ended agent</th><th scope="col">Orchestrated PicoFlow application</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Model decides the whole procedure</td><td>Flow defines the business boundaries</td></tr>
+          <tr><td>Prompt contains implicit policy</td><td>Rules and transitions are explicit code</td></tr>
+          <tr><td>Tool calls are largely discretionary</td><td>Sensitive actions have checkpoints and permissions</td></tr>
+          <tr><td>Flexible but difficult to reproduce</td><td>Flexible within controlled limits</td></tr>
+          <tr><td>Good for exploration and low-risk assistance</td><td>Built for customer-facing tasks and commitments</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="artifact-takeaway">
+      <p><strong>PicoFlow gives AI room to reason while keeping customer-facing business processes under control.</strong> This is not an argument for rigid, hand-authored workflows — developers and AI can generate much of the flow. It is an argument for moving from uncontrolled autonomy to bounded autonomy, with runtime contracts that make the resulting application reliable, testable, and suitable for production.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section section--ink" aria-labelledby="both-sides-title">
+  <div class="shell">
+    <p class="eyebrow">The two-part transformation</p>
+    <h2 class="section-heading" id="both-sides-title">PicoFlow changes how customers use software — and how developers build it.</h2>
+    <p class="section-lede">Customers describe what they need instead of navigating a complex web workflow. Developers describe the application they want, while an LLM generates and iterates the flow and PicoFlow runs and tests it. The human developer owns requirements, review, safety, and production approval — AI-generated, human-validated application development.</p>
+    <div class="use-cases">
+      <article class="use-case">
+        <p class="use-case__tag">For your customers</p>
+        <h3>Conversation creates the outcome</h3>
+        <p>Reduced friction, faster completion, fewer abandoned workflows, and support escalations that arrive with the full task record attached.</p>
+        <a href="/use-cases/">See the workflows</a>
+      </article>
+      <article class="use-case">
+        <p class="use-case__tag">For your developers</p>
+        <h3>Conversation creates the application</h3>
+        <p>From requirements to a running, tested flow in one loop — with flows as plain TypeScript your team can review, diff, and regression-test.</p>
+        <a href="/docs/get-started/">Start the quickstart</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band" aria-labelledby="why-cta-title">
+  <div class="shell cta-band__inner"><div><h2 id="why-cta-title">See the before-and-after on a workflow you recognise.</h2><p>The hotel-reservation tutorial shows the complete journey: intent, search, comparison, confirmation, and booking — with the flow and system actions behind every turn.</p></div><div class="hero__actions"><a class="button button--ink" href="/docs/tutorials/hotel-flow/">Walk through the reservation flow</a><a class="button button--light" href="/demo/">Book a demo</a></div></div>
+</section>

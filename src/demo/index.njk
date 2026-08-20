@@ -1,0 +1,35 @@
+---
+layout: layouts/marketing.njk
+title: Book a PicoFlow demo
+description: Book a 30-minute walkthrough of PicoFlow — see a customer-facing conversational application complete a real workflow, and get straight answers on architecture, licensing, and fit.
+---
+<section class="page-hero">
+  <div class="shell">
+    <p class="eyebrow">Book a demo</p>
+    <h1>See a workflow become a conversation.</h1>
+    <p class="page-hero__lede">Pick a time below. We will walk a real conversational application through a complete customer task — reservation, support resolution, or a workflow you bring — and show you the flow, business rules, and session behind every turn.</p>
+  </div>
+</section>
+
+<section class="section section--paper" aria-labelledby="demo-title">
+  <div class="shell demo-grid">
+    <div>
+      <p class="eyebrow">What to expect</p>
+      <h2 class="section-heading" id="demo-title">Thirty minutes, no slideware.</h2>
+      <ul class="boundary-list">
+        <li><strong>A live application, not a chatbot demo.</strong> Watch the hotel-reservation flow collect intent, call systems, enforce confirmation, and book.</li>
+        <li><strong>The code behind the conversation.</strong> The steps, tools, and transitions that keep the model inside the business envelope.</li>
+        <li><strong>Your workflow, mapped.</strong> Bring the process your customers struggle with; we will sketch the flow envelope together.</li>
+        <li><strong>Straight answers.</strong> Licensing, what the runtime does not do yet, and whether PicoFlow is the right fit — including when it is not.</li>
+      </ul>
+      <p class="demo-fallback">Prefer email? Write to <a href="mailto:{{ site.email }}?subject=PicoFlow%20demo">{{ site.email }}</a> or start with the <a href="/docs/get-started/">quickstart</a> and book later.</p>
+    </div>
+    <div class="demo-embed" aria-label="Schedule a PicoFlow demo">
+      <iframe
+        src="{{ site.calendly }}?embed_domain=www.picoflow.io&amp;embed_type=Inline&amp;hide_gdpr_banner=1&amp;primary_color=f6bd4a"
+        title="Book a PicoFlow demo — scheduling calendar"
+        loading="lazy"></iframe>
+      <p class="demo-embed__note">Scheduling is provided by Calendly. If the calendar does not load, <a href="{{ site.calendly }}">open it directly</a>.</p>
+    </div>
+  </div>
+</section>
