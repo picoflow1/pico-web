@@ -2,7 +2,7 @@
 title: 7. Present and book
 eyebrow: HotelFlow tutorial
 lede: The last stage lists priced results, offers three actions, and hands a generated confirmation message to the framework's terminal step. This is where a conversation becomes a transaction.
-source: picoflow-demo/src/myflow/hotel-flow/present-step.ts, picoflow-demo/src/myflow/hotel-flow/prompt/present.md
+source: pico-demo/src/myflow/hotel-flow/present-step.ts, pico-demo/src/myflow/hotel-flow/prompt/present.md
 ---
 
 `PresentStep` has the smallest prompt in the flow and the most branches. Its
@@ -20,7 +20,7 @@ does so by handing the terminal step the exact sentence it should say.
 
 ## The presentation prompt
 
-`picoflow-demo/src/myflow/hotel-flow/prompt/present.md` in full outline:
+`pico-demo/src/myflow/hotel-flow/prompt/present.md` in full outline:
 
 ```text
 ## Execution instruction ##
@@ -236,7 +236,7 @@ HotelFlow it is a no-op, since every step stays on `text/plain`.
 
 ## The full path, end to end
 
-The scenario in `picoflow-demo/test/hotel-flow/hotel-flow.scenario.json` walks the
+The scenario in `pico-demo/test/hotel-flow/hotel-flow.scenario.json` walks the
 whole graph in fourteen turns:
 
 ```text

@@ -2,7 +2,7 @@
 title: 1. The one-shot flow shape
 eyebrow: InvoiceFlow tutorial
 lede: Some workloads have no second turn. The caller posts once, the model and tool loop runs to completion inside that request, and the response is the result rather than an invitation to reply.
-source: picoflow-demo/src/myflow/invoice-flow/invoice-flow.ts
+source: pico-demo/src/myflow/invoice-flow/invoice-flow.ts
 ---
 
 HotelFlow and BasicFlow are shaped by the user: each HTTP request carries one
@@ -21,7 +21,7 @@ person.
 
 ## The whole flow class
 
-`picoflow-demo/src/myflow/invoice-flow/invoice-flow.ts`:
+`pico-demo/src/myflow/invoice-flow/invoice-flow.ts`:
 
 ```ts
 export class InvoiceFlow extends Flow {
@@ -118,7 +118,7 @@ widening them to `string` loses the compile-time check against the registered
 catalogue.
 
 The provider has to be registered on the engine. In the demo that happens once,
-in `picoflow-demo/src/app.module.ts`:
+in `pico-demo/src/app.module.ts`:
 
 ```ts
 FlowEngine.create({

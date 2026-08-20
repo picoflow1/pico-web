@@ -2,7 +2,7 @@
 title: 4. Tools and Zod
 eyebrow: BasicFlow tutorial
 lede: A tool is a Zod schema the model may call and a decorated method that decides what happens next. The schema shapes the arguments; the handler owns the decision.
-source: picoflow-demo/src/myflow/basic-flow/name-step.ts, picoflow-demo/src/myflow/basic-flow/dob-step.ts, picoflow-demo/src/myflow/basic-flow/prompt/role.md
+source: pico-demo/src/myflow/basic-flow/name-step.ts, pico-demo/src/myflow/basic-flow/dob-step.ts, pico-demo/src/myflow/basic-flow/prompt/role.md
 ---
 
 Prompt text is a request. A tool call is a typed function invocation with a validated
@@ -19,7 +19,7 @@ tell the model to stop reasoning about the rule and call the tool.
 
 ## Defining a tool
 
-From `picoflow-demo/src/myflow/basic-flow/name-step.ts`:
+From `pico-demo/src/myflow/basic-flow/name-step.ts`:
 
 ```ts
 public defineTool(): ToolType[] {

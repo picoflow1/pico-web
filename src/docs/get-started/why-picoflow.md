@@ -2,7 +2,7 @@
 title: Why PicoFlow
 eyebrow: Get started
 lede: What PicoFlow actually removes from an application, what the HotelFlow versus LangGraph comparison measured, and the cases where a lower-level orchestration library is the better choice.
-source: picoflow-demo/docs/hotel-flow-critical-evaluation.md
+source: pico-demo/docs/hotel-flow-critical-evaluation.md
 ---
 
 PicoFlow's strongest value is a multi-turn, tool-calling conversation that has to survive

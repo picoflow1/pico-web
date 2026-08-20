@@ -2,7 +2,7 @@
 title: 1. Designing a support case
 eyebrow: SupportFlow tutorial
 lede: A support case changes jobs several times—verification, return intake, approval, billing, and closure. SupportFlow makes each job a step and reserves policy decisions for deterministic code.
-source: picoflow-demo/src/myflow/support-flow/support-flow.ts, picoflow-demo/src/myflow/support-flow/support-types.ts
+source: pico-demo/src/myflow/support-flow/support-flow.ts, pico-demo/src/myflow/support-flow/support-types.ts
 ---
 
 SupportFlow is not one large support-agent prompt. It is a case coordinator with
@@ -43,7 +43,7 @@ still validate what the model supplies.
 
 ## The flow class
 
-From `picoflow-demo/src/myflow/support-flow/support-flow.ts`:
+From `pico-demo/src/myflow/support-flow/support-flow.ts`:
 
 ```ts
 export class SupportFlow extends Flow {

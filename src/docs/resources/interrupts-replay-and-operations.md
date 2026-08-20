@@ -2,7 +2,7 @@
 title: Interrupts, replay, and operations
 eyebrow: Compare
 lede: PicoFlow retains a rich latest session document; LangGraph checkpointers retain a checkpoint history when configured.
-source: codex/pico-web/picoflow-langgraph.html, picoflow/src/picoflow/types/flow-types.ts, picoflow/src/picoflow/services/flow-engine.ts, picoflow-demo/src/myflow/hotel-langgraph/hotel-langgraph.ts
+source: codex/pico-web/picoflow-langgraph.html, picoflow/src/picoflow/types/flow-types.ts, picoflow/src/picoflow/services/flow-engine.ts, pico-demo/src/myflow/hotel-langgraph/hotel-langgraph.ts
 ---
 
 The earlier reference document has a valuable operational insight: a saved conversation is a

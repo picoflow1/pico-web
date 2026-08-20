@@ -2,7 +2,7 @@
 title: 4. Memory compaction and erasure
 eyebrow: HotelFlow tutorial
 lede: Criteria collection takes eight or more turns, so its history is summarised as it grows. The presentation and comparison stages take the opposite approach and throw their history away on entry.
-source: picoflow-demo/src/myflow/hotel-flow/hotel-flow.ts, picoflow-demo/src/myflow/hotel-flow/present-step.ts, picoflow-demo/src/myflow/hotel-flow/compare-step.ts
+source: pico-demo/src/myflow/hotel-flow/hotel-flow.ts, pico-demo/src/myflow/hotel-flow/present-step.ts, pico-demo/src/myflow/hotel-flow/compare-step.ts
 ---
 
 Long conversations grow their context window until they become slow, expensive,
@@ -20,7 +20,7 @@ and outright erasure for the stages that do not.
 
 ## Configuring compaction
 
-From `picoflow-demo/src/myflow/hotel-flow/hotel-flow.ts`:
+From `pico-demo/src/myflow/hotel-flow/hotel-flow.ts`:
 
 ```ts
 public constructor() {

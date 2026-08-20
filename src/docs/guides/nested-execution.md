@@ -2,7 +2,7 @@
 title: "Nested execution: runStep / runSteps"
 eyebrow: Guides
 lede: Run a registered step as a child of the current one, inside the same session and the same HTTP turn. Children compute; they do not decide where the flow goes next.
-source: picoflow-demo/docs/step-authoring-contract.md
+source: pico-demo/docs/step-authoring-contract.md
 ---
 
 Use nested execution when one turn needs sub-work whose result belongs to the calling step: a

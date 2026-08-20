@@ -2,7 +2,7 @@
 title: Authoring a step
 eyebrow: Guides
 lede: A step owns one stage of a workflow. This is the minimum you must write, the hooks available when the minimum is not enough, and the review checklist before you ship one.
-source: picoflow-demo/docs/step-authoring-contract.md
+source: pico-demo/docs/step-authoring-contract.md
 ---
 
 Reach for this page when adding a stage to an existing flow, or when a step has grown hooks

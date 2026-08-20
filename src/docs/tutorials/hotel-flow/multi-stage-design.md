@@ -2,7 +2,7 @@
 title: 1. Designing a multi-turn conversation
 eyebrow: HotelFlow tutorial
 lede: A booking journey has natural seams. Each seam becomes a step, each step owns its data, and the flow class is nothing more than the registry that lists them.
-source: picoflow-demo/src/myflow/hotel-flow/hotel-flow.ts
+source: pico-demo/src/myflow/hotel-flow/hotel-flow.ts
 ---
 
 Before any prompt is written, the design question for a multi-turn conversation is
@@ -37,7 +37,7 @@ and hope the model picks the right one.
 
 ## The whole flow class
 
-This is the complete file, `picoflow-demo/src/myflow/hotel-flow/hotel-flow.ts`:
+This is the complete file, `pico-demo/src/myflow/hotel-flow/hotel-flow.ts`:
 
 ```ts
 export class HotelFlow extends Flow {

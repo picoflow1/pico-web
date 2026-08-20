@@ -2,7 +2,7 @@
 title: Testing a flow
 eyebrow: Guides
 lede: Four levels of coverage, scenario files that assert every turn, a scripted model for determinism, and a model judge for the responses that only a human could otherwise grade.
-source: picoflow-demo/test
+source: pico-demo/test
 ---
 
 A flow is a distributed system with a nondeterministic component in the middle. Testing it

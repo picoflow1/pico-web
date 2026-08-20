@@ -2,7 +2,7 @@
 title: 5. Branch, forward, and return
 eyebrow: HotelFlow tutorial
 lede: A user who says "compare 2 and 5 on price" should not have to say it twice. This lesson covers the three mechanisms that move a request across a step boundary without asking the user to repeat themselves.
-source: picoflow-demo/src/myflow/hotel-flow/present-step.ts, picoflow-demo/src/myflow/hotel-flow/compare-step.ts
+source: pico-demo/src/myflow/hotel-flow/present-step.ts, pico-demo/src/myflow/hotel-flow/compare-step.ts
 ---
 
 `PresentStep` is a junction. From a single result list the user can book,
@@ -48,7 +48,7 @@ Overriding it lets a step decide what its own first turn looks like.
 
 ## Seeding a step with a synthetic message
 
-From `picoflow-demo/src/myflow/hotel-flow/present-step.ts`:
+From `pico-demo/src/myflow/hotel-flow/present-step.ts`:
 
 ```ts
 public onCrossing(
@@ -185,7 +185,7 @@ reading and writing three different steps.
 
 ## Reading the primed state back
 
-From `picoflow-demo/src/myflow/hotel-flow/compare-step.ts`:
+From `pico-demo/src/myflow/hotel-flow/compare-step.ts`:
 
 ```ts
 public getPrompt(): string {

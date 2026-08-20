@@ -2,7 +2,7 @@
 title: Tool loops and validation
 eyebrow: Compare
 lede: The direct demo implements more hotel-specific checks, while PicoFlow supplies a reusable Step-level acceptance gate that can reject and regenerate any model result before it has effects.
-source: picoflow/src/picoflow/flow/llm-runner.ts, picoflow/src/picoflow/flow/step.ts, picoflow/src/picoflow/utils/retry.ts, picoflow/src/picoflow/utils/tool-response.ts, picoflow-demo/src/myflow/hotel-flow/, picoflow-demo/src/myflow/hotel-langgraph/hotel-langgraph.ts
+source: picoflow/src/picoflow/flow/llm-runner.ts, picoflow/src/picoflow/flow/step.ts, picoflow/src/picoflow/utils/retry.ts, picoflow/src/picoflow/utils/tool-response.ts, pico-demo/src/myflow/hotel-flow/, pico-demo/src/myflow/hotel-langgraph/hotel-langgraph.ts
 ---
 
 Tool calling has four separate responsibilities: tell the model which tools exist, validate the

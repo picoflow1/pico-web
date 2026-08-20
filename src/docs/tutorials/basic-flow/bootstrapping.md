@@ -2,7 +2,7 @@
 title: 1. Bootstrapping PicoFlow in NestJS
 eyebrow: BasicFlow tutorial
 lede: PicoFlow has no server of its own. It is a library you register as one Nest provider, wire to a controller, and hand a session id round-trip.
-source: picoflow-demo/src/app.module.ts, picoflow-demo/src/main.ts, picoflow-demo/src/controllers/ai-controller.ts
+source: pico-demo/src/app.module.ts, pico-demo/src/main.ts, pico-demo/src/controllers/ai-controller.ts
 ---
 
 Before any of the flow code makes sense you need to know what is holding it. PicoFlow
@@ -21,7 +21,7 @@ Nest.
 
 ## Registering the engine
 
-From `picoflow-demo/src/app.module.ts`, lightly trimmed:
+From `pico-demo/src/app.module.ts`, lightly trimmed:
 
 ```ts
 import { ModelProvider, FlowEngine } from "@picoflow/core";
@@ -90,7 +90,7 @@ the application; PicoFlow does not have to ship an NVIDIA adapter for you to use
 
 ## The controller
 
-From `picoflow-demo/src/controllers/ai-controller.ts`, trimmed of Swagger decorators:
+From `pico-demo/src/controllers/ai-controller.ts`, trimmed of Swagger decorators:
 
 ```ts
 @Controller("ai")

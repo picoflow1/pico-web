@@ -2,7 +2,7 @@
 title: Track overview
 eyebrow: BasicFlow tutorial
 lede: BasicFlow registers fourteen steps and uses them to demonstrate every major part of the PicoFlow Step contract. This page maps the whole graph before the lessons take it apart.
-source: picoflow-demo/src/myflow/basic-flow/basic-flow.ts
+source: pico-demo/src/myflow/basic-flow/basic-flow.ts
 ---
 
 `BasicFlow` collects a small user profile across many turns: weather for two cities,
@@ -10,8 +10,8 @@ three favourites, a full name, a date of birth, and a mailing address. The domai
 deliberately thin. What matters is that each stage was written to isolate one
 framework mechanism, so a lesson can quote one file and explain one idea.
 
-The implementation lives in `picoflow-demo/src/myflow/basic-flow/`. Its deterministic
-conversation scenario lives in `picoflow-demo/test/basic-flow/`. Browse the
+The implementation lives in `pico-demo/src/myflow/basic-flow/`. Its deterministic
+conversation scenario lives in `pico-demo/test/basic-flow/`. Browse the
 [BasicFlow source on GitHub](https://github.com/picoflowio/pico-demo/tree/main/src/myflow/basic-flow).
 
 ## What BasicFlow is

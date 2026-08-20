@@ -2,7 +2,7 @@
 title: Your first request
 eyebrow: Get started
 lede: "The HTTP contract in detail: the run body, the session header round-trip, resuming a conversation, listing flows, the two 409-class errors, and how a direct response changes the response body."
-source: picoflow-demo/src/controllers/ai-controller.ts
+source: pico-demo/src/controllers/ai-controller.ts
 ---
 
 `@picoflow/core` has no HTTP layer of its own. The contract below is the demo application's

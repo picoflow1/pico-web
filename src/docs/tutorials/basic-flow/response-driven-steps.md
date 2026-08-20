@@ -2,7 +2,7 @@
 title: 10. Response-driven steps
 eyebrow: BasicFlow tutorial
 lede: A step with no tools can still route. onResponse() inspects the model's reply, parses it, and returns the next step — or returns text and waits for another turn.
-source: picoflow-demo/src/myflow/basic-flow/favorites-step.ts
+source: pico-demo/src/myflow/basic-flow/favorites-step.ts
 ---
 
 `FavoritesStep` collects three values and defines no tools. It asks the model for a
@@ -20,7 +20,7 @@ reply is well formed.
 
 ## The whole step
 
-`picoflow-demo/src/myflow/basic-flow/favorites-step.ts`:
+`pico-demo/src/myflow/basic-flow/favorites-step.ts`:
 
 ```ts
 const PROMPT = Prompt.file("prompt/favorites.md");

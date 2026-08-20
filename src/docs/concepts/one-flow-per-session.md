@@ -2,7 +2,7 @@
 title: One flow per session
 eyebrow: Concepts
 lede: A session document contains exactly one Flow, never an array. A session ID is a cursor into one workflow, not a container for a user's activity, and flow naming is part of the persisted schema.
-source: picoflow-demo/docs/picoflow-workflow-developer-guide.md
+source: pico-demo/docs/picoflow-workflow-developer-guide.md
 ---
 
 This is PicoFlow's central persistence invariant:

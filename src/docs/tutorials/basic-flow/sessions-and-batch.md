@@ -2,7 +2,7 @@
 title: 17. Sessions, migration, batch mode
 eyebrow: BasicFlow tutorial
 lede: Flow-level hooks decide where a new session starts, whether an old document may be restored, and whether this request is a conversation at all.
-source: picoflow-demo/src/myflow/basic-flow/basic-flow.ts, picoflow-demo/src/myflow/basic-flow/president-step.ts
+source: pico-demo/src/myflow/basic-flow/basic-flow.ts, pico-demo/src/myflow/basic-flow/president-step.ts
 ---
 
 Everything so far has been about one conversation moving through steps. This lesson is

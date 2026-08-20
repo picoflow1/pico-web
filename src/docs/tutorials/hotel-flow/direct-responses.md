@@ -2,7 +2,7 @@
 title: 6. Answering without an LLM
 eyebrow: HotelFlow tutorial
 lede: A comparison table is data, not prose. CompareStep renders one in TypeScript and returns it with direct(), which ends the turn without a second model call and leaves the cursor where it was.
-source: picoflow-demo/src/myflow/hotel-flow/compare-step.ts, picoflow-demo/src/myflow/hotel-flow/gen-chart.ts, picoflow-demo/src/myflow/hotel-flow/prompt/compare.md
+source: pico-demo/src/myflow/hotel-flow/compare-step.ts, pico-demo/src/myflow/hotel-flow/gen-chart.ts, pico-demo/src/myflow/hotel-flow/prompt/compare.md
 ---
 
 Once the model has decided which hotels and which feature, there is nothing
@@ -82,7 +82,7 @@ sees the table it produced — and returned to the caller. No second inference.
 
 ## Assembling the row
 
-From `picoflow-demo/src/myflow/hotel-flow/compare-step.ts`, the handler that produces
+From `pico-demo/src/myflow/hotel-flow/compare-step.ts`, the handler that produces
 the table:
 
 ```ts

@@ -2,7 +2,7 @@
 title: Track overview
 eyebrow: InvoiceFlow tutorial
 lede: InvoiceFlow is not a conversation. One HTTP request names a bundled invoice, the flow uploads it to the provider, extracts typed JSON, and returns it as an application/json response.
-source: picoflow-demo/src/myflow/invoice-flow/invoice-flow.ts
+source: pico-demo/src/myflow/invoice-flow/invoice-flow.ts
 ---
 
 `InvoiceFlow` is the document-processing track. There is a user message in the
@@ -11,8 +11,8 @@ server-supplied configuration and by the contents of a PNG or PDF. The whole
 job finishes inside one `POST /ai/run`, and the response body is the extracted
 invoice rather than a chat envelope.
 
-The implementation lives in `picoflow-demo/src/myflow/invoice-flow/`, and its
-end-to-end spec in `picoflow-demo/test/invoice-flow/`. Browse the
+The implementation lives in `pico-demo/src/myflow/invoice-flow/`, and its
+end-to-end spec in `pico-demo/test/invoice-flow/`. Browse the
 [InvoiceFlow source on GitHub](https://github.com/picoflowio/pico-demo/tree/main/src/myflow/invoice-flow).
 
 ## What InvoiceFlow is

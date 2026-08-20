@@ -6,7 +6,7 @@ lede: >
   uses a structured response as an application-controlled alternative to
   model-selected tool calling: prompt, receive, validate, and route in
   onResponse().
-source: picoflow-demo/src/myflow/invoice-flow/no-tool-step.ts, picoflow-demo/src/myflow/invoice-flow/prompt/nt-prompt.md
+source: pico-demo/src/myflow/invoice-flow/no-tool-step.ts, pico-demo/src/myflow/invoice-flow/prompt/nt-prompt.md
 ---
 
 Tools are one way a model asks your application to do something: the model must
@@ -41,7 +41,7 @@ entirely.
 
 ## The whole step
 
-`picoflow-demo/src/myflow/invoice-flow/no-tool-step.ts`, complete:
+`pico-demo/src/myflow/invoice-flow/no-tool-step.ts`, complete:
 
 ```ts
 const PromptTemplate = Prompt.file("prompt/nt-prompt.md");

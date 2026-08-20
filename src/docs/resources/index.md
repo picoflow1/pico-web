@@ -2,10 +2,10 @@
 title: PicoFlow vs. LangGraph
 eyebrow: Compare
 lede: "A side-by-side evaluation of the same hotel-reservation chatbot built twice: once on PicoFlow, once directly on LangGraph. Code size, modularity, contracts, persistence, debugging, and the risks on both sides."
-source: codex/pico-web/picoflow-langgraph.html, picoflow-demo/docs/hotel-flow-critical-evaluation.md, picoflow/src/picoflow/, picoflow-demo/src/myflow/hotel-flow/, picoflow-demo/src/myflow/hotel-langgraph/
+source: codex/pico-web/picoflow-langgraph.html, pico-demo/docs/hotel-flow-critical-evaluation.md, picoflow/src/picoflow/, pico-demo/src/myflow/hotel-flow/, pico-demo/src/myflow/hotel-langgraph/
 ---
 
-Both implementations now live side by side in `picoflow-demo`. They describe the same
+Both implementations now live side by side in `pico-demo`. They describe the same
 conversation: collect a date range and search criteria, search a local hotel catalog, present
 priced results, compare hotels, return to booking, and finish with a confirmation number. They
 carry parallel copies of the same 14-turn semantic scenario.
@@ -30,8 +30,8 @@ the other has. It uses the earlier architecture brief at
 precedence over that historical document.
 
 The PicoFlow side was checked against the local `picoflow` 1.0.23 source and
-`picoflow-demo/src/myflow/hotel-flow`. The direct side was checked against
-`picoflow-demo/src/myflow/hotel-langgraph`, which uses `@langchain/langgraph` 1.4.8. Current
+`pico-demo/src/myflow/hotel-flow`. The direct side was checked against
+`pico-demo/src/myflow/hotel-langgraph`, which uses `@langchain/langgraph` 1.4.8. Current
 LangGraph documentation still provides `StateGraph`, reducers, conditional edges, `Command`,
 `Send`, optional checkpointers, stores, interrupts, and checkpoint history. The direct hotel
 graph intentionally calls `.compile()` with no
@@ -146,6 +146,34 @@ level choices, not evidence about what either framework can express, but they ma
 judging the code as written.
 
 ## Code-size evidence
+
+<figure class="line-compare" aria-labelledby="line-compare-caption">
+<div class="line-compare__grid">
+<article class="line-compare__card line-compare__card--picoflow">
+<h3>HotelFlow on PicoFlow</h3>
+<ul class="line-compare__files">
+<li><code>hotel-flow.ts</code><span>51</span></li>
+<li><code>explore-step.ts</code><span>135</span></li>
+<li><code>present-step.ts</code><span>129</span></li>
+<li><code>compare-step.ts</code><span>157</span></li>
+</ul>
+<p class="line-compare__total"><span>TOTAL</span><strong>472</strong></p>
+<p class="line-compare__note">Four domain modules. The session document, step cursor, tool dispatch, storage adapters, and concurrency checks come from the runtime.</p>
+</article>
+<article class="line-compare__card line-compare__card--langgraph">
+<h3>The same flow, direct on LangGraph</h3>
+<ul class="line-compare__files">
+<li><code>hotel-langgraph.ts</code><span>1,063</span></li>
+<li><code>hotel-session-store.ts</code><span>218</span></li>
+<li><code>hotel-langgraph.state.ts</code><span>90</span></li>
+<li><code>hotel-types.ts</code><span>26</span></li>
+</ul>
+<p class="line-compare__total"><span>TOTAL</span><strong>1,397</strong></p>
+<p class="line-compare__note">One 1,063-line graph module, plus a hand-written session store with its own memory, SQLite, and MongoDB adapters.</p>
+</article>
+</div>
+<figcaption class="line-compare__caption" id="line-compare-caption">The workflow boundary for the same 14-turn hotel-reservation conversation. Counts use <code>wc -l</code>; framework source is excluded on both sides.</figcaption>
+</figure>
 
 | Scope | PicoFlow | Direct LangGraph | Difference |
 | --- | ---: | ---: | ---: |

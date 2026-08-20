@@ -2,7 +2,7 @@
 title: 5. Raw JSON and batch fan-out
 eyebrow: InvoiceFlow tutorial
 lede: The extracted invoice leaves the flow as an application/json body rather than a chat envelope, and the same extraction can be fanned out over a list of files without writing a second flow.
-source: picoflow-demo/src/myflow/invoice-flow/extract-invoice.ts, picoflow-demo/src/myflow/invoice-flow/invoice-flow.ts, picoflow-demo/src/controllers/ai-controller.ts
+source: pico-demo/src/myflow/invoice-flow/extract-invoice.ts, pico-demo/src/myflow/invoice-flow/invoice-flow.ts, pico-demo/src/controllers/ai-controller.ts
 ---
 
 Two features close out this track, and they are unrelated except that both make
@@ -93,7 +93,7 @@ the matching type.
 
 ## The controller decides the envelope
 
-`picoflow-demo/src/controllers/ai-controller.ts`:
+`pico-demo/src/controllers/ai-controller.ts`:
 
 ```ts
 const result = await this.flowEngine.run({

@@ -2,7 +2,7 @@
 title: One turn, traced twice
 eyebrow: Compare
 lede: Follow “compare hotel 2, 5, and 8 on price” from HTTP request to rendered table in both implementations.
-source: picoflow/src/picoflow/flow/llm-runner.ts, picoflow-demo/src/controllers/ai-controller.ts, picoflow-demo/src/controllers/ai-langgraph-controller.ts, picoflow-demo/src/myflow/hotel-flow/present-step.ts, picoflow-demo/src/myflow/hotel-flow/compare-step.ts, picoflow-demo/src/myflow/hotel-langgraph/hotel-langgraph.ts
+source: picoflow/src/picoflow/flow/llm-runner.ts, pico-demo/src/controllers/ai-controller.ts, pico-demo/src/controllers/ai-langgraph-controller.ts, pico-demo/src/myflow/hotel-flow/present-step.ts, pico-demo/src/myflow/hotel-flow/compare-step.ts, pico-demo/src/myflow/hotel-langgraph/hotel-langgraph.ts
 ---
 
 A feature matrix can hide the engineering cost of one ordinary turn. This trace uses the

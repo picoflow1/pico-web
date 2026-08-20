@@ -2,7 +2,7 @@
 title: Testing and evaluation
 eyebrow: Compare
 lede: The two 14-turn scenarios establish semantic parity, but their fast-test stories and untested failure surfaces differ sharply.
-source: picoflow-demo/test/hotel-flow/, picoflow-demo/test/hotel-langgraph/, picoflow-demo/src/myflow/hotel-flow/, picoflow-demo/src/myflow/hotel-langgraph/
+source: pico-demo/test/hotel-flow/, pico-demo/test/hotel-langgraph/, pico-demo/src/myflow/hotel-flow/, pico-demo/src/myflow/hotel-langgraph/
 ---
 
 The scenarios are almost identical: only `flowName: "HotelFlow"` versus
@@ -52,7 +52,7 @@ but those do not prove this demo's prompts, handlers, and hotel invariants.
 
 ## Verified during this audit
 
-The current `picoflow-demo` passed:
+The current `pico-demo` passed:
 
 ```text
 npm run typecheck

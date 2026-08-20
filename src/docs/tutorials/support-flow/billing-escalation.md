@@ -2,7 +2,7 @@
 title: 5. Billing disputes and escalation
 eyebrow: SupportFlow tutorial
 lede: BillingStep collects a factual charge dispute but derives its amount from the ledger. EscalateStep then creates the ticket as deterministic work before control returns to triage.
-source: picoflow-demo/src/myflow/support-flow/billing-step.ts, picoflow-demo/src/myflow/support-flow/escalate-step.ts, picoflow-demo/src/myflow/support-flow/backend/order-book.ts
+source: pico-demo/src/myflow/support-flow/billing-step.ts, pico-demo/src/myflow/support-flow/escalate-step.ts, pico-demo/src/myflow/support-flow/backend/order-book.ts
 ---
 
 Refunds and billing disputes have different authority. A return can result in a

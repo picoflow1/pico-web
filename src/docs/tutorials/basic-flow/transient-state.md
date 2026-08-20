@@ -2,7 +2,7 @@
 title: 14. Transient state and context
 eyebrow: BasicFlow tutorial
 lede: PicoFlow has four places to put data and they have different lifetimes. Choosing wrong is the most common cause of a value that mysteriously disappears — or one that mysteriously will not change.
-source: picoflow-demo/src/myflow/basic-flow/name-step.ts, picoflow-demo/src/myflow/basic-flow/incontext-step.ts, picoflow-demo/src/myflow/basic-flow/president-step.ts
+source: pico-demo/src/myflow/basic-flow/name-step.ts, pico-demo/src/myflow/basic-flow/incontext-step.ts, pico-demo/src/myflow/basic-flow/president-step.ts
 ---
 
 Durable step state, transient step state, flow context, and conversation memory. Three

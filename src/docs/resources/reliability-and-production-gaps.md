@@ -2,7 +2,7 @@
 title: Reliability and production gaps
 eyebrow: Compare
 lede: A production decision should compare failure semantics, races, configuration collisions, growth limits, and external side effects—not only the successful transcript.
-source: picoflow/src/picoflow/services/flow-engine.ts, picoflow/src/picoflow/session/, picoflow-demo/src/controllers/, picoflow-demo/src/myflow/hotel-flow/, picoflow-demo/src/myflow/hotel-langgraph/
+source: picoflow/src/picoflow/services/flow-engine.ts, picoflow/src/picoflow/session/, pico-demo/src/controllers/, pico-demo/src/myflow/hotel-flow/, pico-demo/src/myflow/hotel-langgraph/
 ---
 
 Neither hotel implementation should be treated as production-ready merely because its happy

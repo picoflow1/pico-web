@@ -52,7 +52,7 @@ reads them. They become live only when you uncomment or add the corresponding
 Accepted values are `MEMORY`, `SQLITE`, `MONGO`, and `COSMO` or `COSMOS`. Anything else throws
 `No valid session store '<value>'. Use MEMORY, MONGO, COSMO, or SQLITE.`
 
-<div class="callout callout--danger"><span class="callout__title">.env-example names the wrong variable</span><p><code>picoflow-demo/.env-example</code> sets <code>DOCUMENT_DB=COSMO</code>. No code in <code>pf/src</code> or <code>picoflow-demo/src</code> reads <code>DOCUMENT_DB</code>. The variable <code>CoreConfig</code> actually reads is <code>SESSION_STORE</code>, and it does not appear in the sample file at all — so an application copied from <code>.env-example</code> silently runs on the in-memory store.</p></div>
+<div class="callout callout--danger"><span class="callout__title">.env-example names the wrong variable</span><p><code>pico-demo/.env-example</code> sets <code>DOCUMENT_DB=COSMO</code>. No code in <code>pf/src</code> or <code>pico-demo/src</code> reads <code>DOCUMENT_DB</code>. The variable <code>CoreConfig</code> actually reads is <code>SESSION_STORE</code>, and it does not appear in the sample file at all — so an application copied from <code>.env-example</code> silently runs on the in-memory store.</p></div>
 
 ### Store-specific settings
 

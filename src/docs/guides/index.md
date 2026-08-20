@@ -2,7 +2,7 @@
 title: Create and register a flow
 eyebrow: Guides
 lede: "The shortest path from an empty file to a working endpoint: a Flow subclass, a step, provider adapters, engine registration, and the first HTTP call."
-source: picoflow-demo/docs/picoflow-workflow-developer-guide.md
+source: pico-demo/docs/picoflow-workflow-developer-guide.md
 ---
 
 You need this when you are adding a new workflow to an application that already runs

@@ -2,7 +2,7 @@
 title: Run the demo app
 eyebrow: Get started
 lede: Install and start the NestJS demo application, set only the environment variables you actually need, and run the end-to-end flow scenarios.
-source: picoflow-demo/README.md
+source: pico-demo/README.md
 ---
 
 The demo is a NestJS + Fastify service that registers the example flows, exposes them over

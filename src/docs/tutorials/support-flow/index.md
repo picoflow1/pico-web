@@ -2,7 +2,7 @@
 title: Track overview
 eyebrow: SupportFlow tutorial
 lede: A durable post-purchase support case that verifies an order, routes the request to a specialist, applies policy without an LLM decision, and closes with a factual recap.
-source: picoflow-demo/src/myflow/support-flow/support-flow.ts, picoflow-demo/src/myflow/support-flow/triage-step.ts, picoflow-demo/src/myflow/support-flow/backend/policy-engine.ts
+source: pico-demo/src/myflow/support-flow/support-flow.ts, pico-demo/src/myflow/support-flow/triage-step.ts, pico-demo/src/myflow/support-flow/backend/policy-engine.ts
 ---
 
 `SupportFlow` is the stateful-conversation track. It models a narrow but realistic
@@ -11,8 +11,8 @@ return or billing concern to the appropriate specialist. Deterministic steps app
 return policy, compute the exact refund, or create a billing ticket; the model never
 gets to invent eligibility, money, or an outcome.
 
-The implementation lives in `picoflow-demo/src/myflow/support-flow/`, and its
-turn-by-turn scenario lives in `picoflow-demo/test/support-flow/`. Browse the
+The implementation lives in `pico-demo/src/myflow/support-flow/`, and its
+turn-by-turn scenario lives in `pico-demo/test/support-flow/`. Browse the
 [SupportFlow source on GitHub](https://github.com/picoflowio/pico-demo/tree/main/src/myflow/support-flow).
 
 ## What SupportFlow is

@@ -2,7 +2,7 @@
 title: 2. Big prompts as spec files
 eyebrow: HotelFlow tutorial
 lede: ExploreStep collects eight fields over as many turns. Its instructions live in a Markdown file that reads like a specification, and its working data lives in a JSON scaffold injected fresh on every turn.
-source: picoflow-demo/src/myflow/hotel-flow/prompt/hotel-prompt.ts, picoflow-demo/src/myflow/hotel-flow/prompt/role.md, picoflow-demo/src/myflow/hotel-flow/prompt/explore.md, picoflow-demo/src/myflow/hotel-flow/prompt/explore.json, picoflow-demo/src/myflow/hotel-flow/explore-step.ts
+source: pico-demo/src/myflow/hotel-flow/prompt/hotel-prompt.ts, pico-demo/src/myflow/hotel-flow/prompt/role.md, pico-demo/src/myflow/hotel-flow/prompt/explore.md, pico-demo/src/myflow/hotel-flow/prompt/explore.json, pico-demo/src/myflow/hotel-flow/explore-step.ts
 ---
 
 `ExploreStep` has to collect dates, a price range, a room type, a set of
@@ -22,7 +22,7 @@ scaffold that gives the model a fixed shape to fill in.
 
 ## Prompt.file resolves against the calling file
 
-From `picoflow-demo/src/myflow/hotel-flow/prompt/hotel-prompt.ts`:
+From `pico-demo/src/myflow/hotel-flow/prompt/hotel-prompt.ts`:
 
 ```ts
 export class HotelPrompt {
@@ -30,7 +30,7 @@ export class HotelPrompt {
 }
 ```
 
-From `picoflow-demo/src/myflow/hotel-flow/explore-step.ts`:
+From `pico-demo/src/myflow/hotel-flow/explore-step.ts`:
 
 ```ts
 const ExplorePartial = Prompt.file("prompt/explore.md");

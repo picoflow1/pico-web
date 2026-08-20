@@ -2,7 +2,7 @@
 title: 3. Your first step
 eyebrow: BasicFlow tutorial
 lede: A working step needs two methods. Everything else in the Step contract is opt-in, and BasicFlow contains two steps that prove it.
-source: picoflow-demo/src/myflow/basic-flow/concur-step3.ts, picoflow-demo/src/myflow/basic-flow/concur-step4.ts
+source: pico-demo/src/myflow/basic-flow/concur-step3.ts, pico-demo/src/myflow/basic-flow/concur-step4.ts
 ---
 
 `Step` exposes a large surface — entry and exit hooks, restore, crossing, tool
@@ -19,7 +19,7 @@ them so you can see the floor before the ceiling.
 
 ## The whole step
 
-`picoflow-demo/src/myflow/basic-flow/concur-step3.ts`, in full apart from the licence
+`pico-demo/src/myflow/basic-flow/concur-step3.ts`, in full apart from the licence
 header and imports:
 
 ```ts

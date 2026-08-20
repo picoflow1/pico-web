@@ -2,7 +2,7 @@
 title: "13. Parallel children: runSteps()"
 eyebrow: BasicFlow tutorial
 lede: runSteps() executes independent registered children concurrently and returns their results in order. Independence is your responsibility, and memory namespaces are where it usually breaks.
-source: picoflow-demo/src/myflow/basic-flow/incontext-step.ts, picoflow-demo/src/myflow/basic-flow/concur-step1.ts, picoflow-demo/src/myflow/basic-flow/concur-step2.ts
+source: pico-demo/src/myflow/basic-flow/incontext-step.ts, pico-demo/src/myflow/basic-flow/concur-step1.ts, pico-demo/src/myflow/basic-flow/concur-step2.ts
 ---
 
 `runStep()` calls one child. `runSteps()` calls several at once with `Promise.all`.
@@ -18,7 +18,7 @@ two-level nested tree specifically so you can see both the mechanism and the haz
 
 ## Fan-out from onEnter()
 
-From `picoflow-demo/src/myflow/basic-flow/incontext-step.ts`:
+From `pico-demo/src/myflow/basic-flow/incontext-step.ts`:
 
 ```ts
 protected async onEnter() {

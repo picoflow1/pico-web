@@ -2,7 +2,7 @@
 title: Flows and steps
 eyebrow: Concepts
 lede: "The two classes that carry the whole mental model: a Flow is the durable boundary and the registry, a Step is the customization boundary, and class names are persisted identifiers."
-source: picoflow-demo/docs/picoflow-workflow-developer-guide.md
+source: pico-demo/docs/picoflow-workflow-developer-guide.md
 ---
 
 PicoFlow has exactly two abstractions you subclass. Everything else — memory, tools,

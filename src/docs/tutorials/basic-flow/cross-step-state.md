@@ -2,7 +2,7 @@
 title: 8. Reading another step's state
 eyebrow: BasicFlow tutorial
 lede: State is owned by the step that collected it. Later steps read it through the flow rather than copying it forward.
-source: picoflow-demo/src/myflow/basic-flow/dob-step.ts
+source: pico-demo/src/myflow/basic-flow/dob-step.ts
 ---
 
 `NameStep` collected the user's name. `DOBStep` wants to use it in a question. There
@@ -17,7 +17,7 @@ single owner for each value.
 
 ## The code
 
-All of `picoflow-demo/src/myflow/basic-flow/dob-step.ts`'s `getPrompt()`:
+All of `pico-demo/src/myflow/basic-flow/dob-step.ts`'s `getPrompt()`:
 
 {% raw %}
 ```ts

@@ -2,7 +2,7 @@
 title: Structured output and responses
 eyebrow: Guides
 lede: What happens when a model responds without calling a tool — schema-constrained output, rewriting or routing in onResponse, and the retry predicate whose polarity is the opposite of what you expect.
-source: picoflow-demo/docs/step-authoring-contract.md
+source: pico-demo/docs/step-authoring-contract.md
 ---
 
 Use this when a step's job is to produce data rather than to converse: an extraction, a

@@ -2,7 +2,7 @@
 title: 9. Deterministic LogicStep
 eyebrow: BasicFlow tutorial
 lede: Not every stage needs a model. A LogicStep runs application code, returns a transition, and the runner moves straight on to the next step in the same request.
-source: picoflow-demo/src/myflow/basic-flow/foo-logic.ts, picoflow-demo/src/myflow/basic-flow/goo-logic.ts
+source: pico-demo/src/myflow/basic-flow/foo-logic.ts, pico-demo/src/myflow/basic-flow/goo-logic.ts
 ---
 
 Between collecting the weather and asking for favourites, BasicFlow passes through two
@@ -18,7 +18,7 @@ non-LLM stage, and to show where destination state lands.
 
 ## Both steps in full
 
-`picoflow-demo/src/myflow/basic-flow/foo-logic.ts`:
+`pico-demo/src/myflow/basic-flow/foo-logic.ts`:
 
 ```ts
 export class FooLogicStep extends LogicStep {
@@ -32,7 +32,7 @@ export class FooLogicStep extends LogicStep {
 }
 ```
 
-`picoflow-demo/src/myflow/basic-flow/goo-logic.ts`:
+`pico-demo/src/myflow/basic-flow/goo-logic.ts`:
 
 ```ts
 export class GooLogicStep extends LogicStep {

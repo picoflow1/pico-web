@@ -2,7 +2,7 @@
 title: 7. Prompt files and templates
 eyebrow: BasicFlow tutorial
 lede: Prompts grow. Prompt.file() loads them from disk with caching, Prompt.replace() fills placeholders, and a shared role file keeps one voice across every step.
-source: picoflow-demo/src/myflow/basic-flow/prompt/demo-prompt.ts, picoflow-demo/src/myflow/basic-flow/prompt/role.md, picoflow-demo/src/myflow/basic-flow/prompt/favorites.md, picoflow-demo/src/myflow/basic-flow/prompt/favorites.json
+source: pico-demo/src/myflow/basic-flow/prompt/demo-prompt.ts, pico-demo/src/myflow/basic-flow/prompt/role.md, pico-demo/src/myflow/basic-flow/prompt/favorites.md, pico-demo/src/myflow/basic-flow/prompt/favorites.json
 ---
 
 A template literal is fine for three lines. By the time a prompt is thirty lines with a
@@ -19,7 +19,7 @@ BasicFlow shows both approaches side by side.
 
 ## The shared role file
 
-`picoflow-demo/src/myflow/basic-flow/prompt/role.md` is four bullets:
+`pico-demo/src/myflow/basic-flow/prompt/role.md` is four bullets:
 
 ```text
 ## Role
@@ -50,7 +50,7 @@ and `AddressStep`.
 
 ## A prompt class
 
-`picoflow-demo/src/myflow/basic-flow/prompt/demo-prompt.ts` is the whole loading mechanism
+`pico-demo/src/myflow/basic-flow/prompt/demo-prompt.ts` is the whole loading mechanism
 for the collection steps:
 
 ```ts

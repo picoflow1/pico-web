@@ -2,7 +2,7 @@
 title: 2. Verifying and routing requests
 eyebrow: SupportFlow tutorial
 lede: TriageStep is the durable hub. It verifies an order before exposing its details, carries the customer’s original request into a specialist step, and closes only a case with recorded outcomes.
-source: picoflow-demo/src/myflow/support-flow/triage-step.ts, picoflow-demo/src/myflow/support-flow/backend/order-book.ts, picoflow-demo/src/myflow/support-flow/prompt/support-prompt.ts
+source: pico-demo/src/myflow/support-flow/triage-step.ts, pico-demo/src/myflow/support-flow/backend/order-book.ts, pico-demo/src/myflow/support-flow/prompt/support-prompt.ts
 ---
 
 Every SupportFlow session starts at `TriageStep`. Its system prompt receives the

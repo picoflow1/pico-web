@@ -2,7 +2,7 @@
 title: Concurrent batch mode
 eyebrow: Guides
 lede: One coordinator session fans work out to N worker sessions over self-HTTP. Each worker gets its own session document, and the coordinator owns completion, retry and partial-failure policy itself.
-source: picoflow-demo/docs/picoflow-workflow-developer-guide.md
+source: pico-demo/docs/picoflow-workflow-developer-guide.md
 ---
 
 Use batch mode when you have N independent work items and each deserves its own session

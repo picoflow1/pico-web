@@ -2,7 +2,7 @@
 title: 5. Routing with go() and stay()
 eyebrow: BasicFlow tutorial
 lede: A handler returns where the conversation goes next. stay() is a corrective loop that keeps the current step active; go() moves the one durable cursor.
-source: picoflow-demo/src/myflow/basic-flow/name-step.ts, picoflow-demo/src/myflow/basic-flow/dob-step.ts, picoflow-demo/src/myflow/basic-flow/address-step.ts
+source: pico-demo/src/myflow/basic-flow/name-step.ts, pico-demo/src/myflow/basic-flow/dob-step.ts, pico-demo/src/myflow/basic-flow/address-step.ts
 ---
 
 PicoFlow has one durable conversation cursor: `flow.currentStep`, a step-name string in
@@ -17,7 +17,7 @@ routing helpers exist to move it, or deliberately not to.
 
 ## stay() is a loop, not a no-op
 
-From `picoflow-demo/src/myflow/basic-flow/name-step.ts`:
+From `pico-demo/src/myflow/basic-flow/name-step.ts`:
 
 ```ts
 if (name.toLowerCase() === "john doe") {

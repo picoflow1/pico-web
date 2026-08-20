@@ -2,7 +2,7 @@
 title: Choosing a workflow shape
 eyebrow: Guides
 lede: Four shapes cover almost every PicoFlow application. Picking the wrong one shows up late, as session churn or a coordinator that never completes, so decide before you write prompts.
-source: picoflow-demo/docs/picoflow-workflow-developer-guide.md
+source: pico-demo/docs/picoflow-workflow-developer-guide.md
 ---
 
 Do this before writing any step. The shape determines whether the caller keeps a session ID,

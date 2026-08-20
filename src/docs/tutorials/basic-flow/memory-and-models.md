@@ -2,7 +2,7 @@
 title: 15. Memory namespaces and model overrides
 eyebrow: BasicFlow tutorial
 lede: Two builder calls on a registered step decide what conversation history it sees and which model answers for it. Both are declared in one place, and both are load-bearing.
-source: picoflow-demo/src/myflow/basic-flow/basic-flow.ts
+source: pico-demo/src/myflow/basic-flow/basic-flow.ts
 ---
 
 `defineSteps()` is where BasicFlow's non-obvious configuration lives. Every

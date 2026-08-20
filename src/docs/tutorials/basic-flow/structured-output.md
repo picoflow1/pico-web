@@ -2,7 +2,7 @@
 title: 11. Structured output
 eyebrow: BasicFlow tutorial
 lede: structOutputSchema() hands a Zod object to the provider so the reply arrives as typed data instead of text you have to parse.
-source: picoflow-demo/src/myflow/basic-flow/incontext-step.ts
+source: pico-demo/src/myflow/basic-flow/incontext-step.ts
 ---
 
 The previous lesson asked for JSON in prose and parsed whatever came back.
@@ -18,7 +18,7 @@ method, and `onResponse()` receives an object rather than a string.
 
 ## The schema
 
-From `picoflow-demo/src/myflow/basic-flow/incontext-step.ts`:
+From `pico-demo/src/myflow/basic-flow/incontext-step.ts`:
 
 ```ts
 public structOutputSchema(): object {

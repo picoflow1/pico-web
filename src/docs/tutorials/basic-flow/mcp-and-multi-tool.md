@@ -2,7 +2,7 @@
 title: 16. @Tools batching
 eyebrow: BasicFlow tutorial
 lede: WeatherStep uses a deterministic local fixture to show how a group handler combines matching model tool calls into one operation and one routing decision.
-source: picoflow-demo/src/myflow/basic-flow/weather-step.ts, picoflow-demo/src/myflow/basic-flow/city-temperature-service.ts
+source: pico-demo/src/myflow/basic-flow/weather-step.ts, pico-demo/src/myflow/basic-flow/city-temperature-service.ts
 ---
 
 `WeatherStep` is the entry step in BasicFlow and the track's `@Tools` example.

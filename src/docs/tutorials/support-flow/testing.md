@@ -2,7 +2,7 @@
 title: 7. Testing a support case
 eyebrow: SupportFlow tutorial
 lede: The SupportFlow suite tests policy and ledger services without a model, then replays a nine-turn case through a real FlowEngine when live credentials are available.
-source: picoflow-demo/test/support-flow/support-flow.spec.ts, picoflow-demo/test/support-flow/support-flow.scenario.json, picoflow-demo/src/myflow/support-flow/backend/policy-engine.ts
+source: pico-demo/test/support-flow/support-flow.spec.ts, pico-demo/test/support-flow/support-flow.scenario.json, pico-demo/src/myflow/support-flow/backend/policy-engine.ts
 ---
 
 The support flow has two very different kinds of behavior to test. Return
@@ -20,7 +20,7 @@ here. The suite keeps those concerns separate.
 
 ## Run the suite
 
-From `picoflow-demo`:
+From `pico-demo`:
 
 ```bash
 npm run test:support-flow

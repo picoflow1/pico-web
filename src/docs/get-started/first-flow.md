@@ -2,7 +2,7 @@
 title: Your first flow
 eyebrow: Get started
 lede: "Build a working two-step flow from an empty file: the flow shell, one step with a prompt and a tool, provider registration, and the first HTTP call."
-source: picoflow-demo/docs/picoflow-workflow-developer-guide.md
+source: pico-demo/docs/picoflow-workflow-developer-guide.md
 ---
 
 This page builds a complete, runnable flow. It collects a customer email address, validates
@@ -247,7 +247,7 @@ createServer(async (req, res) => {
 the flow's session-wide context on the first turn of a session.
 
 The demo application's NestJS version of exactly this handler is in
-`picoflow-demo/src/controllers/ai-controller.ts`, and it also exposes `GET /ai/flows` and
+`pico-demo/src/controllers/ai-controller.ts`, and it also exposes `GET /ai/flows` and
 `POST /ai/end`.
 
 ## 5. Make the first call

@@ -2,7 +2,7 @@
 title: Defining and handling tools
 eyebrow: Guides
 lede: Tools are where a model's intent becomes your code's decision. Define them once per flow, expose them per step, and always return a transition.
-source: picoflow-demo/docs/step-authoring-contract.md
+source: pico-demo/docs/step-authoring-contract.md
 ---
 
 Use this when adding a capability the model can invoke: capturing validated input, calling a

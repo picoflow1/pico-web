@@ -2,7 +2,7 @@
 title: Track overview
 eyebrow: HotelFlow tutorial
 lede: HotelFlow is a four-step booking conversation that collects criteria, searches a local catalogue, compares results, and books a room. This page maps the whole graph before the lessons take it apart.
-source: picoflow-demo/src/myflow/hotel-flow/hotel-flow.ts
+source: pico-demo/src/myflow/hotel-flow/hotel-flow.ts
 ---
 
 `HotelFlow` is the transactional track. Where BasicFlow is a tour of the `Step`
@@ -10,8 +10,8 @@ contract, HotelFlow is one product journey — search, look, compare, go back,
 book — expressed as four registered steps that move a single durable cursor
 between them while keeping business state on the step that owns it.
 
-The implementation lives in `picoflow-demo/src/myflow/hotel-flow/`. Its fourteen-turn
-deterministic scenario lives in `picoflow-demo/test/hotel-flow/`. Browse the
+The implementation lives in `pico-demo/src/myflow/hotel-flow/`. Its fourteen-turn
+deterministic scenario lives in `pico-demo/test/hotel-flow/`. Browse the
 [HotelFlow source on GitHub](https://github.com/picoflowio/pico-demo/tree/main/src/myflow/hotel-flow).
 
 ## What HotelFlow is

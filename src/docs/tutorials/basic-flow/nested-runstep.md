@@ -2,7 +2,7 @@
 title: "12. Nested execution: runStep()"
 eyebrow: BasicFlow tutorial
 lede: runStep() executes a registered child step inline and hands its result back to the caller. The durable cursor never moves, so the parent keeps control of routing.
-source: picoflow-demo/src/myflow/basic-flow/name-step.ts, picoflow-demo/src/myflow/basic-flow/incontext-step.ts
+source: pico-demo/src/myflow/basic-flow/name-step.ts, pico-demo/src/myflow/basic-flow/incontext-step.ts
 ---
 
 `go()` hands the conversation to another step. `runStep()` borrows one. The difference
@@ -18,7 +18,7 @@ distinction in PicoFlow's composition model.
 
 ## The call site
 
-From `picoflow-demo/src/myflow/basic-flow/name-step.ts`:
+From `pico-demo/src/myflow/basic-flow/name-step.ts`:
 
 ```ts
 @Tool

@@ -2,11 +2,11 @@
 title: Choose a track
 eyebrow: Tutorials
 lede: Four tutorial tracks, each built line by line from a flow that actually ships in the demo application. Start with BasicFlow.
-source: picoflow-demo/src/myflow
+source: pico-demo/src/myflow
 ---
 
 Every lesson on this site is derived from a real, running flow in
-`picoflow-demo/src/myflow`. Nothing here is a sketch: the code quoted in a lesson is the
+`pico-demo/src/myflow`. Nothing here is a sketch: the code quoted in a lesson is the
 code the demo NestJS application loads, and the transitions described are the ones
 the end-to-end tests assert against the persisted session document.
 

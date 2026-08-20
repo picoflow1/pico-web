@@ -2,7 +2,7 @@
 title: 3. Deterministic return policy
 eyebrow: SupportFlow tutorial
 lede: ReturnsStep uses a model to collect an item and a reason. AdjudicateStep uses deterministic code to apply the return window, restocking fee, refund amount, and approval threshold.
-source: picoflow-demo/src/myflow/support-flow/returns-step.ts, picoflow-demo/src/myflow/support-flow/adjudicate-step.ts, picoflow-demo/src/myflow/support-flow/backend/policy-engine.ts
+source: pico-demo/src/myflow/support-flow/returns-step.ts, pico-demo/src/myflow/support-flow/adjudicate-step.ts, pico-demo/src/myflow/support-flow/backend/policy-engine.ts
 ---
 
 Returns are a useful boundary for an agent workflow. Conversation is needed to

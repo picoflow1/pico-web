@@ -2,7 +2,7 @@
 title: Prompts and prompt files
 eyebrow: Guides
 lede: getPrompt() is called before every model invocation, including after each tool response. This is how to build one from state, load it from a file, and let a transition override it.
-source: picoflow-demo/docs/step-authoring-contract.md
+source: pico-demo/docs/step-authoring-contract.md
 ---
 
 Every step supplies its own system prompt. There is no global prompt, no template engine, and

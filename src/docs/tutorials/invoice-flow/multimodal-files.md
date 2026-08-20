@@ -2,7 +2,7 @@
 title: 4. Multimodal file uploads
 eyebrow: InvoiceFlow tutorial
 lede: A tool result is text, so a tool cannot hand a model an image. ExtractInvoiceStep uploads the file to the provider, builds a mixed text-and-file human message by hand, and re-enters itself with that message attached.
-source: picoflow-demo/src/myflow/invoice-flow/extract-invoice.ts
+source: pico-demo/src/myflow/invoice-flow/extract-invoice.ts
 ---
 
 This is the lesson the whole track exists for. The model asks for a file; the

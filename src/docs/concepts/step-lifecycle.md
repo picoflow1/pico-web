@@ -2,7 +2,7 @@
 title: Step lifecycle
 eyebrow: Concepts
 lede: Four scenarios — new session, restored session, top-level transition, and nested execution — and exactly which of onStart, onRestore, onEnter, onExit and onCrossing fires in each.
-source: picoflow-demo/docs/step-authoring-contract.md
+source: pico-demo/docs/step-authoring-contract.md
 ---
 
 Five hooks decide when a step gets to prepare itself. They look similar and they are not

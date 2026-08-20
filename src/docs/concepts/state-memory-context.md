@@ -2,7 +2,7 @@
 title: State, memory, context, transient
 eyebrow: Concepts
 lede: PicoFlow stores four different kinds of data with four different lifetimes. Choosing the wrong one is the most common source of bugs that only appear on the second turn.
-source: picoflow-demo/docs/step-authoring-contract.md
+source: pico-demo/docs/step-authoring-contract.md
 ---
 
 Every value your flow handles belongs in exactly one of four places. They are easy to

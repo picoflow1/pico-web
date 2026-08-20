@@ -2,7 +2,7 @@
 title: 3. Example-as-schema prompting
 eyebrow: InvoiceFlow tutorial
 lede: The extraction prompt pins a fifty-field nested payload by showing one complete example rather than declaring a schema. That is an effective technique with a specific failure mode, and it is worth knowing both.
-source: picoflow-demo/src/myflow/invoice-flow/prompt/invoice-prompt.ts, picoflow-demo/src/myflow/invoice-flow/prompt/invoice.md, picoflow-demo/src/myflow/invoice-flow/prompt/invoice-example.json
+source: pico-demo/src/myflow/invoice-flow/prompt/invoice-prompt.ts, pico-demo/src/myflow/invoice-flow/prompt/invoice.md, pico-demo/src/myflow/invoice-flow/prompt/invoice-example.json
 ---
 
 An invoice has a vendor, a bill number, two addresses, nested banking details
@@ -21,7 +21,7 @@ takes the other route: it shows the model one filled-in example and says
 
 ## Composing the prompt
 
-`picoflow-demo/src/myflow/invoice-flow/prompt/invoice-prompt.ts`:
+`pico-demo/src/myflow/invoice-flow/prompt/invoice-prompt.ts`:
 
 ```ts
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

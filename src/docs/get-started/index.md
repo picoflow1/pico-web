@@ -83,7 +83,7 @@ call. The model never decides routing; the handler does.
 	</a>
 	<a class="card" href="/docs/tutorials/">
 		<span class="card__title">Tutorials</span>
-		<span class="card__body">Four tracks built line by line from the flows in <code>picoflow-demo/src/myflow</code>.</span>
+		<span class="card__body">Four tracks built line by line from the flows in <code>pico-demo/src/myflow</code>.</span>
 	</a>
 </div>
 

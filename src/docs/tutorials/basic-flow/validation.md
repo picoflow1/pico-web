@@ -2,7 +2,7 @@
 title: 6. Validation belongs in code
 eyebrow: BasicFlow tutorial
 lede: Move the rule out of the prompt and out of the handler into a plain TypeScript module, then hand its verdict back to the model through stay().
-source: picoflow-demo/src/myflow/basic-flow/validators/address-validator.ts, picoflow-demo/src/myflow/basic-flow/address-step.ts
+source: pico-demo/src/myflow/basic-flow/validators/address-validator.ts, pico-demo/src/myflow/basic-flow/address-step.ts
 ---
 
 The previous lesson put the decision in the tool handler. This one takes the next step:
@@ -18,7 +18,7 @@ can be unit tested, reused, and read by someone who knows nothing about PicoFlow
 
 ## A validator with no framework dependencies
 
-`picoflow-demo/src/myflow/basic-flow/validators/address-validator.ts` imports nothing at
+`pico-demo/src/myflow/basic-flow/validators/address-validator.ts` imports nothing at
 all. Its whole public surface is one function:
 
 ```ts
@@ -63,7 +63,7 @@ This is also the string the end-to-end scenario sends on its final turn.
 
 ## Wiring it into the step
 
-`picoflow-demo/src/myflow/basic-flow/address-step.ts` does nothing but call it and translate
+`pico-demo/src/myflow/basic-flow/address-step.ts` does nothing but call it and translate
 the result into a transition:
 
 ```ts

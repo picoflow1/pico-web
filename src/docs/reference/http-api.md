@@ -2,7 +2,7 @@
 title: HTTP API
 eyebrow: Reference
 lede: "The demo controller's three routes, the exact request and response shapes, the session header round-trip, how a non-plain content type replaces the response body, and how errors are reported."
-source: picoflow-demo/src/controllers/ai-controller.ts
+source: pico-demo/src/controllers/ai-controller.ts
 ---
 
 `@picoflow/core` ships no HTTP layer. The contract below is `AiController` in the demo

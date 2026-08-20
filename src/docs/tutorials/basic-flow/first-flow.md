@@ -2,7 +2,7 @@
 title: 2. Your first flow
 eyebrow: BasicFlow tutorial
 lede: A Flow declares a default model and a registry of the steps it is allowed to activate. It is not a graph, and it does not describe the order steps run in.
-source: picoflow-demo/src/myflow/basic-flow/basic-flow.ts
+source: pico-demo/src/myflow/basic-flow/basic-flow.ts
 ---
 
 The most common early misreading of PicoFlow is to treat `defineSteps()` as a
@@ -19,7 +19,7 @@ handler returns.
 
 ## The minimum flow
 
-From `picoflow-demo/src/myflow/basic-flow/basic-flow.ts`:
+From `pico-demo/src/myflow/basic-flow/basic-flow.ts`:
 
 ```ts
 export class BasicFlow extends Flow {

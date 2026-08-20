@@ -2,7 +2,7 @@
 title: 4. Approval holds and session restoration
 eyebrow: SupportFlow tutorial
 lede: A review-required refund is a temporary offer, not a completed transaction. ApprovalStep presents the computed quote, commits only explicit consent, and the flow invalidates a hold that has aged out.
-source: picoflow-demo/src/myflow/support-flow/approval-step.ts, picoflow-demo/src/myflow/support-flow/support-flow.ts, picoflow-demo/src/myflow/support-flow/gen-receipt.ts
+source: pico-demo/src/myflow/support-flow/approval-step.ts, pico-demo/src/myflow/support-flow/support-flow.ts, pico-demo/src/myflow/support-flow/gen-receipt.ts
 ---
 
 Some return requests are eligible but need the customer to approve an exact
