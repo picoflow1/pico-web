@@ -181,9 +181,9 @@ pair TypeScript selects that entry's exact parameter type.
 
 | Model ID | Parameter family |
 | --- | --- |
-| `openai:gpt-4o` | Chat: `temperature`, `topP`, `maxTokens`, `maxRetries`, `timeout` |
+| `openai:gpt-4o` | Chat: `temperature`, `topP`, `maxTokens`, `maxRetries` |
 | `openai:gpt-4o-mini` | Chat |
-| `openai:gpt-5` | Reasoning: `reasoning.effort`, `maxTokens`, `maxRetries`, `timeout` |
+| `openai:gpt-5` | Reasoning: `reasoning.effort`, `maxTokens`, `maxRetries` |
 | `openai:gpt-5.1` | Reasoning |
 | `google:gemini-2.0-flash` | Google chat: `temperature`, `maxOutputTokens`, `maxRetries` |
 | `google:gemini-2.5-flash` | Google chat |

@@ -14,6 +14,7 @@ export abstract class Flow {
   static get id(): string;          // defaults to the class name
   public constructor();
   protected abstract configModel(): ModelSelection;
+  protected configLlmCallPolicy(): LlmCallPolicy;
 }
 ```
 
@@ -25,6 +26,7 @@ Nothing on the instance survives except what is written into the session documen
 | Hook | Signature | Default | Override when |
 | --- | --- | --- | --- |
 | `configModel()` | `protected abstract configModel(): ModelSelection` | Abstract — you must implement it | Always |
+| `configLlmCallPolicy()` | `protected configLlmCallPolicy(): LlmCallPolicy` | `{}` — no deadline | Model invocation attempts need a Flow-wide wall-clock budget |
 | `init()` | `public async init(): Promise<void>` | No operation | Deterministic per-instance setup is needed before steps are collected |
 | `defineSteps()` | `protected defineSteps(): Step[]` | `[new TerminateSessionStep(this).useMemory('temp')]` | The flow declares its own stages |
 | `initialStep()` | `protected initialStep(): StepClassType \| null` | `null` — the first step from `defineSteps()` starts the session | The initial cursor depends on runtime context |
@@ -58,6 +60,17 @@ protected configModel() {
 Every step without its own `useModel(...)` override inherits this selection, including
 `retryAttempts`. See
 [Model catalog](/docs/reference/model-catalog/) for the typing rules.
+
+### configLlmCallPolicy()
+
+```ts
+protected configLlmCallPolicy(): LlmCallPolicy;
+```
+
+Declares code-owned policy for each model invocation attempt independently from provider
+parameters. `{ timeoutMs: 60_000 }` applies to every Step by default. A Step may override
+the same hook with another positive integer, or return `{ timeoutMs: null }` to remove the
+inherited deadline. The policy is not persisted in the session document.
 
 ### init()
 

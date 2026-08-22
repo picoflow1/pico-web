@@ -31,15 +31,17 @@ import { PicoModelCatalog } from "@picoflow/core";
 
 | Shape | Members |
 | --- | --- |
-| OpenAI chat | `temperature?`, `topP?`, `maxTokens?`, `maxRetries?`, `timeout?` |
-| OpenAI reasoning | `reasoning?.effort?` — one of `minimal`, `low`, `medium`, `high` — plus `maxTokens?`, `maxRetries?`, `timeout?` |
+| OpenAI chat | `temperature?`, `topP?`, `maxTokens?`, `maxRetries?` |
+| OpenAI reasoning | `reasoning?.effort?` — one of `minimal`, `low`, `medium`, `high` — plus `maxTokens?`, `maxRetries?` |
 | Google chat | `temperature?`, `maxOutputTokens?`, `maxRetries?` |
 | Anthropic chat | `temperature?`, `maxTokens?`, `maxRetries?` |
 | DeepSeek chat | `temperature?`, `maxTokens?`, `maxRetries?` |
 
 Every schema is `strict`, so an unknown key is a runtime error. `maxTokens` and
-`maxOutputTokens` must be positive integers, `maxRetries` a non-negative integer, and
-`timeout` a positive number.
+`maxOutputTokens` must be positive integers, and `maxRetries` a non-negative integer.
+
+Model-call deadlines do not belong to these provider parameter shapes. Declare the
+provider-neutral `timeoutMs` with `Flow.configLlmCallPolicy()` or its Step override.
 
 The catalog's built-in providers are exactly `openai`, `google`, `anthropic`, and `deepseek` —
 the prefixes appearing in the table above.

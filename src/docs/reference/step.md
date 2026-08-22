@@ -24,6 +24,7 @@ export abstract class Step {
 
 | Hook | Signature | Default | Override when |
 | --- | --- | --- | --- |
+| `configLlmCallPolicy()` | `protected configLlmCallPolicy(): LlmCallPolicyOverride` | `{}` — inherits the Flow policy | This Step needs another `timeoutMs`, or `{ timeoutMs: null }` to remove the Flow deadline |
 | `getPrompt()` | `public getPrompt(): string \| null` | Returns the `_prompt` state value saved by `.withPrompt(...)`, else `null` | The step needs a system prompt |
 | `defineTool()` | `public defineTool(): ToolType[]` | `[]` | The flow needs a tool registered with a name, description, and Zod object schema |
 | `useTool()` | `public useTool(): string[]` | `[]` | The step exposes a tool defined elsewhere, or keeps an undecorated legacy handler |
@@ -113,12 +114,17 @@ Erasing history does not erase step state.
 | `useModel` | `useModel<const Provider extends string, const Name extends string>(selection: ModelSelectionFor<Provider, Name>): this` |
 | `getModel` | `getModel(): string \| undefined` |
 | `getModelSelection` | `getModelSelection(): ResolvedModelSelection` |
+| `getLlmCallPolicy` | `getLlmCallPolicy(): LlmCallPolicy` |
 | `getLLMType` | `getLLMType(): LLMType` |
 | `contentType` | `get contentType(): HttpContentType` / `set contentType(ctType: HttpContentType)` |
 
 `useModel()` marks a real override. `getModelSelection()` merges params with the flow's only
 when the provider **and** name are identical; a cross-model override replaces params
 entirely. An override equal to the flow selection is not persisted on the step document.
+
+`getLlmCallPolicy()` resolves the Step override against the Flow policy. An omitted
+`timeoutMs` inherits the Flow value, a positive integer replaces it, and `null` removes
+it. This code-owned policy is not part of the persisted model selection.
 
 `getLLMType()` maps the resolved model name prefix to `LLMType.GEMINI`, `LLMType.OPENAI`,
 `LLMType.ANTHROPIC`, or `LLMType.UNSUPPORTED`, and is used for provider-side file uploads.

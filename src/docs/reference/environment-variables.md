@@ -117,7 +117,7 @@ Everything else in `.env-example` — the three live provider keys, `NVIDIA_API_
 
 ## Not configurable by environment
 
-Two things are explicit on purpose and are never read from the environment:
+Three things are explicit on purpose and are never read from the environment:
 
 - **Runner retry attempts.** `retryAttempts` is a positive integer on a
   `configModel()` or `useModel(...)` selection. A Step inherits its Flow value
@@ -125,3 +125,6 @@ Two things are explicit on purpose and are never read from the environment:
 - **Model names and hyperparameters.** These belong in `configModel()` and
   `useModel(...)`, so the model plan persisted in the session document reflects
   what the Flow chose. See [Providers](/docs/reference/providers/).
+- **Model-call deadlines.** `timeoutMs` belongs in Flow or Step
+  `configLlmCallPolicy()`. It is code-owned, provider-neutral, and is not persisted
+  in the session document.

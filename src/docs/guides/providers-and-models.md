@@ -180,6 +180,7 @@ This is the division that causes the most confusion:
 | API key, base URL, endpoint, deployment, API version | The adapter's `config` | Connection identity, one per process, secret |
 | `temperature`, `topP`, `maxTokens`, `reasoning.effort`, `maxOutputTokens` | `configModel()` or `useModel()` `params` | Per-flow or per-step behaviour, persisted in the session document |
 | `retryAttempts` | The Flow or Step model selection | A runner policy persisted with the selection; an adapter can supply only the fallback |
+| `timeoutMs` | Flow or Step `configLlmCallPolicy()` | A provider-neutral, per-invocation-attempt deadline; code-owned and not persisted |
 
 The bundled helpers deliberately set no model defaults. An adapter that quietly injected
 `temperature: 0.7` would silently override every flow that did not restate it. Set retry

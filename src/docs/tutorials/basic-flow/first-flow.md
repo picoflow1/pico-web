@@ -1,7 +1,7 @@
 ---
 title: 2. Your first flow
 eyebrow: BasicFlow tutorial
-lede: A Flow declares a default model and a registry of the steps it is allowed to activate. It is not a graph, and it does not describe the order steps run in.
+lede: A Flow declares a default model, a model-call policy, and a registry of the steps it is allowed to activate. It is not a graph, and it does not describe the order steps run in.
 source: pico-demo/src/myflow/basic-flow/basic-flow.ts
 ---
 
@@ -13,6 +13,7 @@ handler returns.
 ## The goal
 
 - Declare a flow-wide default model with `configModel()`.
+- Bound each model invocation attempt with `configLlmCallPolicy()`.
 - Register every step the flow may ever activate with `defineSteps()`.
 - Understand why a `go()` target must appear in that list.
 - Understand what a `Flow` instance's lifetime actually is.
@@ -30,6 +31,11 @@ export class BasicFlow extends Flow {
       params: { temperature: 0.2 },
       retryAttempts: 3,
     } as const;
+  }
+
+  // Applies to every model invocation in this Flow unless a Step overrides it.
+  protected configLlmCallPolicy() {
+    return { timeoutMs: 60_000 } as const;
   }
 
   protected defineSteps(): Step[] {
@@ -75,6 +81,31 @@ During `bootstrap()` the flow walks its step map and calls `step.inheritModel(..
 for each step with no model of its own, then validates each resolved selection against
 the registered providers. A typo in a provider name fails at bootstrap, on the first
 request, not halfway through a conversation.
+
+### configLlmCallPolicy()
+
+`configLlmCallPolicy()` is separate from `configModel()` because `timeoutMs` belongs
+to PicoFlow's runner, not to OpenAI, Google, Anthropic, or any other model provider.
+BasicFlow gives each model invocation attempt a one-minute wall-clock budget:
+
+```ts
+protected configLlmCallPolicy() {
+  return { timeoutMs: 60_000 } as const;
+}
+```
+
+Every step inherits this policy, including `WeatherStep` and `DOBStep`, which select
+different models with `.useModel(...)`. A step can override the same protected method;
+returning `{ timeoutMs: null }` on a step explicitly removes the Flow deadline.
+
+The budget applies to one invocation attempt. If PicoFlow retries a failed call, the
+next attempt receives a fresh budget. It is not a deadline for the whole user turn,
+tool execution, or the complete retry sequence. Request-scoped cancellation is a
+separate concern: a caller can pass an `AbortSignal` to `FlowEngine.run(...)`.
+
+Unlike the model selection and `retryAttempts`, this call policy is code-owned and is
+not written into the session document. A restored session therefore uses the policy
+in the currently deployed Flow and Step classes.
 
 ### defineSteps()
 
@@ -152,7 +183,7 @@ new BasicFlow()          // fresh instance, no state
 flow.addContext(config)  // only when a config object was supplied
 flow.init()              // your async setup hook, default no-op
 flow.collectSteps()      // defineSteps() runs here
-flow.bootstrap(...)      // resolve models, fetch or create the doc, read state back
+flow.bootstrap(...)      // validate call policy, resolve models, load the doc and state
 ```
 
 So `defineSteps()` runs on **every request**, and the `Step` instances are recreated
@@ -171,8 +202,9 @@ transitions, gives the framework three things it could not otherwise have:
 
 1. **A complete persistence schema before the first turn.** Every step's state slot
    exists immediately, so a resumed session never has to reconcile a missing entry.
-2. **Bootstrap-time validation.** Unknown providers, duplicate tool names, and an
-   `initialStep()` that names an unregistered class all fail on request one.
+2. **Bootstrap-time validation.** An invalid `timeoutMs`, unknown providers, duplicate
+   tool names, and an `initialStep()` that names an unregistered class all fail on
+   request one.
 3. **A readable inventory.** `defineSteps()` is the one place a reviewer can see
    every stage, its memory namespace, and its model. That listing is the reason this
    file is worth opening first when you inherit someone else's flow.
@@ -186,6 +218,9 @@ startup over an implicit one mid-conversation.
 - **Reading `defineSteps()` as an execution order.** It is an allow-list. The array
   order only supplies the default `currentStep` when `initialStep()` returns `null`,
   and `BasicFlow` overrides `initialStep()` anyway.
+- **Putting `timeout` in provider params.** Use `timeoutMs` in
+  `configLlmCallPolicy()`. The policy is provider-neutral and applies to each model
+  invocation attempt.
 - **Hiding the entry point.** The constructor takes only the flow. Keep the
   default entry step visible in registration order, or override `initialStep()`
   when runtime context selects it.

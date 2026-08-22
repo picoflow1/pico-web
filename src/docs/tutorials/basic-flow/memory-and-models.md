@@ -191,6 +191,13 @@ model, unless the Step explicitly provides its own value. BasicFlow sets three
 attempts once in `configModel()`, so its `gpt-5` and `gpt-5.1` stages use the
 same runner policy without inheriting an invalid temperature.
 
+`timeoutMs` is runner policy too, but it is deliberately not part of the model
+selection. BasicFlow declares it with `configLlmCallPolicy()`, so the same deadline
+applies when a step changes provider or model. Unlike `retryAttempts`, the call policy
+is code-owned and is not persisted in the session document. See
+[lesson 2](/docs/tutorials/basic-flow/first-flow/#configllmcallpolicy) for its scope and
+override rules.
+
 That is not a stylistic choice. Parameters belong to a model, and `gpt-5` does not
 accept `temperature`. The OpenAI adapter says so explicitly:
 
@@ -225,7 +232,6 @@ const openAIReasoningSchema = z
       .optional(),
     maxTokens: z.number().int().positive().optional(),
     maxRetries: z.number().int().nonnegative().optional(),
-    timeout: z.number().positive().optional(),
   })
   .strict();
 ```

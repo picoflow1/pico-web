@@ -16,10 +16,12 @@ conversation scenario lives in `pico-demo/test/basic-flow/`. Browse the
 
 ## What BasicFlow is
 
-A `Flow` subclass with three overrides that matter and two that are situational:
+A `Flow` subclass with four overrides that matter and two that are situational:
 
 - `configModel()` declares the default model, `openai` / `gpt-4o-mini`, with
   `temperature: 0.2` and three runner retry attempts.
+- `configLlmCallPolicy()` gives each model invocation attempt a 60-second
+  wall-clock budget, regardless of which provider or model a step selects.
 - `defineSteps()` returns the fourteen `Step` instances the flow is allowed to
   activate, each with its memory namespace and optional model override.
 - `initialStep()` picks the entry point at runtime: `PresidentStep` when
@@ -125,8 +127,8 @@ Read them in order. Lessons 1 to 8 are the fundamentals; 9 to 14 are composition
 
 1. [Bootstrapping PicoFlow in NestJS](/docs/tutorials/basic-flow/bootstrapping/) — the
    `FlowEngine` provider, model adapters, and the `/ai/run` controller.
-2. [Your first flow](/docs/tutorials/basic-flow/first-flow/) — `configModel()` and
-   `defineSteps()`, and why a flow is a registry.
+2. [Your first flow](/docs/tutorials/basic-flow/first-flow/) — `configModel()`,
+   `configLlmCallPolicy()`, `defineSteps()`, and why a flow is a registry.
 3. [Your first step](/docs/tutorials/basic-flow/first-step/) — the smallest step that
    works: `getPrompt()` plus `onResponse()`.
 4. [Tools and Zod](/docs/tutorials/basic-flow/tools/) — `defineTool()`, the `@Tool`

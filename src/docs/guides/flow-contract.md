@@ -5,7 +5,7 @@ lede: Every hook you can override on Flow, what the base class actually does, an
 source: pf/src/picoflow/flow/flow.ts
 ---
 
-`Flow` is a large class, but only nine members are meant to be overridden by an application.
+`Flow` is a large class, but only eleven members are meant to be overridden by an application.
 Everything else on it — `goto`, `getContext`, `saveStepState`, `getMemory`, `markCompleted`,
 `concurrentSteps` — is API you call, not API you replace. Use this page when you are deciding
 whether a behaviour belongs in a `Flow` override or somewhere else.
@@ -15,6 +15,7 @@ whether a behaviour belongs in a `Flow` override or somewhere else.
 | Hook | Visibility | Default behaviour | Override when |
 | --- | --- | --- | --- |
 | `configModel()` | `protected abstract` | None — you must implement it | Always. It declares the flow's provider, model name, params, and retry policy |
+| `configLlmCallPolicy()` | `protected` | Returns `{}`, so calls have no Flow deadline | Each model invocation attempt needs a provider-neutral wall-clock budget |
 | `constructor()` | `public` | Sets empty context | Deterministic setup only, such as memory summary policy. Call `super()` |
 | `init()` | `public async` | No operation | Per-instance setup that needs neither the engine nor a loaded session |
 | `defineSteps()` | `protected` | Returns `[new TerminateSessionStep(this).useMemory("temp")]` | Always, for any flow with real stages |
@@ -44,6 +45,20 @@ protected configModel() {
 The `as const` matters: it lets the model catalog narrow the `params` type to the exact
 parameter contract for that provider and model. See
 [Register providers and models](/docs/guides/providers-and-models/).
+
+`configLlmCallPolicy()` owns per-invocation runner policy that must not be mixed into
+provider params:
+
+```ts
+protected configLlmCallPolicy() {
+  return { timeoutMs: 60_000 } as const;
+}
+```
+
+Every Step inherits that deadline unless its own `configLlmCallPolicy()` returns another
+positive integer or `{ timeoutMs: null }`. The timeout applies to one model invocation
+attempt, not to tool execution or the whole turn, and is not persisted with the model
+selection.
 
 The constructor is the only place to configure memory compaction, because the memory
 container is read when steps are collected. `HotelFlow` does this and nothing else:
