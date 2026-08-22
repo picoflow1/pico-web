@@ -28,6 +28,7 @@ export class BasicFlow extends Flow {
       provider: "openai",
       name: "gpt-4o-mini",
       params: { temperature: 0.2 },
+      retryAttempts: 3,
     } as const;
   }
 

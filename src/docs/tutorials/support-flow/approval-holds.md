@@ -124,10 +124,10 @@ protected async onRestoreSessionDoc(session: SessionType): Promise<SessionType |
   const restored = await super.onRestoreSessionDoc(session);
   if (!restored) return null;
 
-  const idleMs = Date.now() - restored.saveOn.getTime();
-  if (idleMs >= readMs("SUPPORT_FLOW_IDLE_MS", DEFAULT_IDLE_MS)) return null;
+  const idleMs = this.sessionIdleMs(restored);
+  if (idleMs >= DEFAULT_IDLE_MS) return null;
   if (restored.flow.currentStep !== ApprovalStep.id ||
-      idleMs < readMs("SUPPORT_FLOW_APPROVAL_HOLD_MS", DEFAULT_APPROVAL_HOLD_MS)) {
+      idleMs < DEFAULT_APPROVAL_HOLD_MS) {
     return restored;
   }
 
@@ -141,16 +141,15 @@ protected async onRestoreSessionDoc(session: SessionType): Promise<SessionType |
 }
 ```
 
-The global idle timeout defaults to 30 minutes. If it has elapsed, returning
+The flow-owned idle timeout is 30 minutes. If it has elapsed, returning
 `null` tells the engine to discard the session and begin a new case. The
 approval-specific timeout defaults to 10 minutes. Between ten and thirty
 minutes, the flow preserves the case but removes the quoted offer and resets
 the cursor to triage. The customer can begin another request, but cannot accept
 a stale amount.
 
-Both settings are configurable through `SUPPORT_FLOW_IDLE_MS` and
-`SUPPORT_FLOW_APPROVAL_HOLD_MS`; only positive, finite values override the
-defaults. The restore hook reads the persisted document before the next model
+Both values are code constants in `SupportFlow`, alongside the restore policy
+that uses them. The hook reads the persisted document before the next model
 turn, which is the correct point to enforce a time-dependent business rule.
 
 Next: [5. Billing disputes and escalation](/docs/tutorials/support-flow/billing-escalation/).

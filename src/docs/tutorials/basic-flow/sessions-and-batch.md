@@ -116,51 +116,41 @@ protected async onRestoreSessionDoc(
 ): Promise<SessionType | null> {
   //you can call:
   //this.isSessionCurrent(doc)
-  //this.isSessionExpired(doc)
+  //this.sessionIdleMs(doc)
   return super.onRestoreSessionDoc(doc);
 }
 ```
 
-The default policy it delegates to:
+The default policy it delegates to accepts only the current document version;
+it has no global expiration policy:
 
 ```ts
 protected async onRestoreSessionDoc(
   sessionDoc: SessionType,
 ): Promise<SessionType | null> {
-  if (this.isSessionExpired(sessionDoc)) {
-    return null;
-  }
-
   if (!this.isSessionCurrent(sessionDoc)) {
-    // Do your migration here, or return null to create a new session.
     return null;
   }
   return sessionDoc;
 }
 ```
 
-and the two predicates:
+The version predicate and idle-time helper are available to an override:
 
 ```ts
 protected isSessionCurrent(doc: SessionType): boolean {
   return doc.version === K.sessionDocVersion;
 }
 
-protected isSessionExpired(doc: SessionType): boolean {
+protected sessionIdleMs(doc: Pick<SessionType, "saveOn">): number {
   const savedAt = doc.saveOn.getTime();
-  if (
-    Number.isFinite(doc.expireAfter) &&
-    Number.isFinite(savedAt) &&
-    Date.now() - savedAt > doc.expireAfter * 1000
-  ) {
-    return true;
-  }
-  return false;
+  return Number.isFinite(savedAt) ? Date.now() - savedAt : 0;
 }
 ```
 
-`expireAfter` is stamped into the document at creation from `SESSION_EXPIRATION`, default
-600 seconds. `K.sessionDocVersion` is the framework's current schema version.
+`K.sessionDocVersion` is the framework's current schema version. A Flow that has a
+time-bound business rule compares `sessionIdleMs(doc)` with a code constant in its
+own restore hook; different Flows can choose different rules or none at all.
 
 The contract in `bootstrap()`:
 
@@ -181,26 +171,20 @@ performed is durable before any step runs. Return `null` and a brand-new session
 document is created; the caller keeps its old id in hand but is effectively starting
 over.
 
-Override this hook when you want to migrate in place rather than discard:
+Override this hook when the Flow owns an idle-time reset or another restore rule:
 
 ```ts
 protected async onRestoreSessionDoc(
   doc: SessionType,
 ): Promise<SessionType | null> {
-  if (this.isSessionExpired(doc)) return null;
-  if (this.isSessionCurrent(doc)) return doc;
-
-  if (doc.version === 1.4) {
-    migrateStepStateFrom14(doc);
-    doc.version = K.sessionDocVersion;
-    return doc;
-  }
-  return null;
+  const restored = await super.onRestoreSessionDoc(doc);
+  if (!restored) return null;
+  return this.sessionIdleMs(restored) >= 30 * 60_000 ? null : restored;
 }
 ```
 
-Keep the migration idempotent. The hook can run again on the next request if the write
-fails.
+Returning `null` creates a new session. Returning the document lets restoration
+continue and persists any intentional reshape before the next Step runs.
 
 The version comparison is worth a second look even so, because the mistake in it is easy
 to repeat. `K.sessionDocVersion` is a **number**, currently `1.5`. Written as a decimal,

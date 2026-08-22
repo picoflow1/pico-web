@@ -50,13 +50,13 @@ export class SupportFlow extends Flow {
   constructor() {
     super();
     this.getMemory()
-      .setSummaryModel({ provider: "openai", name: "gpt-4o" })
+      .setSummaryModel({ provider: "openai", name: "gpt-4o", retryAttempts: 3 })
       .setSummaryConfig({ minMessages: 8, recentMessages: 4 })
       .enableSummary("support-triage");
   }
 
   protected configModel() {
-    return { provider: "openai", name: "gpt-4o" } as const;
+    return { provider: "openai", name: "gpt-4o", retryAttempts: 3 } as const;
   }
 
   protected defineSteps(): Step[] {

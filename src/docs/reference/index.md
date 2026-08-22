@@ -132,14 +132,13 @@ continue restoring it; return `null` to abandon it and create a fresh session do
 The default implementation is:
 
 ```ts
-if (this.isSessionExpired(sessionDoc)) return null;
 if (!this.isSessionCurrent(sessionDoc)) return null;
 return sessionDoc;
 ```
 
-`isSessionExpired(doc)` compares `Date.now() - doc.saveOn` against `doc.expireAfter * 1000`;
-`isSessionCurrent(doc)` compares `doc.version` against `K.sessionDocVersion` (currently `1.5`).
-Both are `protected` and overridable.
+`isSessionCurrent(doc)` compares `doc.version` against `K.sessionDocVersion`.
+`sessionIdleMs(doc)` returns the time since `saveOn`, allowing an override to
+enforce its own idle policy. Both are `protected` and overridable.
 
 When the hook returns a document, `bootstrap()` saves it immediately through the normal
 compare-and-swap path before reading step state. The hook runs only for a document that

@@ -40,7 +40,6 @@ literal values stored by PicoFlow.
   "runStatus": "completed",
   "createdOn": "<sanitized timestamp>",
   "saveOn": "<sanitized timestamp>",
-  "expireAfter": 50000,
   "tokens": {
     "inputTokens": 5688,
     "outputTokens": 823,
@@ -55,7 +54,8 @@ literal values stored by PicoFlow.
     "model": {
       "provider": "openai",
       "name": "gpt-4o-mini",
-      "params": { "temperature": 0.2 }
+      "params": { "temperature": 0.2 },
+      "retryAttempts": 3
     },
     "memory": {
       "WeatherStep": {

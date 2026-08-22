@@ -96,10 +96,10 @@ conversation left off. Nothing about the conversation lives in your client.
 - **Completed and aborted sessions do not resume.** If the stored `runStatus` is `completed`
   or `aborted`, PicoFlow does not fail — it creates a fresh session document and returns a
   new ID. Watch the `session` field; it can change.
-- **Expired sessions are replaced the same way.** Expiry is `SESSION_EXPIRATION` seconds
-  since the last save, recorded per document as `expireAfter`.
+- **A Flow may reset a restored session.** Its `onRestoreSessionDoc()` hook can
+  return `null` for an idle, invalid, or otherwise unacceptable document.
 
-<div class="callout callout--tip"><span class="callout__title">Tip</span><p>Always read the <code>session</code> value from the response rather than assuming your stored ID is still current. Reset-on-restore and expiry both change it.</p></div>
+<div class="callout callout--tip"><span class="callout__title">Tip</span><p>Always read the <code>session</code> value from the response rather than assuming your stored ID is still current. A Flow-owned reset can change it.</p></div>
 
 ## GET /ai/flows
 

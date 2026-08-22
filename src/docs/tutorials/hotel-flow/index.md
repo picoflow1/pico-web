@@ -19,7 +19,8 @@ deterministic scenario lives in `pico-demo/test/hotel-flow/`. Browse the
 A `Flow` subclass with a constructor and two overrides:
 
 - The **constructor** configures rolling memory compaction for one namespace.
-- `configModel()` declares the flow default, `openai` / `gpt-4o`.
+- `configModel()` declares the flow default, `openai` / `gpt-4o`, with three
+  runner attempts.
 - `defineSteps()` returns four `Step` instances, each with its own memory
   namespace and model override.
 

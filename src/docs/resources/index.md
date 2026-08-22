@@ -333,7 +333,6 @@ and token totals.
   "revision": 7,
   "version": 1.5,
   "runStatus": "running | completed | aborted",
-  "expireAfter": 600,
   "flow": {
     "name": "HotelFlow",
     "model": { "provider": "openai", "name": "gpt-4o", "params": {} },

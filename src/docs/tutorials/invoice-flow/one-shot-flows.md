@@ -26,7 +26,11 @@ person.
 ```ts
 export class InvoiceFlow extends Flow {
   protected configModel() {
-    return { provider: "google", name: "gemini-2.5-flash" } as const;
+    return {
+      provider: "google",
+      name: "gemini-2.5-flash",
+      retryAttempts: 3,
+    } as const;
   }
 
   protected defineSteps(): Step[] {

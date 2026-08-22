@@ -44,8 +44,6 @@ COSMODB_URL=http://localhost:8081/
 COSMODB_KEY=...
 COSMODB_ID=picoflow
 COSMODB_SESSION_ID=sessions
-
-SESSION_EXPIRATION=600      # seconds; copied onto each document at creation
 ```
 
 <div class="callout callout--danger"><span class="callout__title">DOCUMENT_DB is dead configuration</span><p>The demo's <code>.env-example</code> sets <code>DOCUMENT_DB=COSMO</code>. No PicoFlow source reads that variable. The store is selected exclusively from <code>SESSION_STORE</code>, read in <code>CoreConfig</code> and defaulting to <code>MEMORY</code>. A project that only sets <code>DOCUMENT_DB</code> silently runs on the in-memory store and loses every session on restart.</p></div>
@@ -63,12 +61,11 @@ Session document
 ├── version               session schema version (K.sessionDocVersion)
 ├── runStatus             "running" | "completed" | "aborted"
 ├── createdOn, saveOn     Date
-├── expireAfter           seconds, copied from SESSION_EXPIRATION at creation
 ├── tokens                input/output/total plus reasoning, visible, cached breakdowns
 ├── log, error, warn, debug, verbose    structured SessionLogger entries
 └── flow                  exactly one envelope — never an array
     ├── name              the registered flow name, permanently bound to this ID
-    ├── model             { provider, name, params } with credential keys stripped
+    ├── model             { provider, name, params, retryAttempts? } with credential keys stripped
     ├── context           the first request's config
     ├── memory            namespace -> { messages, summary?, summarizedThroughId? }
     ├── steps             [{ name, state, model? }]
@@ -118,14 +115,11 @@ The suite covers revision numbering, conflict on a stale save, conflict on a sta
 preservation of ISO-looking strings in user data, and the requirement that two concurrent
 saves from one revision produce exactly one winner.
 
-## Expiry
+## Flow-owned session idle policy
 
-`expireAfter` is copied onto each document at creation from `SESSION_EXPIRATION` (default 600
-seconds) and evaluated against `saveOn`, so the clock resets on every turn. It is enforced in
-`Flow.isSessionExpired()`, which the default `onRestoreSessionDoc()` calls.
-
-Expiry does not delete anything. An expired document stays in the store; the next request
-simply starts a new session with a new ID. Retention and cleanup are your responsibility.
+The store does not evaluate session age. A Flow that needs an idle rule calls
+`sessionIdleMs(doc)` from `onRestoreSessionDoc()` and returns `null` to start a
+new session. Retention and cleanup remain separate application responsibilities.
 
 ## Completion versus deletion
 
@@ -160,7 +154,7 @@ is not a `RunResponseType`; it has no `completed` or `contentType`.
 | --- | --- |
 | Sessions vanish after a restart | `SESSION_STORE` unset or set to `MEMORY` |
 | Sessions vanish after a deploy, with a durable store | `DOCUMENT_DB` was set instead of `SESSION_STORE` |
-| Conversations restart mid-way | Expiry — raise `SESSION_EXPIRATION`, which resets on each turn |
+| Conversations restart mid-way | A Flow-owned restore policy returned `null`; inspect its idle or validation rule |
 | Conversations restart after a release | `onRestoreSessionDoc()` reset them on a schema version bump |
 | `Configuration value 'MONGODB_URL' is required.` | Mongo selected without a connection string |
 | `SessionConflictError` on save | Another writer advanced the revision first |

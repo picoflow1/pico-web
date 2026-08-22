@@ -39,14 +39,13 @@ The two implementations share environment variable names but not always units or
 | Setting | PicoFlow | Direct graph |
 | --- | --- | --- |
 | `SESSION_STORE` | MEMORY, SQLITE, MONGO, or COSMO | memory, sqlite, or mongodb |
-| `SESSION_EXPIRATION` | Seconds | Milliseconds |
 | SQLite path | `SQLITE_PATH` | `SQLITE_DB_PATH` |
 | Mongo settings | `MONGODB_URL`, name, collection | The same three names |
 
-The default direct expiration is `50000` milliseconds—about 50 seconds. PicoFlow interprets
-`50000` as seconds—about 13.9 hours. Running both in one process with one value therefore
-creates radically different user experiences. Give the direct graph a namespaced setting such
-as `HOTEL_LANGGRAPH_SESSION_EXPIRATION_MS`, or normalize both APIs to documented units.
+PicoFlow Flow classes own their idle policy in `onRestoreSessionDoc()` rather
+than reading a shared expiry environment variable. The direct hotel graph also
+uses a code default (50 seconds). Document these independent policies at their
+respective endpoints rather than trying to control both with one variable.
 
 If both select the same Mongo collection, framework session documents and graph-specific
 documents are mixed in one collection. Their random IDs make direct collision unlikely, but

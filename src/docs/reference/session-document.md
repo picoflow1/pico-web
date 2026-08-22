@@ -17,7 +17,6 @@ developer guide.
   "runStatus": "running",
   "createdOn": "2026-03-04T05:06:07.000Z",
   "saveOn": "2026-03-04T05:12:41.113Z",
-  "expireAfter": 600,
   "flow": {
     "name": "HotelFlow",
     "model": { "provider": "openai", "name": "gpt-4o", "params": {} },
@@ -45,8 +44,7 @@ developer guide.
 | `version` | number | The document schema version. Currently `K.sessionDocVersion`, `1.5` |
 | `runStatus` | `running`, `completed`, `aborted` | Lifecycle state |
 | `createdOn` | Date | Creation timestamp |
-| `saveOn` | Date | Last successful write; the expiration baseline |
-| `expireAfter` | number | Lifetime in **seconds**, copied from `SESSION_EXPIRATION` at creation |
+| `saveOn` | Date | Last successful write; the baseline for any Flow-owned idle policy |
 | `flow` | object | The one flow envelope. Never an array |
 | `tokens` | object | Provider-neutral token accounting |
 | `log`, `error`, `warn`, `debug`, `verbose` | object arrays | Structured session log entries |
@@ -56,20 +54,19 @@ developer guide.
 The session tree includes the diagnostic arrays and uses `flow.currentStep` as
 the durable cursor. There is no separate `flow.start` field.
 
-### Expiration
+### Restore policy
 
-`expireAfter` is copied into the document once, at creation, from `CoreConfig.sessionExpiration`
-(default `600`). Changing `SESSION_EXPIRATION` therefore affects new sessions only. The default
-`Flow.onRestoreSessionDoc()` treats a document as expired when
-`Date.now() - saveOn > expireAfter * 1000`. Stores deliberately do not apply this policy —
-`load()` returns a document regardless of its restoration eligibility.
+Stores deliberately do not apply expiry — `load()` returns the stored document.
+`Flow.onRestoreSessionDoc()` accepts current-version documents by default. A
+Flow with a business-specific idle rule compares `sessionIdleMs(doc)` with a
+code constant and returns `null` to start a new session.
 
 ## The flow object
 
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `name` | non-empty string | The registered flow name. Permanently bound to this session ID |
-| `model` | `{ provider, name, params }` | The resolved flow default, with sensitive params stripped |
+| `model` | `{ provider, name, params, retryAttempts? }` | The resolved flow default, with sensitive params stripped |
 | `context` | object | Session-wide configuration, seeded from the first request's `config` |
 | `memory` | record of namespace to memory document | Conversation history per namespace |
 | `steps` | array of step documents | One entry per registered step |

@@ -66,11 +66,11 @@ built-in adapters that are commented out in `app.module.ts`.
 ```bash
 SESSION_STORE=SQLITE
 SQLITE_PATH=ignore/session/session.sqlite
-SESSION_EXPIRATION=50000
 ```
 
 `SESSION_STORE` selects the backend and accepts `MEMORY` (the default), `SQLITE`, `MONGO`,
-`COSMO` or `COSMOS`. `SESSION_EXPIRATION` is in seconds and defaults to `600`.
+`COSMO` or `COSMOS`. Session-idle policy belongs to the Flow's
+`onRestoreSessionDoc()` hook; it is not an environment setting.
 
 <div class="callout callout--warning"><span class="callout__title">Warning</span><p>The shipped <code>.env-example</code> sets <code>DOCUMENT_DB=COSMO</code>. The library reads <code>SESSION_STORE</code>, not <code>DOCUMENT_DB</code>. If you only set <code>DOCUMENT_DB</code> you will silently get the in-process <code>MEMORY</code> store, and every session will disappear on restart. Set <code>SESSION_STORE</code>.</p></div>
 

@@ -62,7 +62,6 @@ survives a class rename.
 
 ```ts
 protected async onRestoreSessionDoc(sessionDoc: SessionType) {
-  if (this.isSessionExpired(sessionDoc)) return null;
   if (!this.isSessionCurrent(sessionDoc)) return null;
   return sessionDoc;
 }
@@ -76,7 +75,7 @@ every running conversation. Users see a session ID change and a workflow that st
 Two protected helpers are available to an override:
 
 ```ts
-this.isSessionExpired(doc);   // saveOn + expireAfter seconds vs now
+this.sessionIdleMs(doc);      // milliseconds since saveOn
 this.isSessionCurrent(doc);   // doc.version === K.sessionDocVersion
 ```
 
@@ -94,7 +93,6 @@ export class CustomerFlow extends Flow {
   protected async onRestoreSessionDoc(
     doc: SessionType,
   ): Promise<SessionType | null> {
-    if (this.isSessionExpired(doc)) return null;
     if (doc.version > K.sessionDocVersion) return null;
     if (doc.version < MIN_SUPPORTED_VERSION) return null;
     if (this.isSessionCurrent(doc)) return doc;

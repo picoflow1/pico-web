@@ -20,7 +20,6 @@ Session document
 ├── createdOn           creation timestamp
 ├── saveOn              last successful write
 ├── runStatus           'running' | 'completed' | 'aborted'
-├── expireAfter         lifetime in seconds, copied at creation
 ├── tokens              provider-neutral token accounting
 ├── log / error / warn / debug / verbose
 └── flow                exactly one — not flows[]
@@ -41,9 +40,8 @@ Session document
 | `revision` | integer | Incremented by the store on every successful write. This is the concurrency token, not a schema version. |
 | `version` | number | The framework's session-document schema version, stamped on every normal save. |
 | `createdOn` | Date | Set once. |
-| `saveOn` | Date | Updated on every save; expiry is measured from here. |
+| `saveOn` | Date | Updated on every save; the baseline for any Flow-owned idle policy. |
 | `runStatus` | enum | `running`, `completed`, or `aborted`. |
-| `expireAfter` | number | Seconds. Copied from `SESSION_EXPIRATION` at creation, defaulting to 600. |
 | `tokens` | object | Cumulative token counters for the whole session. |
 | `log`, `error`, `warn`, `debug`, `verbose` | arrays | Structured entries written by `SessionLogger`. |
 
@@ -87,7 +85,7 @@ this value, or the request fails with `SESSION_FLOW_MISMATCH` before any restore
 
 ### model
 
-The flow's resolved default model as `{ provider, name, params }`. It is written on every
+The flow's resolved default model as `{ provider, name, params, retryAttempts? }`. It is written on every
 save and read back on restore, which means a restored session keeps the model it started
 with even if `configModel()` has since changed in source. Step-level overrides are stored
 separately, on the step document.
@@ -128,7 +126,7 @@ One entry per registered step:
 ```ts
 steps: [
   { name: "ExploreStep", state: { criteria: { city: "Paris" } } },
-  { name: "PresentStep", state: {}, model: { provider: "openai", name: "gpt-4o", params: { temperature: 0.5 } } },
+  { name: "PresentStep", state: {}, model: { provider: "openai", name: "gpt-4o", params: { temperature: 0.5 }, retryAttempts: 3 } },
 ]
 ```
 

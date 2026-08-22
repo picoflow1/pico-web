@@ -128,6 +128,7 @@ protected configModel() {
     provider: "openai",
     name: "gpt-4o-mini",
     params: { temperature: 0.2 },
+    retryAttempts: 3,
   } as const;
 }
 ```
@@ -160,7 +161,12 @@ export function resolveStepModelSelection(
   step?: ResolvedModelSelection,
 ): ResolvedModelSelection {
   if (!step) {
-    return { provider: flow.provider, name: flow.name, params: merge({}, flow.params) };
+    return {
+      provider: flow.provider,
+      name: flow.name,
+      params: merge({}, flow.params),
+      ...(flow.retryAttempts === undefined ? {} : { retryAttempts: flow.retryAttempts }),
+    };
   }
   return {
     provider: step.provider,
@@ -169,12 +175,21 @@ export function resolveStepModelSelection(
       step.provider === flow.provider && step.name === flow.name
         ? merge({}, flow.params, step.params)
         : merge({}, step.params),
+    ...((step.retryAttempts ?? flow.retryAttempts) === undefined
+      ? {}
+      : { retryAttempts: step.retryAttempts ?? flow.retryAttempts },
   };
 }
 ```
 
 Flow params are inherited **only when the step selected the same provider and model**.
 A step on a different model starts from an empty parameter set.
+
+`retryAttempts` is different: it is PicoFlow's runner policy, not a provider
+parameter. A Step inherits the Flow value even when it selects a different
+model, unless the Step explicitly provides its own value. BasicFlow sets three
+attempts once in `configModel()`, so its `gpt-5` and `gpt-5.1` stages use the
+same runner policy without inheriting an invalid temperature.
 
 That is not a stylistic choice. Parameters belong to a model, and `gpt-5` does not
 accept `temperature`. The OpenAI adapter says so explicitly:

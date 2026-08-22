@@ -52,7 +52,7 @@ The constructor opts in only the triage namespace:
 
 ```ts
 this.getMemory()
-  .setSummaryModel({ provider: "openai", name: "gpt-4o" })
+  .setSummaryModel({ provider: "openai", name: "gpt-4o", retryAttempts: 3 })
   .setSummaryConfig({ minMessages: 8, recentMessages: 4 })
   .enableSummary("support-triage");
 ```

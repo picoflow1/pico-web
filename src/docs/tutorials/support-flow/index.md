@@ -20,7 +20,7 @@ turn-by-turn scenario lives in `pico-demo/test/support-flow/`. Browse the
 A `Flow` subclass with four important pieces of configuration:
 
 - `configModel()` sets the OpenAI `gpt-4o` default for ordinary conversational
-  steps.
+  steps and the Flow-owned limit of three runner attempts.
 - `defineSteps()` registers five conversational steps, two `LogicStep`s, and
   `TerminateSessionStep`.
 - The constructor enables summary memory for the triage namespace after eight

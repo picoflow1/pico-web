@@ -129,26 +129,18 @@ The contract is:
 | The document (possibly mutated) | It is saved immediately, then restoration continues from it |
 | `null` | A fresh session document is created and the turn proceeds as new |
 
-The default implementation applies the standard restore policy: return `null` if the
-document has expired, return `null` if its `version` does not equal the framework's current
-`K.sessionDocVersion`, otherwise return the document unchanged. Two protected helpers,
-`isSessionExpired(doc)` and `isSessionCurrent(doc)`, expose those tests so an override can
-reuse them:
+The default implementation returns `null` if the document `version` does not
+equal the framework's current `K.sessionDocVersion`; otherwise it returns the
+document unchanged. `isSessionCurrent(doc)` checks the version, and
+`sessionIdleMs(doc)` gives an override the elapsed time since the last save:
 
 ```ts
 protected async onRestoreSessionDoc(
   doc: SessionType,
 ): Promise<SessionType | null> {
-  if (this.isSessionExpired(doc)) return null;
-  if (this.isSessionCurrent(doc)) return doc;
-
-  if (doc.version < 1.5) {
-    // mutate doc in place, then let it be saved and restored
-    doc.version = 1.5;
-    return doc;
-  }
-
-  return null; // unknown or newer schema: start fresh
+  const restored = await super.onRestoreSessionDoc(doc);
+  if (!restored) return null;
+  return this.sessionIdleMs(restored) >= 30 * 60_000 ? null : restored;
 }
 ```
 

@@ -12,11 +12,11 @@ Both approaches persist multi-turn state, but their units of persistence differ.
 PicoFlow persists one versioned session document with a flow cursor, per-step state, named
 memories, context, execution sequence, status, logs, errors, warnings, and token totals. Its
 stores use the `revision` field as a compare-and-swap token; the engine also serializes same-
-process turns per session. `expireAfter` is measured in seconds.
+process turns per session. Each Flow owns any session-idle rule during restore.
 
 ```text
 session
-├── revision, runStatus, expiry, tokens, operational records
+├── revision, runStatus, tokens, operational records
 └── flow
     ├── currentStep
     ├── steps[].state
@@ -86,8 +86,7 @@ simply omit or reconstruct it. The current implementation does neither.
 PicoFlow
   fetch schema-validated session
   -> enforce one-flow-per-session
-  -> check expiry and document version
-  -> optional migration hook
+  -> Flow restore hook accepts, reshapes, or resets the document
   -> restore cursor, steps, memories, context, models
 
 Direct graph
@@ -115,15 +114,14 @@ the memory adapter calls `Map.set`. Two overlapping turns can therefore lose one
 update. This is a property of the custom store, not LangGraph: a configured checkpointer would
 introduce a different persistence and concurrency model.
 
-## Expiration is not equivalent
+## Session-idle policy is Flow-owned
 
-PicoFlow interprets `expireAfter` and `SESSION_EXPIRATION` in seconds and defaults the session
-to 600 seconds. The direct graph interprets the same environment-variable name in milliseconds
-and defaults to 50,000 milliseconds. In the combined demo, `SESSION_EXPIRATION=50000` means
-about 13.9 hours to one implementation and 50 seconds to the other.
-
-This should be fixed or namespaced before treating the HTTP endpoints as equivalent. Unit
-differences at a shared configuration boundary are operational bugs, not framework trade-offs.
+PicoFlow has no global expiry setting. For example, SupportFlow resets a case
+after 30 minutes of inactivity and releases an approval hold after 10 minutes;
+those values live beside its `onRestoreSessionDoc()` implementation. The direct
+hotel graph has its own 50-second code default. The two applications no longer
+share a misleading expiry environment variable, but their reset behaviour is
+still intentionally different and should be documented at each endpoint.
 
 ## Message growth and compaction
 

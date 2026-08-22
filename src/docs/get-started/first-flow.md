@@ -25,7 +25,12 @@ import { CollectEmailStep } from "./collect-email-step.js";
 
 export class SupportFlow extends Flow {
   protected configModel() {
-    return { provider: "openai", name: "gpt-4o-mini" } as const;
+    return {
+      provider: "openai",
+      name: "gpt-4o-mini",
+      params: { temperature: 0.2 },
+      retryAttempts: 3,
+    } as const;
   }
 
   protected defineSteps(): Step[] {
@@ -39,8 +44,8 @@ export class SupportFlow extends Flow {
 
 Four things are happening here.
 
-`configModel()` is abstract on `Flow`. It declares the default provider and model for every
-step that does not override it. The `as const` matters: it narrows the literal types so
+`configModel()` is abstract on `Flow`. It declares the default provider, model, model
+parameters, and runner retry policy for every step that does not override it. The `as const` matters: it narrows the literal types so
 PicoFlow's catalog can select the exact parameter shape for that model.
 
 `defineSteps()` constructs the step registry. Every step that can be activated by `go(...)`,

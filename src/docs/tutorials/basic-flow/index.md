@@ -18,8 +18,8 @@ conversation scenario lives in `pico-demo/test/basic-flow/`. Browse the
 
 A `Flow` subclass with three overrides that matter and two that are situational:
 
-- `configModel()` declares the default model, `openai` / `gpt-4o-mini` with
-  `temperature: 0.2`.
+- `configModel()` declares the default model, `openai` / `gpt-4o-mini`, with
+  `temperature: 0.2` and three runner retry attempts.
 - `defineSteps()` returns the fourteen `Step` instances the flow is allowed to
   activate, each with its memory namespace and optional model override.
 - `initialStep()` picks the entry point at runtime: `PresidentStep` when

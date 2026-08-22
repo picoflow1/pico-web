@@ -12,9 +12,8 @@ Configuration is read once, when `FlowEngine` constructs a `ConfigManager` and c
 explicit `values` option  >  process.env  >  the dotenv file (.env by default)
 ```
 
-A missing dotenv file is not an error. Everything below is a string in the environment;
-`SESSION_EXPIRATION` is the only value coerced to a number, and a non-numeric value throws
-`Configuration value 'SESSION_EXPIRATION' must be a number.`
+A missing dotenv file is not an error. Flow model policy and session-idle policy
+are deliberately not read from the environment.
 
 ## License
 
@@ -71,20 +70,12 @@ The Mongo and Cosmos values are required at the moment the store is constructed 
 and a missing one throws `Configuration value '<KEY>' is required.` The Memory store needs no
 configuration.
 
-## Session lifetime
+## Flow-owned policies
 
-| Variable | Default | Units | Purpose |
-| --- | --- | --- | --- |
-| `SESSION_EXPIRATION` | `600` | **seconds** | Copied into each new document's `expireAfter` |
-
-The units are seconds, not milliseconds: `Flow.isSessionExpired()` compares
-`Date.now() - saveOn` against `expireAfter * 1000`. The default is therefore ten minutes, and
-the sample file's `SESSION_EXPIRATION=50000` is about 13.9 hours.
-
-The value is copied into the session document at creation, so a change affects new sessions
-only. Existing documents keep the `expireAfter` they were created with. Override the whole
-policy by overriding `onRestoreSessionDoc()` or `isSessionExpired()` — see
-[Session document migration](/docs/guides/migration/).
+Session stores load raw documents; a Flow decides whether a restored document is
+acceptable. Use `onRestoreSessionDoc()` and `sessionIdleMs(doc)` with a code
+constant when a Flow has an idle-time rule. The framework does not define a
+global expiry environment variable or persist an `expireAfter` field.
 
 ## Batch mode
 
@@ -121,15 +112,16 @@ asserted. It is not part of `.env-example`.
 | `OPENROUTER_API_KEY` | yes | partly | Loaded into `CoreConfig` but unused; the demo's OpenRouter adapter is commented out |
 
 Everything else in `.env-example` — the three live provider keys, `NVIDIA_API_KEY`,
-`SESSION_EXPIRATION`, `SQLITE_PATH`, the four `COSMODB_*` values, the three `MONGODB_*` values,
-and `PICOFLOW_KEY` — matches what the code reads.
+`SQLITE_PATH`, the four `COSMODB_*` values, the three `MONGODB_*` values, and
+`PICOFLOW_KEY` — matches what the code reads.
 
 ## Not configurable by environment
 
 Two things are explicit on purpose and are never read from the environment:
 
-- **Provider retry attempts.** `createCustomAdapter({ retryAttempts })` takes a positive
-  integer; the runner otherwise uses three attempts.
-- **Model names and hyperparameters.** These belong in `configModel()` and `useModel(...)`, so
-  the model plan persisted in the session document reflects what the flow chose. See
-  [Providers](/docs/reference/providers/).
+- **Runner retry attempts.** `retryAttempts` is a positive integer on a
+  `configModel()` or `useModel(...)` selection. A Step inherits its Flow value
+  unless it sets its own; the selection is persisted with the session.
+- **Model names and hyperparameters.** These belong in `configModel()` and
+  `useModel(...)`, so the model plan persisted in the session document reflects
+  what the Flow chose. See [Providers](/docs/reference/providers/).

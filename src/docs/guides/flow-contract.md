@@ -160,7 +160,6 @@ The base implementation is the default policy, and it is stricter than most peop
 
 ```ts
 protected async onRestoreSessionDoc(sessionDoc: SessionType) {
-  if (this.isSessionExpired(sessionDoc)) return null;
   if (!this.isSessionCurrent(sessionDoc)) return null;
   return sessionDoc;
 }

@@ -152,7 +152,6 @@ thrown.
 | --- | --- |
 | `PICOFLOW_KEY` | Runtime license token. Required. |
 | `SESSION_STORE` | Session backend: `MEMORY` (default), `SQLITE`, `MONGO`, `COSMO`/`COSMOS`. |
-| `SESSION_EXPIRATION` | Session lifetime in seconds. Defaults to `600`. |
 | `SQLITE_PATH` | SQLite file path. Defaults to `ignore/session/session.sqlite`. |
 | `COSMODB_KEY`, `COSMODB_URL`, `COSMODB_ID`, `COSMODB_SESSION_ID` | Azure Cosmos DB connection. |
 | `MONGODB_NAME`, `MONGODB_COLLECTION`, `MONGODB_URL` | MongoDB connection. |
@@ -171,7 +170,7 @@ import { Flow, FlowEngine, Step, TerminateSessionStep } from "@picoflow/core";
 
 class PingFlow extends Flow {
   protected configModel() {
-    return { provider: "openai", name: "gpt-4o-mini" } as const;
+    return { provider: "openai", name: "gpt-4o-mini", retryAttempts: 3 } as const;
   }
 
   protected defineSteps(): Step[] {

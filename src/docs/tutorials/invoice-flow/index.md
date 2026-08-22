@@ -19,7 +19,8 @@ end-to-end spec in `pico-demo/test/invoice-flow/`. Browse the
 
 A `Flow` subclass with three overrides:
 
-- `configModel()` declares the default model, `google` / `gemini-2.5-flash`.
+- `configModel()` declares the default model, `google` / `gemini-2.5-flash`,
+  and the Flow-owned limit of three runner attempts.
 - `defineSteps()` registers two steps.
 - `spawnSteps()` implements batch mode, fanning the same extraction out over a
   list of files.
