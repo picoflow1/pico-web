@@ -15,7 +15,7 @@ fallback provider.
 Three separate things have to line up:
 
 ```text
-configModel() / useModel()   ->  { provider, name, params }
+configModel() / useModel()   ->  { provider, name, params, retryAttempts? }
 PicoModelCatalog             ->  validates params for cataloged provider:name IDs
 registered ModelProviderAdapter for `provider`  ->  builds the runtime model
 ```
@@ -90,10 +90,11 @@ ModelProvider.createCustomAdapter({
 | `runtimeProvider` | yes | Which bundled runtime builds the client: `openai`, `azure-openai`, `google`, `anthropic`, `deepseek`, `ollama`, `openrouter` |
 | `config` | no | Connection settings merged into every constructed model |
 | `capabilities` | no | `(selection) => ({ temperature?: boolean })`, used to reject unsupported params |
-| `retryAttempts` | no | Positive integer; overrides the runner's default of 3 attempts for this provider |
+| `retryAttempts` | no | Positive integer fallback when a Flow or Step selection does not provide one |
 
 `retryAttempts` is intentionally explicit and is never read from an environment variable. A
-non-integer or a value below 1 throws at adapter creation.
+Flow or Step selection takes precedence over this provider-wide fallback. A non-integer or a
+value below 1 throws at adapter creation.
 
 The NVIDIA adapter makes the trade-off concrete. This compiles, but its `params` are dynamic —
 PicoFlow does not know NVIDIA's model-specific contract:
@@ -134,7 +135,12 @@ Flows and steps select models with the same object shape:
 
 ```ts
 protected configModel() {
-  return { provider: "openai", name: "gpt-4o", params: { temperature: 0.2 } } as const;
+  return {
+    provider: "openai",
+    name: "gpt-4o",
+    params: { temperature: 0.2 },
+    retryAttempts: 3,
+  } as const;
 }
 
 new ExploreStep(this).useModel({
@@ -173,10 +179,11 @@ This is the division that causes the most confusion:
 | --- | --- | --- |
 | API key, base URL, endpoint, deployment, API version | The adapter's `config` | Connection identity, one per process, secret |
 | `temperature`, `topP`, `maxTokens`, `reasoning.effort`, `maxOutputTokens` | `configModel()` or `useModel()` `params` | Per-flow or per-step behaviour, persisted in the session document |
-| `retryAttempts` | The adapter | A transport policy, not a model behaviour |
+| `retryAttempts` | The Flow or Step model selection | A runner policy persisted with the selection; an adapter can supply only the fallback |
 
 The bundled helpers deliberately set no model defaults. An adapter that quietly injected
-`temperature: 0.7` would silently override every flow that did not restate it.
+`temperature: 0.7` would silently override every flow that did not restate it. Set retry
+policy just as explicitly on the Flow or Step where it is reviewed with the workflow.
 
 ### How step params merge
 

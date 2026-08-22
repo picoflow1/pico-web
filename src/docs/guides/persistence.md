@@ -90,7 +90,7 @@ export interface SessionStore {
 }
 ```
 
-`load()` applies no policy. It does not check expiry, run status or schema version — those
+`load()` applies no policy. It does not check a Flow's idle rule, run status or schema version — those
 decisions belong to `Flow.onRestoreSessionDoc()`. `save()` must reject a stale revision with
 `SessionConflictError`.
 

@@ -19,7 +19,7 @@ developer guide.
   "saveOn": "2026-03-04T05:12:41.113Z",
   "flow": {
     "name": "HotelFlow",
-    "model": { "provider": "openai", "name": "gpt-4o", "params": {} },
+    "model": { "provider": "openai", "name": "gpt-4o", "params": {}, "retryAttempts": 3 },
     "context": { "config": { "tenantId": "demo" } },
     "memory": { "hotel-explore": { "messages": [], "summary": "…" } },
     "steps": [{ "name": "ExploreStep", "state": {} }],
@@ -84,7 +84,7 @@ A violation raises `SessionFlowInvariantError` with code `SESSION_FLOW_INVARIANT
 type StepType = {
   name: string;
   state: object;
-  model?: { provider: string; name: string; params: Record<string, any> };
+  model?: { provider: string; name: string; params: Record<string, any>; retryAttempts?: number };
 };
 ```
 

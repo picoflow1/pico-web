@@ -29,7 +29,7 @@ Nothing on the instance survives except what is written into the session documen
 | `defineSteps()` | `protected defineSteps(): Step[]` | `[new TerminateSessionStep(this).useMemory('temp')]` | The flow declares its own stages |
 | `initialStep()` | `protected initialStep(): StepClassType \| null` | `null` — the first step from `defineSteps()` starts the session | The initial cursor depends on runtime context |
 | `defineTool()` | `public defineTool(): ToolType[]` | `[]` | Several steps share one tool definition |
-| `onRestoreSessionDoc()` | `protected onRestoreSessionDoc(sessionDoc: SessionType): Promise<SessionType \| null>` | Applies the expiration and version policy | The stored document needs migration or a stricter policy |
+| `onRestoreSessionDoc()` | `protected onRestoreSessionDoc(sessionDoc: SessionType): Promise<SessionType \| null>` | Accepts only the current document version | The stored document needs migration, an idle-time reset, or another stricter policy |
 | `spawnSteps()` | `protected spawnSteps(): Promise<string>` | Returns `''` | `config._concurrent` should coordinate worker sessions |
 | `run()` | `public run(message: string): Promise<RunResponseType>` | Dispatches to `spawnSteps()` or the current step, then builds the response envelope | The whole dispatch contract intentionally differs |
 | `isBatch()` | `public isBatch(): boolean` | `false` | An extra pre-run session checkpoint is required |
@@ -40,7 +40,7 @@ Nothing on the instance survives except what is written into the session documen
 protected abstract configModel(): ModelSelection;
 ```
 
-Declares the flow's default provider, model, and parameters, independently from step
+Declares the flow's default provider, model, parameters, and runner retry policy, independently from step
 composition. It is resolved lazily on first use, validated through `PicoModelCatalog`, and
 then validated again against the registered provider adapter during bootstrap.
 
@@ -50,11 +50,13 @@ protected configModel() {
     provider: "openai",
     name: "gpt-4o",
     params: { temperature: 0.2 },
+    retryAttempts: 3,
   } as const;
 }
 ```
 
-Every step without its own `useModel(...)` override inherits this selection. See
+Every step without its own `useModel(...)` override inherits this selection, including
+`retryAttempts`. See
 [Model catalog](/docs/reference/model-catalog/) for the typing rules.
 
 ### init()

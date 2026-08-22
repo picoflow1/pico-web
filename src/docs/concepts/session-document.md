@@ -24,7 +24,7 @@ Session document
 ├── log / error / warn / debug / verbose
 └── flow                exactly one — not flows[]
     ├── name            permanently bound to this session ID
-    ├── model           { provider, name, params }
+    ├── model           { provider, name, params, retryAttempts? }
     ├── context         session-wide config
     ├── memory          namespace -> conversation history
     ├── steps           [{ name, state, model? }]

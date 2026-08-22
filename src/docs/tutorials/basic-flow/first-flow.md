@@ -67,7 +67,7 @@ edge list, no `.addTransition()`, no separate graph file.
 ### configModel()
 
 `configModel()` is `protected abstract` on `Flow`; every subclass must implement it. It
-returns a `{ provider, name, params }` selection. `as const` is not required but it
+returns a `{ provider, name, params, retryAttempts? }` selection. `as const` is not required but it
 narrows the literal types, which makes the provider/model pair checkable.
 
 The returned model is the default for every step that does not call `.useModel(...)`.

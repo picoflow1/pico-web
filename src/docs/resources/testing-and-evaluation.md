@@ -72,7 +72,7 @@ calls and require credentials.
 | Response admission retry | Override `checkResponse()`, reject the first raw and structured result, and assert bounded retry, token accounting, warning logging, and exhaustion behavior |
 | Invented hotel booking | Attempt a hotel outside the current results |
 | Multiple tool calls | Return two calls in one AI message and assert the declared policy |
-| Store conformance | Run create/get/update/delete, expiry, stale-write, and serialization cases against every adapter |
+| Store conformance | Run create/get/update/delete, restore-policy isolation, stale-write, and serialization cases against every adapter |
 | History growth | Re-enter search/present/compare many times and assert compaction or a hard size policy |
 | Provider failure | Throw from the model and verify status, saved diagnostics, and safe retry semantics |
 | Booking idempotency | Repeat the final booking turn and prove no duplicate external effect |

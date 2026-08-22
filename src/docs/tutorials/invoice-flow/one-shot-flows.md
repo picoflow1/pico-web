@@ -112,7 +112,11 @@ round trip.
 
 ```ts
 protected configModel() {
-  return { provider: "google", name: "gemini-2.5-flash" } as const;
+  return {
+    provider: "google",
+    name: "gemini-2.5-flash",
+    retryAttempts: 3,
+  } as const;
 }
 ```
 

@@ -177,7 +177,7 @@ export function resolveStepModelSelection(
         : merge({}, step.params),
     ...((step.retryAttempts ?? flow.retryAttempts) === undefined
       ? {}
-      : { retryAttempts: step.retryAttempts ?? flow.retryAttempts },
+      : { retryAttempts: step.retryAttempts ?? flow.retryAttempts }),
   };
 }
 ```

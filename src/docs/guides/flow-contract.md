@@ -14,13 +14,13 @@ whether a behaviour belongs in a `Flow` override or somewhere else.
 
 | Hook | Visibility | Default behaviour | Override when |
 | --- | --- | --- | --- |
-| `configModel()` | `protected abstract` | None — you must implement it | Always. It declares the flow's provider, model name and params |
+| `configModel()` | `protected abstract` | None — you must implement it | Always. It declares the flow's provider, model name, params, and retry policy |
 | `constructor()` | `public` | Sets empty context | Deterministic setup only, such as memory summary policy. Call `super()` |
 | `init()` | `public async` | No operation | Per-instance setup that needs neither the engine nor a loaded session |
 | `defineSteps()` | `protected` | Returns `[new TerminateSessionStep(this).useMemory("temp")]` | Always, for any flow with real stages |
 | `initialStep()` | `protected` | Returns `null`, so the first entry of `defineSteps()` starts the session | The starting cursor depends on runtime context |
 | `defineTool()` | `public` | Returns `[]` | Several steps share one tool definition |
-| `onRestoreSessionDoc(doc)` | `protected async` | Returns `null` when expired or when `doc.version !== K.sessionDocVersion`, otherwise returns `doc` | You need migration, a different expiry policy, or a stricter compatibility check |
+| `onRestoreSessionDoc(doc)` | `protected async` | Returns `null` when `doc.version !== K.sessionDocVersion`, otherwise returns `doc` | You need migration, a Flow-owned idle reset, or a stricter compatibility check |
 | `spawnSteps()` | `protected async` | Returns `""` | `config._concurrent` selects this flow as a batch coordinator |
 | `run(message)` | `public async` | Dispatches to `spawnSteps()` or `requireCurrentStep().run(message)`, then builds `RunResponseType` | Almost never |
 | `isBatch()` | `public` | Returns `false` | The flow needs an extra session checkpoint saved before `run()` |
@@ -36,6 +36,7 @@ protected configModel() {
     provider: "openai",
     name: "gpt-4o",
     params: { temperature: 0.2 },
+    retryAttempts: 3,
   } as const;
 }
 ```

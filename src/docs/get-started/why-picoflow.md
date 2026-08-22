@@ -22,7 +22,7 @@ owning all of this in application code:
 - construction of tool-result messages, including the error and validation-failure cases;
 - synthetic messages when a stage change means the model needs a fresh instruction;
 - serialization and restoration of the message history;
-- a session document, an expiration policy, and a store adapter per backend;
+- a session document, a Flow-owned restore policy, and a store adapter per backend;
 - a concurrency story for two requests that arrive for the same session; and
 - a response envelope for the HTTP layer.
 

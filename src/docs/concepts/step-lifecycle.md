@@ -22,8 +22,8 @@ those are three different events.
 
 ## Scenario 1: new session
 
-A request arrives with no session ID, or with an ID that is missing, expired, completed or
-aborted.
+A request arrives with no session ID, or with an ID that is missing, completed, aborted, or
+rejected by that Flow's restore policy.
 
 ```text
 Flow creates step documents, currentStep = initialStep()

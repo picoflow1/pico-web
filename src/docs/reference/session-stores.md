@@ -7,7 +7,7 @@ source: pf/src/picoflow/session/session-store.ts
 
 A session store is the only durable dependency PicoFlow has. It persists whole session
 documents and enforces optimistic concurrency; it does not interpret flows, steps, or
-expiration policy.
+restore policy.
 
 ## The contract
 
@@ -23,7 +23,7 @@ export interface SessionStore {
 
 | Method | Required behaviour |
 | --- | --- |
-| `load` | Return the stored document without applying restoration policy. Expiry is `Flow.onRestoreSessionDoc()`'s decision, not the store's |
+| `load` | Return the stored document without applying restoration policy. A Flow's idle-time or other restore decision belongs in `onRestoreSessionDoc()`, not the store |
 | `create` | Build a document through `FlowCreator.createDoc(flow)` and persist it at `revision` 0 |
 | `save` | Persist only if the stored revision equals `expectedRevision`, then return the document at `expectedRevision + 1` |
 | `delete` | Compare-and-swap when a revision is supplied; unconditional when it is omitted |
@@ -129,8 +129,8 @@ backend. It asserts that:
 5. `delete` removes the document, after which `load` returns `null`;
 6. two concurrent saves from one revision produce exactly one winner, and the loser throws
    `SessionConflictError`;
-7. `load` returns a document whose expiration has passed, because policy is not the store's
-   job; and
+7. `load` returns a document that a Flow could consider stale, because restore policy is not
+   the store's job; and
 8. saving a document whose `flow.name` is blank throws `SessionFlowInvariantError`.
 
 A store that passes is safe to register through `FlowEngine.create({ sessionStore })`. Run it in

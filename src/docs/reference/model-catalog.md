@@ -94,6 +94,7 @@ new ExploreStep(this).useModel({
   provider: "openai",
   name: "gpt-5.1",
   params: { reasoning: { effort: "low" } },
+  retryAttempts: 3,
 });
 ```
 
@@ -102,6 +103,11 @@ public useModel<const Provider extends string, const Name extends string>(
   selection: ModelSelectionFor<Provider, Name>,
 ): this;
 ```
+
+`retryAttempts` is a positive-integer runner policy on the selection, separate
+from provider `params`. A Step value wins over its Flow value; an omitted
+selection value falls back to the provider adapter and then PicoFlow's default
+of three attempts. It is persisted with the model selection.
 
 ## The discriminated union
 

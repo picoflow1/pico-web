@@ -125,9 +125,10 @@ ModelProvider.createCustomAdapter({
 | `runtimeProvider` | Which bundled LangChain model class constructs the instance |
 | `config` | Connection values only — merged into the model constructor and stripped of the `provider` key |
 | `capabilities` | Optional per-selection capability report, currently just `temperature` |
-| `retryAttempts` | Maximum runner attempts. Must be a positive integer, and is deliberately never read from an environment variable |
+| `retryAttempts` | Fallback maximum runner attempts when the Flow or Step selection omits one. Must be a positive integer, and is deliberately never read from an environment variable |
 
-When `retryAttempts` is omitted, the runner uses its own default of three attempts.
+When both the selected model and its adapter omit `retryAttempts`, the runner uses its own
+default of three attempts.
 
 ### What a custom provider can type-check
 

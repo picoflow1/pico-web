@@ -15,8 +15,8 @@ startup instead of on a user's third turn.
 
 | Layer | Owns | Where it lives |
 | --- | --- | --- |
-| **Provider adapter** | Connection setup: API key, base URL, endpoint, deployment, retry attempts | Application bootstrap, in `FlowEngine.create({ providers })` |
-| **Model selection** | Which model, and its hyperparameters: temperature, reasoning effort, token limits | Flow and step source, in `configModel()` and `.useModel(...)` |
+| **Provider adapter** | Connection setup: API key, base URL, endpoint, deployment; an optional retry fallback | Application bootstrap, in `FlowEngine.create({ providers })` |
+| **Model selection** | Which model, its hyperparameters, and its runner retry policy | Flow and step source, in `configModel()` and `.useModel(...)` |
 
 The separation is the point. An adapter answers "how do I reach this provider". A selection
 answers "what should this stage of the conversation use". Changing the model a step uses is a
@@ -85,19 +85,20 @@ ModelProvider.createCustomAdapter({
 | `runtimeProvider` | Which bundled LangChain runtime builds the model: `openai`, `azure-openai`, `google`, `anthropic`, `deepseek`, `ollama`, `openrouter` |
 | `config` | Connection values passed to that runtime |
 | `capabilities` | Optional per-selection capability report, currently `temperature: boolean` |
-| `retryAttempts` | Optional positive integer. The runner's maximum attempts for this provider's models |
+| `retryAttempts` | Optional positive integer fallback when a model selection does not specify one |
 
 `provider` and `runtimeProvider` are deliberately independent. NVIDIA speaks the OpenAI wire
 protocol but remains an application-owned integration with its own name, its own credential,
 and its own catalog rules.
 
-<div class="callout callout--tip"><span class="callout__title">Tip</span><p><code>retryAttempts</code> is explicit by design and is never read from an environment variable. If a provider needs different retry behaviour, say so in code where a reviewer can see it.</p></div>
+<div class="callout callout--tip"><span class="callout__title">Tip</span><p><code>retryAttempts</code> is explicit by design and is never read from an environment variable. Set the usual policy on a Flow or step; an adapter value is only the fallback for selections that omit it.</p></div>
 
 ### Adapters do not set hyperparameters
 
 A built-in adapter supplies connection setup and model construction. It does not inject a
-default temperature, a default token limit, or a default retry count. Those belong in
-`configModel()` or `.useModel(...)`, next to the step whose behaviour they affect.
+default temperature or token limit. Set the normal retry policy in `configModel()` or
+`.useModel(...)`, next to the step whose behaviour it affects; use an adapter retry value
+only as a provider-wide fallback.
 
 Keep secrets in environment configuration and pass them to adapters at bootstrap. Never put
 an API key in flow, step, or prompt source.
@@ -115,12 +116,17 @@ protected configModel() {
     provider: "openai",
     name: "gpt-4o",
     params: { temperature: 0.2 },
+    retryAttempts: 3,
   } as const;
 }
 ```
 
 The `as const` matters — it preserves the literal types so the catalog can select the exact
 parameter shape.
+
+`retryAttempts` is the maximum number of PicoFlow runner attempts, not a provider client
+parameter. A step inherits its Flow value even when it selects a different model, unless it
+sets its own value.
 
 ### Per-step override
 
@@ -161,6 +167,9 @@ step .useModel(...)      if present
 
 Both are validated at the start of every invocation, before any session I/O, and before the
 first model call.
+
+For retries specifically, PicoFlow uses the step selection when present, then the Flow
+selection, then an optional adapter fallback, then its built-in default of three attempts.
 
 ## The model catalog
 

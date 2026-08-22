@@ -147,7 +147,7 @@ Two properties are required of the predicate:
 `checkResponse()` is only one input to the loop. The full sequence per attempt:
 
 ```text
-attempt 1..N   (N = adapter retryAttempts, default 3)
+attempt 1..N   (N = step retryAttempts, then Flow, then adapter fallback, default 3)
   invoke the model
   tally tokens
   if the response has no tool calls and blank content:
@@ -160,15 +160,18 @@ attempt 1..N   (N = adapter retryAttempts, default 3)
 exhausted -> throw: LLM call failed. Reason:<finish reason>. Error:<message>
 ```
 
-Empty-response recovery is automatic and needs no code from you. Set `retryAttempts` on the
-provider adapter when a specific provider warrants a different budget:
+Empty-response recovery is automatic and needs no code from you. Set `retryAttempts` in the
+Flow or Step selection when that workflow needs a different budget:
 
 ```ts
-ModelProvider.createCustomAdapter({
-  provider: "in-house",
-  runtimeProvider: "openai",
-  retryAttempts: 5,
-});
+protected configModel() {
+  return {
+    provider: "in-house",
+    name: "support-model",
+    params: {},
+    retryAttempts: 5,
+  } as const;
+}
 ```
 
 Every attempt is a billed model call. `checkResponse()` that rejects too eagerly triples the
