@@ -1067,6 +1067,20 @@ a:hover {
 	margin-bottom: var(--space-1);
 }
 
+.cards--tracks .card__title {
+	font-size: 0.9em;
+}
+
+.cards--tracks .card__title-main,
+.cards--tracks .card__title-sub {
+	display: block;
+}
+
+.cards--tracks .card__title-sub {
+	font-size: var(--font-size-fluid-x1);
+	color: color-mix(in srgb, var(--color-primary-placeholder) 80%, var(--color-neutral-text) 20%);
+}
+
 .card__body {
 	display: block;
 	font-size: var(--font-size-sm);

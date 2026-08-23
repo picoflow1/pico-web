@@ -16,25 +16,25 @@ set of framework features unavoidable.
 
 ## The five tracks
 
-<div class="cards">
+<div class="cards cards--tracks">
 	<a class="card" href="/docs/tutorials/basic-flow/">
-		<span class="card__title">BasicFlow — the complete tour</span>
+		<span class="card__title"><span class="card__title-main">BasicFlow</span><span class="card__title-sub">the complete tour</span></span>
 		<span class="card__body">Fourteen registered steps covering tools, MCP, logic steps, structured output, nested execution, memory namespaces, and batch mode. Eighteen lessons.</span>
 	</a>
 	<a class="card" href="/docs/tutorials/hotel-flow/">
-		<span class="card__title">HotelFlow — multi-turn assistant</span>
+		<span class="card__title"><span class="card__title-main">HotelFlow</span><span class="card__title-sub">multi-turn assistant</span></span>
 		<span class="card__body">A search, compare, and book workflow. Large prompt files, your own backend behind a tool, memory compaction, and answering without an LLM call.</span>
 	</a>
 	<a class="card" href="/docs/tutorials/invoice-flow/">
-		<span class="card__title">InvoiceFlow — one-shot extraction</span>
+		<span class="card__title"><span class="card__title-main">InvoiceFlow</span><span class="card__title-sub">one-shot extraction</span></span>
 		<span class="card__body">No conversation to speak of. Attach a PDF or PNG, extract typed JSON, return it with a content type, and fan the same job out over a list of files.</span>
 	</a>
 	<a class="card" href="/docs/tutorials/support-flow/">
-		<span class="card__title">SupportFlow — guided support case</span>
+		<span class="card__title"><span class="card__title-main">SupportFlow</span><span class="card__title-sub">guided support case</span></span>
 		<span class="card__body">Verify an order, route returns or billing, apply policy in deterministic steps, obtain approval when required, and close the case with a durable recap.</span>
 	</a>
 	<a class="card" href="/docs/tutorials/home-insurance-flow/">
-		<span class="card__title">HomeInsuranceQuoteFlow — regulated quote journey</span>
+		<span class="card__title"><span class="card__title-main">HomeInsuranceQuoteFlow</span><span class="card__title-sub">regulated quote journey</span></span>
 		<span class="card__body">A twenty-turn intake, correction, deterministic rating, exact comparison, re-rating, option selection, and consent workflow.</span>
 	</a>
 </div>
