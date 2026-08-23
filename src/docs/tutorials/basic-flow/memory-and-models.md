@@ -231,7 +231,6 @@ const openAIReasoningSchema = z
       .strict()
       .optional(),
     maxTokens: z.number().int().positive().optional(),
-    maxRetries: z.number().int().nonnegative().optional(),
   })
   .strict();
 ```

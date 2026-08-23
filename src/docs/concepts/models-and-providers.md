@@ -181,16 +181,16 @@ pair TypeScript selects that entry's exact parameter type.
 
 | Model ID | Parameter family |
 | --- | --- |
-| `openai:gpt-4o` | Chat: `temperature`, `topP`, `maxTokens`, `maxRetries` |
+| `openai:gpt-4o` | Chat: `temperature`, `topP`, `maxTokens` |
 | `openai:gpt-4o-mini` | Chat |
-| `openai:gpt-5` | Reasoning: `reasoning.effort`, `maxTokens`, `maxRetries` |
+| `openai:gpt-5` | Reasoning: `reasoning.effort`, `maxTokens` |
 | `openai:gpt-5.1` | Reasoning |
-| `google:gemini-2.0-flash` | Google chat: `temperature`, `maxOutputTokens`, `maxRetries` |
+| `google:gemini-2.0-flash` | Google chat: `temperature`, `maxOutputTokens` |
 | `google:gemini-2.5-flash` | Google chat |
 | `google:gemini-2.5-pro` | Google chat |
 | `google:gemini-3.1-pro-preview` | Google chat |
-| `anthropic:claude-sonnet-4-5` | Anthropic chat: `temperature`, `maxTokens`, `maxRetries` |
-| `deepseek:deepseek-v3` | DeepSeek chat: `temperature`, `maxTokens`, `maxRetries` |
+| `anthropic:claude-sonnet-4-5` | Anthropic chat: `temperature`, `maxTokens` |
+| `deepseek:deepseek-v3` | DeepSeek chat: `temperature`, `maxTokens` |
 | `deepseek:deepseek-r1` | DeepSeek chat |
 
 `reasoning.effort` accepts `minimal`, `low`, `medium` or `high`.

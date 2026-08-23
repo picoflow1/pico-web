@@ -91,10 +91,16 @@ ModelProvider.createCustomAdapter({
 | `config` | no | Connection settings merged into every constructed model |
 | `capabilities` | no | `(selection) => ({ temperature?: boolean })`, used to reject unsupported params |
 | `retryAttempts` | no | Positive integer fallback when a Flow or Step selection does not provide one |
+| `runtimeMaxRetries` | no | Non-negative LangChain retry count, only for an application-owned adapter that intentionally needs an internal retry layer |
 
 `retryAttempts` is intentionally explicit and is never read from an environment variable. A
 Flow or Step selection takes precedence over this provider-wide fallback. A non-integer or a
 value below 1 throws at adapter creation.
+
+PicoFlow is the default retry owner: every bundled adapter sets the underlying LangChain
+runtime to zero retries. A `createCustomAdapter()` caller can opt into an internal runtime
+retry layer with `runtimeMaxRetries`, but should do so only for a provider-specific reason;
+the configured count is in addition to PicoFlow's `retryAttempts`.
 
 The NVIDIA adapter makes the trade-off concrete. This compiles, but its `params` are dynamic —
 PicoFlow does not know NVIDIA's model-specific contract:
@@ -181,6 +187,7 @@ This is the division that causes the most confusion:
 | `temperature`, `topP`, `maxTokens`, `reasoning.effort`, `maxOutputTokens` | `configModel()` or `useModel()` `params` | Per-flow or per-step behaviour, persisted in the session document |
 | `retryAttempts` | The Flow or Step model selection | A runner policy persisted with the selection; an adapter can supply only the fallback |
 | `timeoutMs` | Flow or Step `configLlmCallPolicy()` | A provider-neutral, per-invocation-attempt deadline; code-owned and not persisted |
+| `runtimeMaxRetries` | Application-owned `createCustomAdapter()` | An explicit provider-runtime retry exception; built-in adapters always use zero |
 
 The bundled helpers deliberately set no model defaults. An adapter that quietly injected
 `temperature: 0.7` would silently override every flow that did not restate it. Set retry
@@ -242,6 +249,7 @@ That is a backstop, not a design. Do not rely on it:
 | Zod `Unrecognized key(s)` | A parameter name that is not in that model's strict catalog schema |
 | `Cannot infer provider for model 'x'. Set config.provider explicitly.` | The legacy `Model` path could not derive a provider from the model name |
 | `Provider 'p' retryAttempts must be a positive integer.` | Bad `retryAttempts` in `createCustomAdapter` |
+| `Provider 'p' runtimeMaxRetries must be a non-negative integer.` | Bad internal runtime retry count in `createCustomAdapter` |
 | `Flow 'X' configModel() did not provide a model name.` | `configModel()` returned an object with an empty `name` |
 
 Related: [Models and providers](/docs/concepts/models-and-providers/) for the concepts,

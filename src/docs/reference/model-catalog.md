@@ -31,17 +31,20 @@ import { PicoModelCatalog } from "@picoflow/core";
 
 | Shape | Members |
 | --- | --- |
-| OpenAI chat | `temperature?`, `topP?`, `maxTokens?`, `maxRetries?` |
-| OpenAI reasoning | `reasoning?.effort?` — one of `minimal`, `low`, `medium`, `high` — plus `maxTokens?`, `maxRetries?` |
-| Google chat | `temperature?`, `maxOutputTokens?`, `maxRetries?` |
-| Anthropic chat | `temperature?`, `maxTokens?`, `maxRetries?` |
-| DeepSeek chat | `temperature?`, `maxTokens?`, `maxRetries?` |
+| OpenAI chat | `temperature?`, `topP?`, `maxTokens?` |
+| OpenAI reasoning | `reasoning?.effort?` — one of `minimal`, `low`, `medium`, `high` — plus `maxTokens?` |
+| Google chat | `temperature?`, `maxOutputTokens?` |
+| Anthropic chat | `temperature?`, `maxTokens?` |
+| DeepSeek chat | `temperature?`, `maxTokens?` |
 
 Every schema is `strict`, so an unknown key is a runtime error. `maxTokens` and
-`maxOutputTokens` must be positive integers, and `maxRetries` a non-negative integer.
+`maxOutputTokens` must be positive integers.
 
 Model-call deadlines do not belong to these provider parameter shapes. Declare the
 provider-neutral `timeoutMs` with `Flow.configLlmCallPolicy()` or its Step override.
+Likewise, `retryAttempts` is PicoFlow's only default retry policy. Built-in adapters
+force their LangChain runtime retries to zero; an application-owned model-backed adapter
+can opt in explicitly with `runtimeMaxRetries`.
 
 The catalog's built-in providers are exactly `openai`, `google`, `anthropic`, and `deepseek` —
 the prefixes appearing in the table above.
