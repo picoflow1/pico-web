@@ -1,7 +1,105 @@
 ---
 layout: layouts/marketing.njk
-title: PicoFlow licensing
-description: PicoFlow is a commercially licensed runtime. Personal evaluation is free; production deployments are licensed per application. Request an evaluation key or commercial terms.
+title: PicoFlow Evaluation and Commercial License
+description: The PicoFlow license allows free internal, non-production evaluation and prototyping, including in enterprise environments. Production use requires a commercial agreement.
 ---
-<section class="page-hero page-hero--paper"><div class="shell"><p class="eyebrow">Licensing</p><h1>Commercially licensed. Free to evaluate.</h1><p class="page-hero__lede">PicoFlow is not open source, and we would rather say so on this page than after you have built a proof of concept. Personal evaluation costs nothing and takes one email. Production deployments are licensed per application.</p></div></section>
-<section class="section section--white"><div class="shell license-grid"><div><p class="eyebrow">Getting a key</p><h2 class="section-heading">Request an evaluation key; use it for as long as the evaluation takes.</h2><p class="section-lede">Evaluation keys are issued on request and returned the same working day. Verification is entirely offline: the runtime checks a token signature against a public key compiled into the package on the first model call, then caches the result. There is no licence server, no network request, and no telemetry.</p><div class="hero__actions"><a class="button button--ink" href="mailto:{{ site.email }}?subject=PicoFlow%20evaluation%20key">Request an evaluation key</a><a class="button button--outline" href="mailto:{{ site.email }}?subject=PicoFlow%20commercial%20licence">Ask about commercial terms</a></div></div><div class="license-list"><article><h3>Personal evaluation — free</h3><p>Individual learning, proof-of-concept work, and first-flow experimentation. No commitment and no card.</p></article><article><h3>Production — per application</h3><p>Deployment guidance, version support, and commercial runtime terms. Priced against the deployment rather than seat count; contact us for a quote.</p></article><article><h3>If the licence is a blocker</h3><p>Some organisations require permissively licensed dependencies. If that is you, <a href="/compare/langgraph/">direct LangGraph</a> is the honest recommendation and the comparison page explains the trade-off.</p></article></div></div></section>
+
+<section class="page-hero page-hero--paper">
+  <div class="shell">
+    <p class="eyebrow">License</p>
+    <h1>PicoFlow Evaluation and Commercial License</h1>
+    <p class="page-hero__lede">Free for internal, non-production evaluation and prototyping — including in enterprise environments. Production use requires a commercial agreement.</p>
+  </div>
+</section>
+
+<section class="section section--white">
+  <div class="shell license-terms">
+    <div class="license-terms__meta">
+      <span>Version 1.0</span>
+      <span>Effective August 23, 2026</span>
+      <span>Applies to <code>@picoflow/core</code></span>
+    </div>
+
+    <div class="license-terms__notice">
+      <p><strong>This is the PicoFlow software license.</strong> It grants a limited evaluation right and describes the separate agreement required for production. If you accept these terms for an organisation, you confirm that you can bind that organisation.</p>
+    </div>
+
+    <section>
+      <h2>1. Agreement and definitions</h2>
+      <p>These terms govern your access to, installation of, and use of the PicoFlow software distributed as <code>@picoflow/core</code>, together with its accompanying documentation and examples (the <strong>Software</strong>). “PicoFlow,” “we,” and “us” mean the provider of the Software identified at <a href="mailto:{{ site.email }}">{{ site.email }}</a>. “You” means the individual or organisation accepting these terms.</p>
+      <p>The Software is proprietary and source-available; it is not open-source software. All rights not expressly granted in this license are reserved.</p>
+    </section>
+
+    <section>
+      <h2>2. Free evaluation license</h2>
+      <p>Subject to these terms, PicoFlow grants you a limited, non-exclusive, non-transferable, non-sublicensable, revocable license to install and use the Software without charge solely for internal, non-production evaluation.</p>
+      <p>This evaluation license expressly permits an organisation of any size, including an enterprise, to use the Software for internal research, development, testing, prototyping, proof-of-concept work, demonstrations, technical evaluation, and procurement review. Your employees and contractors may use the Software for those purposes when they are acting on your behalf and are bound by these terms.</p>
+      <p>No evaluation-fee payment is required. An evaluation license ends when its associated license key expires or is revoked, when you stop evaluating the Software, or when a commercial agreement for the Software takes effect.</p>
+    </section>
+
+    <section>
+      <h2>3. What counts as production use</h2>
+      <p><strong>Production Use</strong> means using the Software to operate a live service or workflow for customers, end users, or an organisation’s operational business activities. It includes processing live customer or employee requests, making or supporting operational decisions, handling real transactions, or delivering a service to a third party.</p>
+      <p>Production Use is not permitted under the evaluation license. It requires a separate written commercial agreement or order with PicoFlow. That agreement controls the applicable fees, deployment scope, support, term, and any additional rights.</p>
+    </section>
+
+    <section>
+      <h2>4. Restrictions</h2>
+      <p>You may not, and may not allow any other person to:</p>
+      <ul>
+        <li>use the Software for Production Use without a commercial agreement;</li>
+        <li>sell, rent, lease, sublicense, distribute, publish, or make the Software available to a third party except as expressly allowed in a commercial agreement;</li>
+        <li>remove or obscure proprietary notices, or bypass, disable, or interfere with license-key or other access controls;</li>
+        <li>reverse engineer, decompile, or disassemble the Software except to the limited extent that applicable law prohibits that restriction; or</li>
+        <li>use the Software in violation of applicable law or to infringe another party’s rights.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>5. Ownership and third-party software</h2>
+      <p>PicoFlow and its licensors retain all right, title, and interest in the Software, including all intellectual-property rights. No ownership transfers to you under this license.</p>
+      <p>The Software may include or depend on third-party components that are licensed under their own terms. Those terms apply to the applicable components and are not changed by this license.</p>
+    </section>
+
+    <section>
+      <h2>6. Your data and model providers</h2>
+      <p>You choose and remain responsible for the models, tools, session stores, credentials, data, and environments used with the Software. PicoFlow does not receive your prompts or session documents merely because you run the Software. Your use of third-party model providers and services is governed by your agreements with them.</p>
+    </section>
+
+    <section>
+      <h2>7. Evaluation support and changes</h2>
+      <p>The evaluation license does not include support, service levels, uptime commitments, or a commitment to maintain any particular feature. PicoFlow may update the Software or the evaluation program. A later version of this license applies only when you accept it or when it accompanies a later Software release.</p>
+    </section>
+
+    <section>
+      <h2>8. Disclaimer and limitation of liability</h2>
+      <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE SOFTWARE IS PROVIDED “AS IS” AND “AS AVAILABLE.” PICOFLOW DISCLAIMS ALL WARRANTIES, WHETHER EXPRESS, IMPLIED, OR STATUTORY, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT.</p>
+      <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, PICOFLOW WILL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES, OR FOR LOST PROFITS, REVENUE, DATA, OR BUSINESS OPPORTUNITY, ARISING FROM OR RELATED TO THE SOFTWARE OR THIS LICENSE.</p>
+    </section>
+
+    <section>
+      <h2>9. Termination</h2>
+      <p>This evaluation license terminates automatically if you breach these terms. PicoFlow may terminate an evaluation license by revoking its associated license key on reasonable notice. On termination, you must stop using the Software under the evaluation license and delete copies under your control, except for copies retained solely to comply with law or ordinary backup retention that remain inaccessible and unused.</p>
+    </section>
+
+    <section>
+      <h2>10. Contact and commercial terms</h2>
+      <p>For an evaluation key, a production license, or questions about these terms, contact <a href="mailto:{{ site.email }}">{{ site.email }}</a>. A signed commercial agreement takes precedence over this evaluation license where the two conflict.</p>
+    </section>
+
+    <p class="license-terms__review">Before relying on this agreement as binding commercial terms, PicoFlow should have qualified counsel confirm the provider’s legal name, governing law, and liability provisions for the jurisdictions in which it will operate.</p>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="shell cta-band__inner">
+    <div>
+      <h2>Evaluate PicoFlow inside your organisation.</h2>
+      <p>Use it for prototypes and proof-of-concept work first. Move to production under commercial terms when the workflow is ready.</p>
+    </div>
+    <div class="page-hero__actions">
+      <a class="button button--ink" href="mailto:{{ site.email }}?subject=PicoFlow%20evaluation%20key">Request an evaluation key</a>
+      <a class="button button--outline" href="mailto:{{ site.email }}?subject=PicoFlow%20commercial%20license">Discuss production licensing</a>
+    </div>
+  </div>
+</section>

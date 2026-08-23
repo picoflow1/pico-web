@@ -101,7 +101,7 @@ export default {
         {
           question: "Is PicoFlow open source?",
           answer:
-            'No. PicoFlow is a commercially licensed runtime distributed as the <a href="https://www.npmjs.com/package/@picoflow/core">@picoflow/core npm package</a>. Personal evaluation is free, and production use requires commercial terms. If a permissively licensed dependency is a hard requirement for your organisation, LangGraph is the better choice and we would rather you know that now than after a proof of concept. <a href="/license/">See licensing</a>.',
+            'No. PicoFlow is a commercially licensed runtime distributed as the <a href="https://www.npmjs.com/package/@picoflow/core">@picoflow/core npm package</a>. Internal, non-production evaluation is free, including enterprise prototyping; production use requires a commercial agreement. If a permissively licensed dependency is a hard requirement for your organisation, LangGraph is the better choice and we would rather you know that now than after a proof of concept. <a href="/license/">Read the license</a>.',
         },
         {
           question: "Does PicoFlow stream responses?",
@@ -182,9 +182,9 @@ export default {
             'Failures return through the flow\'s error contract, while persisted state and revision checks protect the session from being silently overwritten. Provider retry attempts are explicit, and PicoFlow does not automatically replay a losing turn because it may already have caused an external side effect. <a href="/docs/guides/error-handling/">Read the error-handling guide</a>.',
         },
         {
-          question: "How is PicoFlow licensed, and what does it cost?",
+          question: "How is PicoFlow licensed?",
           answer:
-            'Personal evaluation is free: request a key on the <a href="/license/">licensing page</a> and it is normally returned the same working day. Production is licensed per application and priced against the deployment rather than seat count. There is no public price list \u2014 a quote needs a short conversation about where and how it runs.',
+            'Internal, non-production evaluation is free, including enterprise prototyping, proof-of-concept work, testing, and demos. Production use requires a commercial agreement. <a href="/license/">Read the PicoFlow Evaluation and Commercial License</a>.',
         },
       ],
     },

@@ -644,6 +644,12 @@ a:hover {
 	white-space: nowrap;
 }
 
+/* Keep the five-track comparison table wide enough to scroll horizontally
+   instead of collapsing its columns on narrow screens. */
+.prose h2#what-each-track-demonstrates + table {
+	white-space: nowrap;
+}
+
 /* Line-count evidence — a visual companion to the comparison table. */
 .line-compare {
 	margin: var(--space-6) 0 var(--space-5);

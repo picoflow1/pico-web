@@ -289,3 +289,20 @@ div.section-heading { font-size: inherit; letter-spacing: normal; line-height: i
 @media (max-width: 620px) {
   .product-hero__grid, .comparison-hero__inner { padding: 72px 0 58px; }.product-flow { padding: 17px; }.product-flow__stages, .product-capability-grid, .comparison-evidence__grid { grid-template-columns: 1fr; }.product-flow__stage { min-height: 135px; }.product-capability { min-height: 260px; }.comparison-hero__summary { padding-left: 16px; }.comparison-positioning__grid { gap: 12px; }.comparison-choice { padding: 22px; }
 }
+
+/* Full commercial-license page. */
+.license-terms { max-width: 860px; }
+.license-terms__meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; color: #765b24; font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.license-terms__meta span { padding: 7px 9px; border: 1px solid rgba(118,91,36,.24); border-radius: 999px; }
+.license-terms__meta code { font-family: inherit; text-transform: none; }
+.license-terms__notice { padding: 22px 24px; margin-bottom: 43px; color: #51411d; background: #fbf3dc; border-left: 4px solid #c99a35; border-radius: 0 10px 10px 0; }
+.license-terms__notice p { margin: 0; }
+.license-terms section { padding: 0 0 31px; margin: 0 0 32px; border-bottom: 1px solid var(--line); }
+.license-terms h2 { margin: 0 0 14px; color: var(--ink); font-size: clamp(23px, 2.6vw, 31px); letter-spacing: -.04em; line-height: 1.12; }
+.license-terms p, .license-terms li { color: #515151; font-size: 16px; line-height: 1.72; }
+.license-terms p { margin: 0 0 15px; }
+.license-terms p:last-child { margin-bottom: 0; }
+.license-terms ul { padding-left: 22px; margin: 0; }
+.license-terms li + li { margin-top: 8px; }
+.license-terms code { padding: .13em .34em; color: #594617; background: #f8edce; border-radius: 4px; font-family: var(--mono); font-size: .86em; }
+.license-terms__review { padding: 18px 20px; color: #6d5530 !important; background: #f4efe5; border-radius: 10px; font-size: 14px !important; line-height: 1.55 !important; }
