@@ -1,5 +1,5 @@
 ---
-title: 5. Branch, forward, and return
+title: 6. Branch, forward, and return
 eyebrow: HotelFlow tutorial
 lede: A user who says "compare 2 and 5 on price" should not have to say it twice. This lesson covers the three mechanisms that move a request across a step boundary without asking the user to repeat themselves.
 source: pico-demo/src/myflow/hotel-flow/present-step.ts, pico-demo/src/myflow/hotel-flow/compare-step.ts
@@ -275,6 +275,6 @@ callers cannot accidentally break that guarantee.
 
 ## Next
 
-[6. Answering without an LLM](/docs/tutorials/hotel-flow/direct-responses/) picks up
+[7. Answering without an LLM](/docs/tutorials/hotel-flow/direct-responses/) picks up
 inside `CompareStep`, where the answer is a rendered table and no second model
 call happens at all.

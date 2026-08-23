@@ -1,0 +1,33 @@
+---
+title: Start here — an eight-turn deterministic replay
+eyebrow: BasicFlow tutorial
+lede: "See the whole BasicFlow profile path first: a corrective tool loop, two deterministic LogicSteps, response-driven favorites, validation, nested work, and terminal completion."
+source: pico-demo/test/basic-flow/basic-flow.e2e-spec.ts, pico-demo/test/basic-flow/basic-flow.scenario.json
+---
+
+<p>BasicFlow’s canonical replay is deliberately deterministic. The real Nest application is exercised end to end, while the test replaces the provider with the checked-in scripted model. That gives developers stable, inspectable responses for every framework behavior this track introduces.</p>
+
+<h2 id="run-it-yourself">Run it yourself</h2>
+<pre><code class="language-bash">cd pico-demo
+BASIC_FLOW_USE_SCRIPTED_MODEL=1 BASIC_FLOW_TEST_DOCUMENT_DB=memory npm run test:basic-flow</code></pre>
+<p>The test sends all eight scenario turns through one session and verifies each active step plus the final persisted profile. No provider call is needed in scripted mode.</p>
+
+<h2 id="captured-deterministic-transcript">Captured deterministic transcript</h2>
+<div class="quote-replay">
+  <div class="quote-replay__header"><span class="quote-replay__dots" aria-hidden="true"><i></i><i></i><i></i></span><a href="https://github.com/picoflowio/pico-demo/blob/main/test/basic-flow/basic-flow.scenario.json">test/basic-flow/basic-flow.scenario.json</a><span>8 turns · scripted e2e</span></div>
+  <ol class="quote-replay__list">
+  {%- for turn in replay.turns %}
+    <li class="quote-replay__turn{% if turn.completed %} quote-replay__turn--completed{% endif %}">
+      <p class="quote-replay__meta">{{ loop.index }} · {{ turn.stage }}{% if turn.completed %} · completed{% endif %}</p>
+      <div class="quote-replay__message quote-replay__message--you"><span class="quote-replay__who">You</span><div class="quote-replay__bubble">{{ turn.user | escape }}</div></div>
+      <div class="quote-replay__message quote-replay__message--bot"><span class="quote-replay__who">Bot</span><div class="quote-replay__bubble">{{ turn.bot | renderTranscriptMarkdown | safe }}</div></div>
+    </li>
+  {%- endfor %}
+  </ol>
+</div>
+
+<h2 id="what-this-proves">What this proves</h2>
+<table><thead><tr><th>Point</th><th>Contract</th></tr></thead><tbody><tr><td>Turns 1–2</td><td><code>WeatherStep</code> stays active until a supported pair of cities is supplied.</td></tr><tr><td>Turn 3</td><td>Tool work advances through two <code>LogicStep</code>s without a model decision before Favorites becomes active.</td></tr><tr><td>Turn 4</td><td><code>FavoritesStep.onResponse()</code> parses structured text and routes to Name.</td></tr><tr><td>Turns 5–6</td><td>Name validation rejects a placeholder, then nested child work runs without taking the durable cursor.</td></tr><tr><td>Turn 8</td><td>Address validation stores accepted state and the terminal step completes the session.</td></tr></tbody></table>
+
+<h2 id="next">Next</h2>
+<p>Continue with <a href="/docs/tutorials/basic-flow/bootstrapping/">1. Bootstrapping PicoFlow in NestJS</a> to build the application boundary that hosts this replay.</p>

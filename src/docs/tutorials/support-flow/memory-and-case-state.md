@@ -1,5 +1,5 @@
 ---
-title: 6. Memory and durable case state
+title: 7. Memory and durable case state
 eyebrow: SupportFlow tutorial
 lede: SupportFlow gives each specialist a separate conversation history while keeping the verified order and committed outcomes in step-owned durable state. Only the long-running triage history is summarized.
 source: pico-demo/src/myflow/support-flow/support-flow.ts, pico-demo/src/myflow/support-flow/triage-step.ts, pico-demo/src/myflow/support-flow/returns-step.ts, pico-demo/src/myflow/support-flow/approval-step.ts
@@ -138,4 +138,4 @@ recognize the item the customer just named, while its future model calls remain
 free of unrelated triage and billing turns. Durable order and case facts still
 arrive from state, where they can be validated and attributed.
 
-Next: [7. Testing a support case](/docs/tutorials/support-flow/testing/).
+Next: [8. Testing a support case](/docs/tutorials/support-flow/testing/).

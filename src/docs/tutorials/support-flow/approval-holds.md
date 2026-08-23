@@ -1,5 +1,5 @@
 ---
-title: 4. Approval holds and session restoration
+title: 5. Approval holds and session restoration
 eyebrow: SupportFlow tutorial
 lede: A review-required refund is a temporary offer, not a completed transaction. ApprovalStep presents the computed quote, commits only explicit consent, and the flow invalidates a hold that has aged out.
 source: pico-demo/src/myflow/support-flow/approval-step.ts, pico-demo/src/myflow/support-flow/support-flow.ts, pico-demo/src/myflow/support-flow/gen-receipt.ts
@@ -152,4 +152,4 @@ Both values are code constants in `SupportFlow`, alongside the restore policy
 that uses them. The hook reads the persisted document before the next model
 turn, which is the correct point to enforce a time-dependent business rule.
 
-Next: [5. Billing disputes and escalation](/docs/tutorials/support-flow/billing-escalation/).
+Next: [6. Billing disputes and escalation](/docs/tutorials/support-flow/billing-escalation/).

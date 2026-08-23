@@ -1,5 +1,5 @@
 ---
-title: 7. Present and book
+title: 8. Present and book
 eyebrow: HotelFlow tutorial
 lede: The last stage lists priced results, offers three actions, and hands a generated confirmation message to the framework's terminal step. This is where a conversation becomes a transaction.
 source: pico-demo/src/myflow/hotel-flow/present-step.ts, pico-demo/src/myflow/hotel-flow/prompt/present.md

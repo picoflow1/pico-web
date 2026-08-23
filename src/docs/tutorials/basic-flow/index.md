@@ -33,55 +33,10 @@ A `Flow` subclass with four overrides that matter and two that are situational:
 
 The normal profile path, exactly as the code routes it:
 
-```text
-                     initialStep()
-                config.isPresident === true ?
-                   /                      \
-                 yes                       no
-                  |                         |
-           PresidentStep                WeatherStep
-        (sessionCompleted)             |    ^      |
-                                       |    |      | terminate_session
-                            both cities|    |stay  |
-                                       v    |      v
-                                  FooLogicStep   TerminateSessionStep
-                                       |
-                       go().withState({fooData})
-                                       v
-                                  GooLogicStep
-                                       |
-                       go().withState({gooData})
-                                       v
-                                 FavoritesStep
-                                       |
-                        onResponse() parses JSON
-                                       v
-                                   NameStep -----------------+
-                                       |                     |
-                                       |  runStep(InContextStep)
-                                       |                     |
-                                       |            InContextStep
-                                       |          (onEnter: runSteps)
-                                       |            /            \
-                                       |     ConcurStep1     ConcurStep2
-                                       |          |               |
-                                       |     runSteps([          onEnter:
-                                       |      ConcurStep3])   runSteps([ConcurStep4])
-                                       |          |               |
-                                       |     ConcurStep3     ConcurStep4
-                                       |                     |
-                                       | <-------------------+
-                                       v
-                                    DOBStep
-                                       |
-                                       v
-                                  AddressStep
-                                       |
-                     go().withPrompt(FromAddressEnd)
-                          .withState({ fromAddress: 5 })
-                                       v
-                             TerminateSessionStep
-```
+<figure class="flow-journey">
+  <img src="/assets/img/basic-flow-journey.svg" width="1200" height="720" alt="BasicFlow graph from Weather through FooLogic, GooLogic, Favorites, Name, Date of Birth, Address, Terminal and completion, with a corrective weather loop and nested child-work branch from Name.">
+  <figcaption>The durable path is intentionally broad to demonstrate PicoFlow contracts. The nested branch runs inside NameStep and returns its result without becoming the durable cursor.</figcaption>
+</figure>
 
 Three things about that diagram are worth stating explicitly, because they are the
 source of most confusion:
@@ -119,6 +74,11 @@ only the default cursor; `initialStep()` overrides it here.
 | `TerminateSessionStep` | framework | `temp` | flow default | The built-in terminal step |
 
 <div class="callout callout--note"><span class="callout__title">Note</span><p>&ldquo;Class default&rdquo; means the step never called <code>.useMemory(...)</code>, so its memory namespace is its own class name and its conversation history is isolated from every other step.</p></div>
+
+## Start with the replay
+
+[Start here — an eight-turn deterministic replay](/docs/tutorials/basic-flow/live-replay/)
+shows the full profile journey before the individual framework lessons unpack it.
 
 ## The eighteen lessons
 
@@ -164,4 +124,5 @@ Read them in order. Lessons 1 to 8 are the fundamentals; 9 to 14 are composition
 
 ## Next
 
-Begin with [1. Bootstrapping PicoFlow in NestJS](/docs/tutorials/basic-flow/bootstrapping/).
+Begin with [the deterministic replay](/docs/tutorials/basic-flow/live-replay/), then
+continue to [1. Bootstrapping PicoFlow in NestJS](/docs/tutorials/basic-flow/bootstrapping/).

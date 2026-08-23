@@ -1,5 +1,5 @@
 ---
-title: 7. Testing a support case
+title: 8. Testing a support case
 eyebrow: SupportFlow tutorial
 lede: The SupportFlow suite tests policy and ledger services without a model, then replays a nine-turn case through a real FlowEngine when live credentials are available.
 source: pico-demo/test/support-flow/support-flow.spec.ts, pico-demo/test/support-flow/support-flow.scenario.json, pico-demo/src/myflow/support-flow/backend/policy-engine.ts

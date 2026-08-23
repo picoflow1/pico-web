@@ -35,43 +35,10 @@ model fills in over several turns and hands back through a single tool call.
 
 Every edge below is a `go(...)` or `direct(...)` returned from a `@Tool` handler.
 
-```text
-                    ExploreStep is first in defineSteps()
-                       and therefore the initial cursor
-                                    |
-                                    v
-                            +----------------+
-         capture_choices,   |                |
-         no results found   |  ExploreStep   |
-              stay(...) <---|                |<--------------------+
-                            +----------------+                     |
-                                    |                              |
-                capture_choices, results found                     |
-             go(PresentStep).withState({ hotelFound })             |
-                                    |                    go(ExploreStep)
-                                    v                  .withMessage(last)
-                            +----------------+          (search_again)
-                            |                |----------------------+
-                            |  PresentStep   |
-                    +------>|                |
-                    |       +----------------+
-                    |          |          |
-      go(PresentStep)          |          | chosen_hotel
-      (resume_booking)         |          | go(TerminateSessionStep)
-                    |          |          |      .withPrompt(confirmation)
-                    |  go_compare         |
-                    |          |          v
-                    |          |   +----------------------+
-                    |          |   | TerminateSessionStep |
-                    |          |   +----------------------+
-                    |          v          ^
-                    |  +----------------+ |
-                    +--|  CompareStep   |-+ terminate_session
-                       +----------------+
-                             ^      |
-                             |      | generate_comparison
-                             +------+ direct(table) stays on CompareStep
-```
+<figure class="flow-journey">
+  <img src="/assets/img/hotel-flow-journey.svg" width="1200" height="610" alt="HotelFlow graph from Explore through Present and Compare to Book, including a search rerun loop, comparison return, and a direct response loop that stays in Compare.">
+  <figcaption>Explore owns the long-lived criteria interview. Present and Compare receive destination state and use isolated memories, while comparison tables bypass a second model call.</figcaption>
+</figure>
 
 Two edges are deliberately drawn as self-loops:
 
@@ -142,20 +109,22 @@ read the [InvoiceFlow track](/docs/tutorials/invoice-flow/).
 
 ## The seven lessons
 
-1. [Designing a multi-stage workflow](/docs/tutorials/hotel-flow/multi-stage-design/)
+1. [A fourteen-turn live replay](/docs/tutorials/hotel-flow/live-replay/) — the
+   complete recorded search, comparison, and booking interaction.
+2. [Designing a multi-stage workflow](/docs/tutorials/hotel-flow/multi-stage-design/)
    — mapping a user journey onto steps, and why registration order picks the
    entry point.
-2. [Big prompts as spec files](/docs/tutorials/hotel-flow/prompt-files/) —
+3. [Big prompts as spec files](/docs/tutorials/hotel-flow/prompt-files/) —
    `Prompt.file()`, prompt composition, and the mutable JSON scaffold.
-3. [MCP-backed hotel search](/docs/tutorials/hotel-flow/backend-tools/) — typed
+4. [MCP-backed hotel search](/docs/tutorials/hotel-flow/backend-tools/) — typed
    criteria, an MCP service boundary, and PicoFlow-owned routing.
-4. [Memory compaction and erasure](/docs/tutorials/hotel-flow/memory-compaction/) —
+5. [Memory compaction and erasure](/docs/tutorials/hotel-flow/memory-compaction/) —
    `enableSummary()`, the compaction thresholds, and `eraseMemory()`.
-5. [Branch, forward, and return](/docs/tutorials/hotel-flow/branch-and-return/) —
+6. [Branch, forward, and return](/docs/tutorials/hotel-flow/branch-and-return/) —
    `onCrossing()`, `.withMessage(...)`, and priming a step before you enter it.
-6. [Answering without an LLM](/docs/tutorials/hotel-flow/direct-responses/) —
+7. [Answering without an LLM](/docs/tutorials/hotel-flow/direct-responses/) —
    `direct()` and building a Markdown table from cross-step state.
-7. [Present and book](/docs/tutorials/hotel-flow/present-and-book/) — the
+8. [Present and book](/docs/tutorials/hotel-flow/present-and-book/) — the
    present-and-choose prompt and the terminal handoff.
 
 ## Running it
@@ -172,4 +141,4 @@ tables are reproducible across runs.
 ## Next
 
 Start with
-[1. Designing a multi-stage workflow](/docs/tutorials/hotel-flow/multi-stage-design/).
+[1. A fourteen-turn live replay](/docs/tutorials/hotel-flow/live-replay/).

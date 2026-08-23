@@ -1,0 +1,35 @@
+---
+title: 1. A fourteen-turn live replay
+eyebrow: HotelFlow tutorial
+lede: "Start with a recorded booking conversation: collection, a search refinement, two exact comparison tables, return to selection, and a completed reservation."
+source: pico-demo/test/hotel-flow/hotel-flow.e2e-spec.ts, pico-demo/test/hotel-flow/hotel-flow.scenario.json
+---
+
+<p>Read this first. It is a complete, passing model-backed run of the fourteen-turn scenario with <code>HOTEL_FLOW_CURRENT_DATE</code> frozen to <code>2027-07-15</code>. The collection wording can vary; the local catalogue, date policy, price calculations, direct comparison tables, and completion flag are the durable contracts.</p>
+
+<h2 id="run-it-yourself">Run it yourself</h2>
+<pre><code class="language-bash">cd pico-demo
+npm run test:hotel-flow</code></pre>
+<p>With <code>OPENAI_API_KEY</code> and <code>PICOFLOW_KEY</code>, this starts the demo application, sends every scenario request through one session, semantically judges the replies, and inspects the final durable state. Set <code>RUN_LIVE_HOTEL_FLOW_TEST=0</code> when credentials are unavailable.</p>
+
+<h2 id="captured-live-transcript">Captured live transcript</h2>
+<div class="quote-replay">
+  <div class="quote-replay__header"><span class="quote-replay__dots" aria-hidden="true"><i></i><i></i><i></i></span><a href="https://github.com/picoflowio/pico-demo/blob/main/test/hotel-flow/hotel-flow.scenario.json">test/hotel-flow/hotel-flow.scenario.json</a><span>14 turns · recorded e2e</span></div>
+  <ol class="quote-replay__list">
+  {%- for turn in replay.turns %}
+    <li class="quote-replay__turn{% if turn.completed %} quote-replay__turn--completed{% endif %}">
+      <p class="quote-replay__meta">{{ loop.index }} · {{ turn.stage }}{% if turn.completed %} · completed{% endif %}</p>
+      <div class="quote-replay__message quote-replay__message--you"><span class="quote-replay__who">You</span><div class="quote-replay__bubble">{{ turn.user | escape }}</div></div>
+      <div class="quote-replay__message quote-replay__message--bot"><span class="quote-replay__who">Bot</span><div class="quote-replay__bubble">{{ turn.bot | renderTranscriptMarkdown | safe }}</div></div>
+    </li>
+  {%- endfor %}
+  </ol>
+</div>
+
+<p>The final response sets <code>completed: true</code>. The current cursor is the terminal step, so a client should start a new session for another reservation.</p>
+
+<h2 id="what-to-compare">What to compare when your replay differs</h2>
+<table><thead><tr><th>Point</th><th>Contract</th></tr></thead><tbody><tr><td>Turns 1–7</td><td>Collection is Portland-only and dates remain after the frozen current date.</td></tr><tr><td>Turn 9</td><td>The refined two-bed search produces the current result set.</td></tr><tr><td>Turns 10–12</td><td>Comparisons are application-rendered Markdown tables, not model-invented prices.</td></tr><tr><td>Turn 14</td><td>A confirmation is generated and the session completes.</td></tr></tbody></table>
+
+<h2 id="next">Next</h2>
+<p><a href="/docs/tutorials/hotel-flow/multi-stage-design/">2. Designing a multi-stage workflow</a> maps the reachable steps and return paths behind the replay.</p>

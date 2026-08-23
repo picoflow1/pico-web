@@ -1,5 +1,5 @@
 ---
-title: 3. MCP-backed hotel search
+title: 4. MCP-backed hotel search
 eyebrow: HotelFlow tutorial
 lede: ExploreStep accepts validated conversational criteria, calls a real local MCP pricing service, and keeps durable state and routing inside PicoFlow.
 source: pico-demo/src/myflow/hotel-flow/explore-step.ts, pico-demo/src/tools/hotel-pricing-contract.ts, pico-demo/src/tools/hotel-pricing-mcp-client.ts, pico-demo/src/tools/hotel-pricing-mcp-server.ts, pico-demo/src/myflow/hotel-flow/backend/pricing-engine.ts
@@ -155,5 +155,5 @@ remains the model-driven test of criteria collection and downstream routing.
 
 ## Next
 
-[4. Memory compaction and erasure](/docs/tutorials/hotel-flow/memory-compaction/)
+[5. Memory compaction and erasure](/docs/tutorials/hotel-flow/memory-compaction/)
 looks at the conversation history that produced this tool call.

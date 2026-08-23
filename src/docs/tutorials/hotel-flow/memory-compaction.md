@@ -1,5 +1,5 @@
 ---
-title: 4. Memory compaction and erasure
+title: 5. Memory compaction and erasure
 eyebrow: HotelFlow tutorial
 lede: Criteria collection takes eight or more turns, so its history is summarised as it grows. The presentation and comparison stages take the opposite approach and throw their history away on entry.
 source: pico-demo/src/myflow/hotel-flow/hotel-flow.ts, pico-demo/src/myflow/hotel-flow/present-step.ts, pico-demo/src/myflow/hotel-flow/compare-step.ts
@@ -252,6 +252,6 @@ when the user leaves and comes back.
 
 ## Next
 
-[5. Branch, forward, and return](/docs/tutorials/hotel-flow/branch-and-return/)
+[6. Branch, forward, and return](/docs/tutorials/hotel-flow/branch-and-return/)
 follows the three transitions out of `PresentStep` and shows how a user's
 sentence is carried across a step boundary.

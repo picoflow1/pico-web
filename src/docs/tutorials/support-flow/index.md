@@ -34,35 +34,10 @@ closes the case.
 
 ## The graph
 
-```text
-POST /ai/run (flowName: SupportFlow)
-              |
-              v
-       +----------------+
-       |   TriageStep   | -- verify_order --> stays at triage
-       +----------------+
-          |         |
-  route returns   route billing
-          |         |
-          v         v
- +-------------+ +-------------+
- | ReturnsStep | | BillingStep |
- +-------------+ +-------------+
-          |         |
-          v         v
- +----------------+ +--------------+
- | AdjudicateStep | | EscalateStep |
- |  LogicStep     | |  LogicStep   |
- +----------------+ +--------------+
-   | deny | auto/review     |
-   |      |                 |
-   v      v                 v
-Returns  ApprovalStep ----> TriageStep -- close_case --> TerminateSessionStep
-             |
-       confirm or decline
-             v
-      TriageStep or ReturnsStep
-```
+<figure class="flow-journey">
+  <img src="/assets/img/support-flow-journey.svg" width="1200" height="720" alt="SupportFlow graph from triage through returns and deterministic adjudication to approval, or through billing and deterministic escalation, with both paths returning to triage before completion.">
+  <figcaption>Triage is the durable case hub. Conversational specialists collect bounded facts; logic steps apply policy or create a ticket before control returns to the hub.</figcaption>
+</figure>
 
 There are two purposeful hub-and-spoke loops. A return is collected by
 `ReturnsStep`, adjudicated without an LLM turn, and then either denied, committed
@@ -135,22 +110,24 @@ outcome.
 
 ## The seven lessons
 
-1. [Designing a support case](/docs/tutorials/support-flow/case-shape/) — why triage,
+1. [A nine-turn live replay](/docs/tutorials/support-flow/live-replay/) — the
+   recorded case interaction and its approval prompt.
+2. [Designing a support case](/docs/tutorials/support-flow/case-shape/) — why triage,
    returns, approval, billing, and deterministic workers are separate steps.
-2. [Verifying and routing requests](/docs/tutorials/support-flow/verify-and-route/) —
+3. [Verifying and routing requests](/docs/tutorials/support-flow/verify-and-route/) —
    bounded tools at the hub, `stay()`, forwarding the customer’s request, and a
    truthful terminal recap.
-3. [Deterministic return policy](/docs/tutorials/support-flow/return-policy/) —
+4. [Deterministic return policy](/docs/tutorials/support-flow/return-policy/) —
    collecting a request in a conversational step and deciding it in a `LogicStep`.
-4. [Approval holds and session restoration](/docs/tutorials/support-flow/approval-holds/)
+5. [Approval holds and session restoration](/docs/tutorials/support-flow/approval-holds/)
    — committing an exact quote only after consent and expiring an old hold safely.
-5. [Billing disputes and escalation](/docs/tutorials/support-flow/billing-escalation/)
+6. [Billing disputes and escalation](/docs/tutorials/support-flow/billing-escalation/)
    — recomputing ledger totals and creating a ticket without another model call.
-6. [Memory and durable case state](/docs/tutorials/support-flow/memory-and-case-state/)
+7. [Memory and durable case state](/docs/tutorials/support-flow/memory-and-case-state/)
    — namespace isolation, triage-owned outcomes, and summary compaction.
-7. [Testing a support case](/docs/tutorials/support-flow/testing/) — deterministic
+8. [Testing a support case](/docs/tutorials/support-flow/testing/) — deterministic
    policy tests plus the nine-turn live scenario.
 
 ## Next
 
-Start with [1. Designing a support case](/docs/tutorials/support-flow/case-shape/).
+Start with [1. A nine-turn live replay](/docs/tutorials/support-flow/live-replay/).

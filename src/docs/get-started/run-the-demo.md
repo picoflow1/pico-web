@@ -115,7 +115,7 @@ npm run start:dev
 
 The service listens on port 8000 and binds `0.0.0.0`.
 
-<div class="callout callout--note"><span class="callout__title">Note</span><p>The <code>postbuild</code> asset copy matters. <code>HotelFlow</code> and <code>InvoiceFlow</code> load prompt files, catalog JSON and sample documents from disk at runtime, so running <code>dist/main.js</code> after a bare <code>nest build</code> will fail to find them.</p></div>
+<div class="callout callout--note"><span class="callout__title">Note</span><p>The <code>postbuild</code> asset copy matters. <code>HotelFlow</code>, <code>InvoiceFlow</code>, and <code>HomeInsuranceQuoteFlow</code> load prompt files, configuration JSON, catalogs, or sample documents from disk at runtime, so running <code>dist/main.js</code> after a bare <code>nest build</code> will fail to find them.</p></div>
 
 ## Which flows are registered
 
@@ -124,7 +124,13 @@ factory:
 
 ```ts
 FlowEngine.create({
-  flows: [BasicFlow, HotelFlow, InvoiceFlow],
+  flows: [
+    BasicFlow,
+    HotelFlow,
+    InvoiceFlow,
+    SupportFlow,
+    HomeInsuranceQuoteFlow,
+  ],
   providers: [
     ...ModelProvider.createBuiltinAdapters({
       openai: { apiKey: config.get<string>("OPENAI_API_KEY") },
@@ -167,7 +173,7 @@ curl http://localhost:8000/ai/flows
 ```
 
 ```json
-["BasicFlow","HotelFlow","InvoiceFlow"]
+["BasicFlow","HotelFlow","InvoiceFlow","SupportFlow","HomeInsuranceQuoteFlow"]
 ```
 
 ### What each flow demonstrates
@@ -177,6 +183,8 @@ curl http://localhost:8000/ai/flows
 | `BasicFlow` | Multi-stage conversation | The broadest lifecycle coverage: context-dependent `initialStep()`, per-step model overrides, shared and separate memory namespaces, logic steps, nested and concurrent execution, batch coordination. |
 | `HotelFlow` | Multi-turn search, compare, book | `onEnter()` with `eraseMemory()`, `onCrossing()`, memory compaction configured in the flow constructor, large prompt files, `direct(...)` responses. |
 | `InvoiceFlow` | One-shot document extraction | A step with no tools, multimodal file input, structured output, `HttpContentType.Json`, and document fan-out via `spawnSteps()`. |
+| `SupportFlow` | Durable support case | Deterministic policy, approval boundaries, isolated specialist memory, and session restoration. |
+| `HomeInsuranceQuoteFlow` | Twenty-turn quote journey | Shared intake memory, isolated coverage/contact stages, deterministic rating, exact quote tables, correction, re-rating, and consent. |
 
 ## Run the flow tests
 
@@ -184,9 +192,11 @@ curl http://localhost:8000/ai/flows
 npm run test:basic-flow
 npm run test:hotel-flow
 npm run test:invoice-flow
+npm run test:support-flow
+npm run test:home-insurance-flow
 ```
 
-`npm test` runs all three in sequence via `test:flows`.
+`npm test` runs the standard flow suite in sequence via `test:flows`.
 
 Each spec boots the real NestJS application with a Fastify adapter and drives a scripted
 multi-turn scenario through the HTTP contract, then asserts on the persisted SQLite session
@@ -211,6 +221,7 @@ A live scenario is skipped, not failed, when its provider keys are absent:
 | `test:basic-flow` | `OPENAI_API_KEY`, `PICOFLOW_KEY` | — |
 | `test:hotel-flow` | `OPENAI_API_KEY`, `PICOFLOW_KEY` | `RUN_LIVE_HOTEL_FLOW_TEST=0` |
 | `test:invoice-flow` | `GEMINI_API_KEY`, `PICOFLOW_KEY` | `RUN_LIVE_INVOICE_FLOW_TEST=0` |
+| `test:home-insurance-flow` | `OPENAI_API_KEY`, `PICOFLOW_KEY` | `RUN_LIVE_HOME_INSURANCE_FLOW_TEST=0` |
 
 `BasicFlow` additionally supports a deterministic mode that replaces the provider with a
 scripted model, so it exercises the same transitions and SQLite assertions without spending
@@ -227,6 +238,10 @@ In that mode only `PICOFLOW_KEY` is required.
 `HotelFlow`'s scenario is graded by an LLM judge (`gpt-4o` by default, overridable with
 `HOTEL_FLOW_JUDGE_MODEL`). Pair live scenarios with deterministic contract assertions so a
 fluent answer cannot disguise missing state or a wrong transition.
+
+`HomeInsuranceQuoteFlow` applies the same principle over twenty live turns. Its spec also
+tests rating and referral decisions without a model, and the final session assertions prove
+that the roof correction, deductible re-rate, selected option, and contact consent persisted.
 
 ## Next
 

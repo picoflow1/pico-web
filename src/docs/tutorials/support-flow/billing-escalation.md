@@ -1,5 +1,5 @@
 ---
-title: 5. Billing disputes and escalation
+title: 6. Billing disputes and escalation
 eyebrow: SupportFlow tutorial
 lede: BillingStep collects a factual charge dispute but derives its amount from the ledger. EscalateStep then creates the ticket as deterministic work before control returns to triage.
 source: pico-demo/src/myflow/support-flow/billing-step.ts, pico-demo/src/myflow/support-flow/escalate-step.ts, pico-demo/src/myflow/support-flow/backend/order-book.ts
@@ -130,4 +130,4 @@ hub receives control. Therefore the next triage prompt can truthfully provide
 the ticket ID and say the billing team will review it—without claiming the
 customer will receive a credit.
 
-Next: [6. Memory and durable case state](/docs/tutorials/support-flow/memory-and-case-state/).
+Next: [7. Memory and durable case state](/docs/tutorials/support-flow/memory-and-case-state/).

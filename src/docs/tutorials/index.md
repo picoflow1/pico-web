@@ -1,7 +1,7 @@
 ---
 title: Choose a track
 eyebrow: Tutorials
-lede: Four tutorial tracks, each built line by line from a flow that actually ships in the demo application. Start with BasicFlow.
+lede: Five tutorial tracks, each grounded in a flow that actually ships in the demo application. Start with BasicFlow.
 source: pico-demo/src/myflow
 ---
 
@@ -10,11 +10,11 @@ Every lesson on this site is derived from a real, running flow in
 code the demo NestJS application loads, and the transitions described are the ones
 the end-to-end tests assert against the persisted session document.
 
-There are four flows, and therefore four tracks. They overlap deliberately — each
+There are five flows, and therefore five tracks. They overlap deliberately — each
 one is a complete workflow, not a fragment — but each was written to make a different
 set of framework features unavoidable.
 
-## The four tracks
+## The five tracks
 
 <div class="cards">
 	<a class="card" href="/docs/tutorials/basic-flow/">
@@ -33,25 +33,29 @@ set of framework features unavoidable.
 		<span class="card__title">SupportFlow — guided support case</span>
 		<span class="card__body">Verify an order, route returns or billing, apply policy in deterministic steps, obtain approval when required, and close the case with a durable recap.</span>
 	</a>
+	<a class="card" href="/docs/tutorials/home-insurance-flow/">
+		<span class="card__title">HomeInsuranceQuoteFlow — regulated quote journey</span>
+		<span class="card__body">A twenty-turn intake, correction, deterministic rating, exact comparison, re-rating, option selection, and consent workflow.</span>
+	</a>
 </div>
 
 ## What each track demonstrates
 
-| Feature | BasicFlow | HotelFlow | InvoiceFlow | SupportFlow |
-| --- | --- | --- | --- | --- |
-| Zod tool definitions and `@Tool` handlers | yes | yes | yes | yes |
-| Multi-tool batching with `@Tools([...])` | yes | no | no | no |
-| MCP server behind a tool handler | yes | no | no | no |
-| `LogicStep` (no model call) | yes | no | no | yes |
-| Structured output via `structOutputSchema()` | yes | no | no | no |
-| Nested execution: `runStep()` / `runSteps()` | yes | no | no | no |
-| Memory compaction and summarisation | no | yes | no | yes |
-| `direct()` responses with no second model call | no | yes | yes | no |
-| Multimodal file uploads | no | no | yes | no |
-| Batch mode via `spawnSteps()` + `concurrentSteps()` | yes | no | yes | no |
-| Per-step model overrides | yes | yes | yes | yes |
-| Named memory namespaces | yes | yes | yes | yes |
-| Custom session restoration | no | no | no | yes |
+| Feature | BasicFlow | HotelFlow | InvoiceFlow | SupportFlow | Home insurance |
+| --- | --- | --- | --- | --- | --- |
+| Zod tool definitions and `@Tool` handlers | yes | yes | yes | yes | yes |
+| Multi-tool batching with `@Tools([...])` | yes | no | no | no | no |
+| MCP server behind a tool handler | yes | no | no | no | no |
+| `LogicStep` (no model call) | yes | no | no | yes | yes |
+| Structured output via `structOutputSchema()` | yes | no | no | no | no |
+| Nested execution: `runStep()` / `runSteps()` | yes | no | no | no | no |
+| Memory compaction and summarisation | no | yes | no | yes | yes |
+| `direct()` responses with no second model call | no | yes | yes | no | yes |
+| Multimodal file uploads | no | no | yes | no | no |
+| Batch mode via `spawnSteps()` + `concurrentSteps()` | yes | no | yes | no | no |
+| Per-step model overrides | yes | yes | yes | yes | no |
+| Named memory namespaces | yes | yes | yes | yes | yes |
+| Custom session restoration | no | no | no | yes | yes |
 
 ## Which one first
 
@@ -67,7 +71,7 @@ address. No product would be shaped that way. It is shaped that way so that ever
 lesson has a step that isolates one framework idea, and so the end-to-end test can
 walk a single deterministic eight-turn path through all of it.
 
-<div class="callout callout--note"><span class="callout__title">Note</span><p>The demo application registers all four flows in one NestJS module and serves them from one endpoint, <code>POST /ai/run</code>. The <code>flowName</code> field in the request body selects which flow a session belongs to. A session is bound to exactly one flow for its lifetime.</p></div>
+<div class="callout callout--note"><span class="callout__title">Note</span><p>The demo application registers all five flows in one NestJS module and serves them from one endpoint, <code>POST /ai/run</code>. The <code>flowName</code> field in the request body selects which flow a session belongs to. A session is bound to exactly one flow for its lifetime.</p></div>
 
 ## Running the code alongside the lessons
 
@@ -87,4 +91,5 @@ after every turn.
 ## Next
 
 Start with the [BasicFlow track overview](/docs/tutorials/basic-flow/), which maps all
-fourteen steps before the first lesson.
+fourteen steps before the first lesson. For a regulated money boundary, continue to
+the [HomeInsuranceQuoteFlow overview](/docs/tutorials/home-insurance-flow/).

@@ -1,5 +1,5 @@
 ---
-title: 1. Designing a support case
+title: 2. Designing a support case
 eyebrow: SupportFlow tutorial
 lede: A support case changes jobs several times—verification, return intake, approval, billing, and closure. SupportFlow makes each job a step and reserves policy decisions for deterministic code.
 source: pico-demo/src/myflow/support-flow/support-flow.ts, pico-demo/src/myflow/support-flow/support-types.ts
@@ -146,4 +146,4 @@ the amount. `BillingStep` may collect a dispute; it cannot promise a credit.
 Those boundaries are implemented in the code, not merely requested in the
 prompt, which makes them survive a model’s occasional bad judgment.
 
-Next: [2. Verifying and routing requests](/docs/tutorials/support-flow/verify-and-route/).
+Next: [3. Verifying and routing requests](/docs/tutorials/support-flow/verify-and-route/).

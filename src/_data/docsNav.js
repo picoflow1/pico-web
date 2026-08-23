@@ -89,6 +89,10 @@ export default {
 					items: [
 						{ title: "Track overview", url: "/docs/tutorials/basic-flow/" },
 						{
+							title: "Start here — deterministic replay",
+							url: "/docs/tutorials/basic-flow/live-replay/",
+						},
+						{
 							title: "1. Bootstrapping PicoFlow in NestJS",
 							url: "/docs/tutorials/basic-flow/bootstrapping/",
 						},
@@ -164,31 +168,35 @@ export default {
 					items: [
 						{ title: "Track overview", url: "/docs/tutorials/hotel-flow/" },
 						{
-							title: "1. Designing a multi-stage workflow",
+							title: "1. A fourteen-turn live replay",
+							url: "/docs/tutorials/hotel-flow/live-replay/",
+						},
+						{
+							title: "2. Designing a multi-stage workflow",
 							url: "/docs/tutorials/hotel-flow/multi-stage-design/",
 						},
 						{
-							title: "2. Big prompts as spec files",
+							title: "3. Big prompts as spec files",
 							url: "/docs/tutorials/hotel-flow/prompt-files/",
 						},
 						{
-							title: "3. MCP-backed hotel search",
+							title: "4. MCP-backed hotel search",
 							url: "/docs/tutorials/hotel-flow/backend-tools/",
 						},
 						{
-							title: "4. Memory compaction and erasure",
+							title: "5. Memory compaction and erasure",
 							url: "/docs/tutorials/hotel-flow/memory-compaction/",
 						},
 						{
-							title: "5. Branch, forward, and return",
+							title: "6. Branch, forward, and return",
 							url: "/docs/tutorials/hotel-flow/branch-and-return/",
 						},
 						{
-							title: "6. Answering without an LLM",
+							title: "7. Answering without an LLM",
 							url: "/docs/tutorials/hotel-flow/direct-responses/",
 						},
 						{
-							title: "7. Present and book",
+							title: "8. Present and book",
 							url: "/docs/tutorials/hotel-flow/present-and-book/",
 						},
 					],
@@ -224,32 +232,70 @@ export default {
 					items: [
 						{ title: "Track overview", url: "/docs/tutorials/support-flow/" },
 						{
-							title: "1. Designing a support case",
+							title: "1. A nine-turn live replay",
+							url: "/docs/tutorials/support-flow/live-replay/",
+						},
+						{
+							title: "2. Designing a support case",
 							url: "/docs/tutorials/support-flow/case-shape/",
 						},
 						{
-							title: "2. Verifying and routing requests",
+							title: "3. Verifying and routing requests",
 							url: "/docs/tutorials/support-flow/verify-and-route/",
 						},
 						{
-							title: "3. Deterministic return policy",
+							title: "4. Deterministic return policy",
 							url: "/docs/tutorials/support-flow/return-policy/",
 						},
 						{
-							title: "4. Approval holds and session restoration",
+							title: "5. Approval holds and session restoration",
 							url: "/docs/tutorials/support-flow/approval-holds/",
 						},
 						{
-							title: "5. Billing disputes and escalation",
+							title: "6. Billing disputes and escalation",
 							url: "/docs/tutorials/support-flow/billing-escalation/",
 						},
 						{
-							title: "6. Memory and durable case state",
+							title: "7. Memory and durable case state",
 							url: "/docs/tutorials/support-flow/memory-and-case-state/",
 						},
 						{
-							title: "7. Testing a support case",
+							title: "8. Testing a support case",
 							url: "/docs/tutorials/support-flow/testing/",
+						},
+					],
+				},
+				{
+					label: "HomeInsuranceQuoteFlow \u2014 regulated quote",
+					items: [
+						{ title: "Track overview", url: "/docs/tutorials/home-insurance-flow/" },
+						{
+							title: "1. A twenty-turn live replay",
+							url: "/docs/tutorials/home-insurance-flow/live-replay/",
+						},
+						{
+							title: "2. Designing a quote journey",
+							url: "/docs/tutorials/home-insurance-flow/multi-stage-design/",
+						},
+						{
+							title: "3. Prompt files and bounded collection",
+							url: "/docs/tutorials/home-insurance-flow/prompt-files/",
+						},
+						{
+							title: "4. Deterministic eligibility and rating",
+							url: "/docs/tutorials/home-insurance-flow/rating-boundary/",
+						},
+						{
+							title: "5. Memory namespaces and expiry",
+							url: "/docs/tutorials/home-insurance-flow/memory-and-expiry/",
+						},
+						{
+							title: "6. Correct, re-rate, and return",
+							url: "/docs/tutorials/home-insurance-flow/correct-and-rerate/",
+						},
+						{
+							title: "7. Exact quote tables and fallback",
+							url: "/docs/tutorials/home-insurance-flow/direct-quote-tables/",
 						},
 					],
 				},

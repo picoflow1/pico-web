@@ -1,5 +1,5 @@
 ---
-title: 2. Big prompts as spec files
+title: 3. Big prompts as spec files
 eyebrow: HotelFlow tutorial
 lede: ExploreStep collects eight fields over as many turns. Its instructions live in a Markdown file that reads like a specification, and its working data lives in a JSON scaffold injected fresh on every turn.
 source: pico-demo/src/myflow/hotel-flow/prompt/hotel-prompt.ts, pico-demo/src/myflow/hotel-flow/prompt/role.md, pico-demo/src/myflow/hotel-flow/prompt/explore.md, pico-demo/src/myflow/hotel-flow/prompt/explore.json, pico-demo/src/myflow/hotel-flow/explore-step.ts
@@ -269,6 +269,6 @@ handler decides whether to accept it.
 
 ## Next
 
-[3. MCP-backed hotel search](/docs/tutorials/hotel-flow/backend-tools/) follows the
+[4. MCP-backed hotel search](/docs/tutorials/hotel-flow/backend-tools/) follows the
 typed criteria into `capture_choices`, PicoFlow-owned routing, and the pricing
 MCP service.

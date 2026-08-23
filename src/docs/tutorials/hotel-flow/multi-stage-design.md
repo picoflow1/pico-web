@@ -1,5 +1,5 @@
 ---
-title: 1. Designing a multi-turn conversation
+title: 2. Designing a multi-turn conversation
 eyebrow: HotelFlow tutorial
 lede: A booking journey has natural seams. Each seam becomes a step, each step owns its data, and the flow class is nothing more than the registry that lists them.
 source: pico-demo/src/myflow/hotel-flow/hotel-flow.ts
@@ -199,6 +199,6 @@ you know before opening an editor that the change is confined to `CompareStep`,
 
 ## Next
 
-[2. Big prompts as spec files](/docs/tutorials/hotel-flow/prompt-files/) opens
+[3. Big prompts as spec files](/docs/tutorials/hotel-flow/prompt-files/) opens
 `explore.md` and shows how an eight-task specification and a mutable JSON
 scaffold become one system prompt.

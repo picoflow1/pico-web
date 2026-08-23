@@ -1,5 +1,6 @@
 import path from "node:path";
 import { readFileSync } from "node:fs";
+import markdownIt from "markdown-it";
 import markdownItAnchor from "markdown-it-anchor";
 import hljs from "highlight.js/lib/core";
 import typescript from "highlight.js/lib/languages/typescript";
@@ -9,6 +10,7 @@ hljs.registerLanguage("typescript", typescript);
 hljs.registerLanguage("json", json);
 
 const highlightedFences = new Set(["ts", "typescript", "json"]);
+const transcriptMarkdown = markdownIt({ typographer: true, linkify: true });
 const docsRoots = new Set([
   "get-started",
   "concepts",
@@ -155,6 +157,11 @@ export default function (eleventyConfig) {
     } catch {
       return decodeHtmlEntities(value);
     }
+  });
+  eleventyConfig.addFilter("renderTranscriptMarkdown", (value) => {
+    // Keep headings inside a chat bubble out of the page outline while preserving
+    // the recorded response's Markdown structure.
+    return transcriptMarkdown.render(String(value ?? "").replace(/^### /gm, "#### "));
   });
 
   eleventyConfig.addTransform("highlightRawTypescript", function (content) {

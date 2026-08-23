@@ -1,5 +1,5 @@
 ---
-title: 2. Verifying and routing requests
+title: 3. Verifying and routing requests
 eyebrow: SupportFlow tutorial
 lede: TriageStep is the durable hub. It verifies an order before exposing its details, carries the customer’s original request into a specialist step, and closes only a case with recorded outcomes.
 source: pico-demo/src/myflow/support-flow/triage-step.ts, pico-demo/src/myflow/support-flow/backend/order-book.ts, pico-demo/src/myflow/support-flow/prompt/support-prompt.ts
@@ -135,4 +135,4 @@ recap through `.withPrompt(...)`.
 request. It goes directly to the terminal step, unlike `close_case`, because a
 customer can always stop talking even if nothing has been resolved.
 
-Next: [3. Deterministic return policy](/docs/tutorials/support-flow/return-policy/).
+Next: [4. Deterministic return policy](/docs/tutorials/support-flow/return-policy/).

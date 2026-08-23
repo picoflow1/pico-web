@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Home insurance quote workflow</title>
+  <desc id="desc">A flow from qualification through property, risk, coverage, review, deterministic rating, quote presentation, consent, and completion. A review correction returns to the collection step that owns the fact, while referral leaves deterministic rating without generating a quote.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#18242e"/><stop offset="1" stop-color="#0d1218"/></linearGradient>
+    <linearGradient id="collection" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#50bce9"/><stop offset="1" stop-color="#6877e9"/></linearGradient>
+    <linearGradient id="presentation" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c18cf5"/><stop offset="1" stop-color="#8964dc"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="9" stdDeviation="10" flood-color="#000" flood-opacity=".28"/></filter>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="#97a9b8"/></marker>
+    <marker id="correction" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="#f5c76d"/></marker>
+  </defs>
+  <rect width="1200" height="720" rx="30" fill="url(#background)"/>
+  <g fill="none" stroke="#2b3b49" stroke-width="1" opacity=".7"><path d="M0 108H1200M0 216H1200M0 324H1200M0 432H1200M0 540H1200M0 648H1200"/><path d="M120 0V720M240 0V720M360 0V720M480 0V720M600 0V720M720 0V720M840 0V720M960 0V720M1080 0V720"/></g>
+  <text x="54" y="64" fill="#f3f7fa" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="700">Home insurance quote journey</text>
+  <text x="54" y="94" fill="#9cafbe" font-family="Inter, Arial, sans-serif" font-size="16">The model guides the conversation. Durable state and code own the application, decision, money, and completion.</text>
+
+  <g fill="none" stroke="#97a9b8" stroke-width="3" marker-end="url(#arrow)">
+    <path d="M216 250H265"/><path d="M426 250H475"/><path d="M636 250H685"/><path d="M846 250H895"/>
+    <path d="M975 320V398"/><path d="M1055 458H1080"/>
+    <path d="M975 518C975 558 754 540 676 570"/><path d="M676 620H895"/><path d="M1056 620H1080"/>
+  </g>
+  <g fill="none" stroke="#f5c76d" stroke-width="3" stroke-dasharray="8 8" marker-end="url(#correction)">
+    <path d="M975 180C975 128 765 128 765 180"/><path d="M975 180C975 112 555 112 555 180"/><path d="M975 180C975 96 345 96 345 180"/><path d="M975 180C975 80 135 80 135 180"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <g fill="url(#collection)"><rect x="56" y="180" width="160" height="140" rx="18"/><rect x="266" y="180" width="160" height="140" rx="18"/><rect x="476" y="180" width="160" height="140" rx="18"/><rect x="686" y="180" width="160" height="140" rx="18"/></g>
+    <rect x="896" y="180" width="160" height="140" rx="18" fill="#f4c866"/>
+    <rect x="895" y="398" width="160" height="120" rx="18" fill="#2d4150" stroke="#7b99ab" stroke-width="2"/>
+    <rect x="1080" y="398" width="84" height="120" rx="18" fill="#f29c68"/>
+    <rect x="516" y="570" width="160" height="100" rx="18" fill="url(#presentation)"/>
+    <rect x="896" y="570" width="160" height="100" rx="18" fill="#4cbf9f"/>
+    <rect x="1080" y="570" width="84" height="100" rx="18" fill="#4cbf9f"/>
+  </g>
+  <g font-family="Inter, Arial, sans-serif" text-anchor="middle">
+    <g font-size="18" font-weight="700" fill="#fff"><text x="136" y="233">Qualification</text><text x="346" y="233">Property</text><text x="556" y="233">Risk</text><text x="766" y="233">Coverage</text><text x="976" y="233" fill="#27313d">Review</text><text x="975" y="444">RateQuote</text><text x="1122" y="444">Referral</text><text x="596" y="609">Present quote</text><text x="976" y="609">Contact</text><text x="1122" y="609">End</text></g>
+    <g font-size="12" fill="#e7f4fb"><text x="136" y="261">state · ZIP · date</text><text x="346" y="261">home · roof · systems</text><text x="556" y="261">claims · hazards</text><text x="766" y="261">limit · deductible</text></g>
+    <text x="976" y="261" font-family="Inter, Arial, sans-serif" font-size="12" fill="#70561b">confirm or correct</text>
+    <g font-size="12" fill="#dce9f1"><text x="975" y="473">deterministic code</text><text x="1122" y="473">no premium</text><text x="596" y="638">compare · re-rate · select</text><text x="976" y="638">consent</text><text x="1122" y="638">complete</text></g>
+  </g>
+  <g font-family="Inter, Arial, sans-serif" font-size="13" fill="#d6e0e8"><circle cx="58" cy="700" r="5" fill="#71b6ea"/><text x="72" y="705">model-guided collection</text><circle cx="280" cy="700" r="5" fill="#f4c866"/><text x="294" y="705">review gate</text><circle cx="404" cy="700" r="5" fill="#b27be9"/><text x="418" y="705">exact quote response</text><path d="M622 700h28" stroke="#f5c76d" stroke-width="3" stroke-dasharray="7 6"/><text x="662" y="705">correction returns to state owner</text></g>
+</svg>

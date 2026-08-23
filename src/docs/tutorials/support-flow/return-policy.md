@@ -1,5 +1,5 @@
 ---
-title: 3. Deterministic return policy
+title: 4. Deterministic return policy
 eyebrow: SupportFlow tutorial
 lede: ReturnsStep uses a model to collect an item and a reason. AdjudicateStep uses deterministic code to apply the return window, restocking fee, refund amount, and approval threshold.
 source: pico-demo/src/myflow/support-flow/returns-step.ts, pico-demo/src/myflow/support-flow/adjudicate-step.ts, pico-demo/src/myflow/support-flow/backend/policy-engine.ts
@@ -143,4 +143,4 @@ result later, but cannot change it.
 
 <div class="callout callout--note"><span class="callout__title">Two sources of protection</span><p>The prompt says not to promise eligibility or money. The handler and policy engine enforce that rule even if the model ignores the prompt: only the engine decides the route, quote, and committed refund.</p></div>
 
-Next: [4. Approval holds and session restoration](/docs/tutorials/support-flow/approval-holds/).
+Next: [5. Approval holds and session restoration](/docs/tutorials/support-flow/approval-holds/).

@@ -32,42 +32,9 @@ starts every session.
 
 ## The graph
 
-```text
-POST /ai/run
-  { "flowName": "InvoiceFlow",
-    "message": "Extract the configured invoice into JSON.",
-    "config": { "fileName": "data/ACME.png" } }
-        |
-        v
-+--------------------+
-|     NoToolStep     |   no tools, no onCrossing
-|  getPrompt()       |   prompt asks for a JSON date object
-|  onResponse()      |   StringUtil.parseJson
-+--------------------+
-        |
-        | go(ExtractInvoiceStep).withState({ from_previous })
-        v
-+--------------------------------------+
-|         ExtractInvoiceStep           |<---------------------+
-|  getPrompt() injects config.fileName |                      |
-|  onCrossing() seeds a first message  |                      |
-+--------------------------------------+                      |
-        |                                                     |
-        | fetch_file(name)                                    |
-        |   path.join(__dirname, name)                        |
-        |   LLMFileManager.uploadFile()                       |
-        |   new HumanMessage([text, contentPart])             |
-        +--- go(ExtractInvoiceStep).withMessage(msg) ---------+
-        |                                        SELF RE-ENTRY
-        | capture_json(json)
-        |   saveState({ json })
-        |   flow.markCompleted()
-        v
-direct(json).withContentType(HttpContentType.Json)
-        |
-        v
-HTTP 200, Content-Type: application/json, body is the invoice
-```
+<figure class="flow-journey">
+  <img src="/assets/img/invoice-flow-journey.svg" width="1200" height="620" alt="InvoiceFlow graph from POST ai/run through NoToolStep and ExtractInvoiceStep to an application JSON HTTP response, with ExtractInvoiceStep re-entering itself after uploading its configured invoice file.">
+</figure>
 
 The self re-entry is the mechanism that makes multimodal extraction work in a
 single step. `fetch_file` cannot return the file contents as tool feedback —

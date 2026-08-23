@@ -25,10 +25,11 @@ each turn asserts the response *and* re-reads the persisted document.
 
 ```bash
 npm test                 # runs test:flows
-npm run test:flows       # basic-flow, then hotel-flow, then invoice-flow
+npm run test:flows       # standard registered flow suite
 npm run test:basic-flow
 npm run test:hotel-flow
 npm run test:invoice-flow
+npm run test:home-insurance-flow # deterministic rating + 20-turn live scenario
 npm run test2:basic-flow # BASIC_FLOW_TEST_USE_ENV=1 — use your own .env store config
 npm run typecheck        # tsc --project tsconfig.contract.json
 ```
@@ -38,7 +39,8 @@ Each spec is a plain `node --test` file executed through `tsx`, with no test fra
 
 By default the suites override the store to SQLite under `test/.tmp/`, so they never touch
 your configured database. Set `BASIC_FLOW_TEST_USE_ENV=1`, `HOTEL_FLOW_TEST_USE_ENV=1` or
-`INVOICE_FLOW_TEST_USE_ENV=1` to run against whatever your environment configures instead.
+`INVOICE_FLOW_TEST_USE_ENV=1` or `HOME_INSURANCE_FLOW_TEST_USE_ENV=1` to run against
+whatever your environment configures instead.
 
 There are also two unit specs, `test/tool-decorator.spec.ts` and
 `test/tool-response-helper.spec.ts`, which no npm script currently runs. Invoke them directly:

@@ -1,5 +1,5 @@
 ---
-title: 6. Answering without an LLM
+title: 7. Answering without an LLM
 eyebrow: HotelFlow tutorial
 lede: A comparison table is data, not prose. CompareStep renders one in TypeScript and returns it with direct(), which ends the turn without a second model call and leaves the cursor where it was.
 source: pico-demo/src/myflow/hotel-flow/compare-step.ts, pico-demo/src/myflow/hotel-flow/gen-chart.ts, pico-demo/src/myflow/hotel-flow/prompt/compare.md
@@ -300,6 +300,6 @@ an `application/json` content type, which is covered in
 
 ## Next
 
-[7. Present and book](/docs/tutorials/hotel-flow/present-and-book/) closes the loop
+[8. Present and book](/docs/tutorials/hotel-flow/present-and-book/) closes the loop
 with the presentation prompt, a generated confirmation number, and the terminal
 step.

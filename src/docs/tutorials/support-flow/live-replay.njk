@@ -1,0 +1,33 @@
+---
+title: 1. A nine-turn live replay
+eyebrow: SupportFlow tutorial
+lede: "Start with a recorded support-case session: order verification, a consent-gated return request, a billing handoff, and terminal completion."
+source: pico-demo/test/support-flow/support-flow.spec.ts, pico-demo/test/support-flow/support-flow.scenario.json
+---
+
+<p>This is the current recorded model-backed execution of SupportFlow’s nine-turn scenario, with the clock frozen to <code>2027-07-15</code>. The interaction shows the stage boundaries and the approval prompt. The policy, refund arithmetic, ticket creation, and post-run durable-state assertions are explained and tested in the later lessons; model wording is not the policy authority.</p>
+
+<h2 id="run-it-yourself">Run it yourself</h2>
+<pre><code class="language-bash">cd pico-demo
+npm run test:support-flow</code></pre>
+<p>With <code>OPENAI_API_KEY</code> and <code>PICOFLOW_KEY</code>, the live scenario runs through one memory-backed session. Without live credentials, the deterministic policy tests still run and the live case is skipped.</p>
+
+<h2 id="captured-live-transcript">Captured live transcript</h2>
+<div class="quote-replay">
+  <div class="quote-replay__header"><span class="quote-replay__dots" aria-hidden="true"><i></i><i></i><i></i></span><a href="https://github.com/picoflowio/pico-demo/blob/main/test/support-flow/support-flow.scenario.json">test/support-flow/support-flow.scenario.json</a><span>9 turns · recorded e2e</span></div>
+  <ol class="quote-replay__list">
+  {%- for turn in replay.turns %}
+    <li class="quote-replay__turn{% if turn.completed %} quote-replay__turn--completed{% endif %}">
+      <p class="quote-replay__meta">{{ loop.index }} · {{ turn.stage }}{% if turn.completed %} · completed{% endif %}</p>
+      <div class="quote-replay__message quote-replay__message--you"><span class="quote-replay__who">You</span><div class="quote-replay__bubble">{{ turn.user | escape }}</div></div>
+      <div class="quote-replay__message quote-replay__message--bot"><span class="quote-replay__who">Bot</span><div class="quote-replay__bubble">{{ turn.bot | renderTranscriptMarkdown | safe }}</div></div>
+    </li>
+  {%- endfor %}
+  </ol>
+</div>
+
+<h2 id="what-is-code-owned">What is code-owned</h2>
+<table><thead><tr><th>Area</th><th>Contract</th></tr></thead><tbody><tr><td>Order verification</td><td>Order number and email or ZIP resolve through the local order book.</td></tr><tr><td>Return decision</td><td><code>AdjudicateStep</code> applies policy and computes a refund without an LLM decision.</td></tr><tr><td>Approval</td><td>A refund over the agent authority limit must have explicit confirmation before it is committed.</td></tr><tr><td>Billing</td><td>The disputed amount is derived from ledger entries before <code>EscalateStep</code> creates the ticket.</td></tr></tbody></table>
+
+<h2 id="next">Next</h2>
+<p><a href="/docs/tutorials/support-flow/case-shape/">2. Designing a support case</a> maps the hub-and-spoke routes, durable owners, and deterministic workers behind this session.</p>
