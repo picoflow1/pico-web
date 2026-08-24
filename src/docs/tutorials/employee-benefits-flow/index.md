@@ -10,6 +10,8 @@ It uses the durable journey shape from HotelFlow and the strict policy boundary 
 HomeInsuranceQuoteFlow, then adds repeated code-owned corrections across medical,
 savings-account, ancillary, beneficiary, and dependent-care elections.
 
+The intake stages use the flow's `gpt-4o` default. Medical selection, account and ancillary elections, beneficiaries, dependent care, and review override to `gpt-5.1` with low reasoning effort; policy evaluation and final submission remain model-free `LogicStep`s.
+
 The implementation lives in
 [`pico-demo/src/myflow/employee-benefits-flow`](https://github.com/picoflowio/pico-demo/tree/main/src/myflow/employee-benefits-flow),
 and the complete twenty-two-turn scenario lives in

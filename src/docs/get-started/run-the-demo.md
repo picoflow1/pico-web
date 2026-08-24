@@ -56,7 +56,7 @@ Copy `.env-example` to `.env` and fill in only what your target flow needs.
 | `InvoiceFlow` | `google:gemini-2.5-flash`, with a `gemini-3.1-pro-preview` step override | `GEMINI_API_KEY` |
 | `SupportFlow` | `openai:gpt-4o` | `OPENAI_API_KEY` |
 | `HomeInsuranceQuoteFlow` | `openai:gpt-4o` | `OPENAI_API_KEY` |
-| `EmployeeBenefitsFlow` | `openai:gpt-4o` | `OPENAI_API_KEY` |
+| `EmployeeBenefitsFlow` | `openai:gpt-4o`, with `gpt-5.1` overrides for plan selection, elections, and review | `OPENAI_API_KEY` |
 
 `app.module.ts` also constructs Anthropic and NVIDIA adapters. Registering an adapter with
 an undefined API key is harmless; the credential is only used when a flow or step actually
