@@ -2,7 +2,7 @@
 title: Run the demo app
 eyebrow: Get started
 lede: Install and start the NestJS demo application, set only the environment variables you actually need, and run the end-to-end flow scenarios.
-source: pico-demo/README.md
+source: pico-demo/README.md, pico-demo/src/app.module.ts, pico-demo/package.json
 ---
 
 The demo is a NestJS + Fastify service that registers the example flows, exposes them over
@@ -54,6 +54,9 @@ Copy `.env-example` to `.env` and fill in only what your target flow needs.
 | `BasicFlow` | `openai:gpt-4o-mini`, with `gpt-5` and `gpt-5.1` step overrides | `OPENAI_API_KEY` |
 | `HotelFlow` | `openai:gpt-4o`, with `gpt-5.1` step overrides | `OPENAI_API_KEY` |
 | `InvoiceFlow` | `google:gemini-2.5-flash`, with a `gemini-3.1-pro-preview` step override | `GEMINI_API_KEY` |
+| `SupportFlow` | `openai:gpt-4o` | `OPENAI_API_KEY` |
+| `HomeInsuranceQuoteFlow` | `openai:gpt-4o` | `OPENAI_API_KEY` |
+| `EmployeeBenefitsFlow` | `openai:gpt-4o` | `OPENAI_API_KEY` |
 
 `app.module.ts` also constructs Anthropic and NVIDIA adapters. Registering an adapter with
 an undefined API key is harmless; the credential is only used when a flow or step actually
@@ -115,7 +118,7 @@ npm run start:dev
 
 The service listens on port 8000 and binds `0.0.0.0`.
 
-<div class="callout callout--note"><span class="callout__title">Note</span><p>The <code>postbuild</code> asset copy matters. <code>HotelFlow</code>, <code>InvoiceFlow</code>, and <code>HomeInsuranceQuoteFlow</code> load prompt files, configuration JSON, catalogs, or sample documents from disk at runtime, so running <code>dist/main.js</code> after a bare <code>nest build</code> will fail to find them.</p></div>
+<div class="callout callout--note"><span class="callout__title">Note</span><p>The <code>postbuild</code> asset copy matters. <code>HotelFlow</code>, <code>InvoiceFlow</code>, <code>HomeInsuranceQuoteFlow</code>, and <code>EmployeeBenefitsFlow</code> load prompt files, configuration JSON, catalogs, or sample documents from disk at runtime, so running <code>dist/main.js</code> after a bare <code>nest build</code> will fail to find them.</p></div>
 
 ## Which flows are registered
 
@@ -130,6 +133,7 @@ FlowEngine.create({
     InvoiceFlow,
     SupportFlow,
     HomeInsuranceQuoteFlow,
+    EmployeeBenefitsFlow,
   ],
   providers: [
     ...ModelProvider.createBuiltinAdapters({
@@ -173,7 +177,7 @@ curl http://localhost:8000/ai/flows
 ```
 
 ```json
-["BasicFlow","HotelFlow","InvoiceFlow","SupportFlow","HomeInsuranceQuoteFlow"]
+["BasicFlow","HotelFlow","InvoiceFlow","SupportFlow","HomeInsuranceQuoteFlow","EmployeeBenefitsFlow"]
 ```
 
 ### What each flow demonstrates
@@ -185,6 +189,7 @@ curl http://localhost:8000/ai/flows
 | `InvoiceFlow` | One-shot document extraction | A step with no tools, multimodal file input, structured output, `HttpContentType.Json`, and document fan-out via `spawnSteps()`. |
 | `SupportFlow` | Durable support case | Deterministic policy, approval boundaries, isolated specialist memory, and session restoration. |
 | `HomeInsuranceQuoteFlow` | Twenty-turn quote journey | Shared intake memory, isolated coverage/contact stages, deterministic rating, exact quote tables, correction, re-rating, and consent. |
+| `EmployeeBenefitsFlow` | Twenty-two-turn enrollment journey | Directory-backed eligibility, household validation, exact plan and network tools, HSA and dependent-care limits, ancillary pricing, beneficiary validation, explicit review, and deterministic submission. |
 
 ## Run the flow tests
 
@@ -194,6 +199,7 @@ npm run test:hotel-flow
 npm run test:invoice-flow
 npm run test:support-flow
 npm run test:home-insurance-flow
+npm run test:employee-benefits-flow
 ```
 
 `npm test` runs the standard flow suite in sequence via `test:flows`.
@@ -222,6 +228,7 @@ A live scenario is skipped, not failed, when its provider keys are absent:
 | `test:hotel-flow` | `OPENAI_API_KEY`, `PICOFLOW_KEY` | `RUN_LIVE_HOTEL_FLOW_TEST=0` |
 | `test:invoice-flow` | `GEMINI_API_KEY`, `PICOFLOW_KEY` | `RUN_LIVE_INVOICE_FLOW_TEST=0` |
 | `test:home-insurance-flow` | `OPENAI_API_KEY`, `PICOFLOW_KEY` | `RUN_LIVE_HOME_INSURANCE_FLOW_TEST=0` |
+| `test:employee-benefits-flow` | `OPENAI_API_KEY`, `PICOFLOW_KEY` | `RUN_LIVE_EMPLOYEE_BENEFITS_FLOW_TEST=0` |
 
 `BasicFlow` additionally supports a deterministic mode that replaces the provider with a
 scripted model, so it exercises the same transitions and SQLite assertions without spending
@@ -242,6 +249,11 @@ fluent answer cannot disguise missing state or a wrong transition.
 `HomeInsuranceQuoteFlow` applies the same principle over twenty live turns. Its spec also
 tests rating and referral decisions without a model, and the final session assertions prove
 that the roof correction, deductible re-rate, selected option, and contact consent persisted.
+
+`EmployeeBenefitsFlow` extends that pattern to twenty-two live turns. Its
+deterministic tests own eligibility, plan prices, provider-network status, HSA and
+dependent-care limits, ancillary pricing, pending evidence of insurability, and the final
+enrollment record. The live scenario adds semantic grading and persisted-state assertions.
 
 ## Next
 

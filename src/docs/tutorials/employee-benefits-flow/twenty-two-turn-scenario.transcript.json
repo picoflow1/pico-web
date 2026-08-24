@@ -1,0 +1,315 @@
+{
+  "flowName": "EmployeeBenefitsFlow",
+  "testDate": "2026-11-05T00:00:00.000Z",
+  "judgeModel": "gpt-4o",
+  "turns": [
+    {
+      "label": "enrollment scope and identity prompt",
+      "input": "Hi, I need to enroll in my employee benefits.",
+      "expectedResponse": "Explain that this is a fictional 2027 benefits enrollment demonstration and ask for employee ID, plan year, and enrollment event. Ask for an event date only if the event is new hire or qualifying life event; do not ask for one for open enrollment.",
+      "completed": false,
+      "actualResponse": "Welcome to the fictional 2027 benefits enrollment demonstration. To get started with your enrollment, I'll need a few details:\n\n1. Your Employee ID in the format `E-0000`.\n2. The plan year, which is `2027`.\n3. Your enrollment event type: `open_enrollment`, `new_hire`, or `qualifying_life_event`.\n4. If you are enrolling due to a new-hire or qualifying-life event, please provide the event date in `YYYY-MM-DD` format. If it's open enrollment, no event date is needed.\n\nCould you please provide me with this information?",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The response correctly explains the fictional 2027 benefits enrollment demonstration and asks for the necessary information: employee ID, plan year, and enrollment event. It appropriately requests an event date only for new hire or qualifying life events, not for open enrollment.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "eligibility and household tier prompt",
+      "input": "My employee ID is E-1042. This is 2027 open enrollment.",
+      "expectedResponse": "Use the eligibility tool, recognize the employee as eligible under the fictional rules, and ask who should be covered or which household coverage tier is needed.",
+      "completed": false,
+      "actualResponse": "Please select the coverage tier that you want for your benefits:\n\n- `employee_only`: Only you will be covered.\n- `employee_spouse`: You and your spouse or domestic partner will be covered.\n- `employee_children`: You and your dependent children will be covered.\n- `family`: You, your spouse or domestic partner, and your dependent children will all be covered.\n\nOnce you've selected the coverage tier, if it includes additional people other than yourself, I'll need their names, relationships, and birth dates. If it includes a spouse or domestic partner, I'll also need to know if they have access to other medical coverage. \n\nWhich coverage tier would you like to choose?",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The assistant correctly used the eligibility tool to determine eligibility and asked for the household coverage tier, which aligns with the expected behavior.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "family details prompt",
+      "input": "I want family coverage for me, my spouse, and our two children.",
+      "expectedResponse": "Ask for each covered dependent's name, relationship, and birth date, and whether the spouse has access to other medical coverage. Do not request government identifiers.",
+      "completed": false,
+      "actualResponse": "Great! For family coverage, I'll need the following details:\n\n1. Your spouse or domestic partner's name, relationship (spouse or domestic_partner), and birth date.\n2. Both of your children's names, relationships (child), and birth dates.\n3. Please let me know if your spouse or domestic partner has access to other medical coverage.\n\nPlease provide all this information in one response.",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The actual response correctly asks for each covered dependent's name, relationship, and birth date, and whether the spouse has access to other medical coverage, without requesting government identifiers.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "care preferences prompt",
+      "input": "My spouse is Morgan Rivera, born 1987-03-12, and has other medical coverage available. Our children are Sam Rivera, born 2018-04-10, and Riley Rivera, born 2010-09-03.",
+      "expectedResponse": "Validate and save the family household, then ask for broad anticipated care use, prescription-use frequency, network flexibility, and plan priorities without requesting diagnoses or medication names.",
+      "completed": false,
+      "actualResponse": "Let's gather some broad information about your anticipated healthcare needs and preferences. Please provide your input for each of the following categories:\n\n1. **Anticipated Care Use:** How would you describe the healthcare needs of you and your family?\n   - `preventive_only`: Mostly routine check-ups and preventive care.\n   - `moderate`: Occasional doctor visits and minor medical needs.\n   - `high`: Frequent doctor visits, specialists, or ongoing care needs.\n\n2. **Prescription Use:** How often do you and your family members use prescriptions?\n   - `none`: Rarely or not at all.\n   - `occasional`: Some prescriptions now and then.\n   - `regular`: Regularly filling prescriptions.\n\n3. **Network Preference:** Do you prefer a plan that covers only in-network providers or one that offers more flexibility with out-of-network providers?\n   - `in_network_only`\n   - `out_of_network_flexibility`\n\n4. **Priorities:** What are the most important factors for you when choosing a plan? You can select one or more of the following:\n   - `lowest_payroll_cost`\n   - `lower_deductible`\n   - `out_of_network_access`\n   - `hsa_savings`\n   - `prescription_coverage`\n\nPlease provide your responses according to the options listed above.",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The assistant correctly asked for anticipated care use, prescription-use frequency, network flexibility, and plan priorities without requesting diagnoses or medication names.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "deterministic medical plan options",
+      "input": "We expect moderate use and regular prescriptions. I want out-of-network flexibility, HSA savings, and good prescription coverage.",
+      "expectedResponse": "Present exact fictional Value EPO, HSA Advantage HDHP, and Standard PPO options with payroll premiums, deductible, out-of-pocket maximum, HSA and out-of-network facts, plus a clearly rule-based fit and disclaimer.",
+      "completed": false,
+      "actualResponse": "### 2027 medical plans — family\n\n| ID | Plan | Per paycheck | Annual payroll | Family deductible | Family out-of-pocket max | HSA / employer funding | Out-of-network |\n|---|---|---:|---:|---:|---:|---|---|\n| EPO_VALUE | Value EPO | $155.00 | $3,720.00 | $2,500.00 | $9,000.00 | No | No |\n| HDHP_HSA | HSA Advantage HDHP | $125.00 | $3,000.00 | $5,000.00 | $10,000.00 | Yes / $1,500.00 | Yes |\n| PPO_STANDARD | Standard PPO | $220.00 | $5,280.00 | $3,000.00 | $8,000.00 | No | Yes |\n\n**Rule-based fit:** HDHP_HSA\n- You prioritized HSA savings and the HDHP includes an employer HSA contribution.\n- Compare prescription terms carefully because you reported regular medication use.\n\nFictional demo terms under rules benefits-demo-2027.1; this is decision support, not financial, tax, or medical advice. Verify the official plan documents and provider directory.",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The response correctly presents the Value EPO, HSA Advantage HDHP, and Standard PPO options with necessary details including payroll premiums, deductibles, out-of-pocket maximums, HSA and out-of-network information. It also provides a rule-based fit and disclaimer as expected.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "exact HDHP and PPO comparison",
+      "input": "Compare the HSA Advantage HDHP and Standard PPO.",
+      "expectedResponse": "Return an exact structured comparison of HDHP_HSA and PPO_STANDARD using code-owned payroll, deductible, out-of-pocket, prescription, HSA, and network terms.",
+      "completed": false,
+      "actualResponse": "### Medical plan comparison\n\n| Plan | Per paycheck | Annual payroll | Family deductible | Family OOP max | Prescription terms | HSA / employer funding | Out-of-network |\n|---|---:|---:|---:|---:|---|---|---|\n| HSA Advantage HDHP (HDHP_HSA) | $125.00 | $3,000.00 | $5,000.00 | $10,000.00 | 20% after deductible | Yes / $1,500.00 | Yes |\n| Standard PPO (PPO_STANDARD) | $220.00 | $5,280.00 | $3,000.00 | $8,000.00 | $10 / $40 / $80 | No | Yes |\n\nThese are fictional demo terms. Verify official plan documents before enrolling.",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The response provides a structured comparison of the HDHP_HSA and PPO_STANDARD plans, including payroll, deductible, out-of-pocket, prescription, HSA, and network terms as expected.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "provider network lookup",
+      "input": "Is Dr. Maya Chen in network for the Value EPO?",
+      "expectedResponse": "Use the fictional provider directory and state that Dr. Maya Chen is out of network for EPO_VALUE, with a reminder to verify before care. Do not infer status from plan type alone.",
+      "completed": false,
+      "actualResponse": "Dr. Maya Chen is out of network for EPO_VALUE in the fictional demo directory. Recheck before receiving care.",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The response correctly identifies Dr. Maya Chen as out of network for the Value EPO and advises verification before care, as expected.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "select HDHP and ask for HSA contribution",
+      "input": "Select the HSA Advantage HDHP.",
+      "expectedResponse": "Validate and save HDHP_HSA, then explain the HSA annual demo limit and $1,500 employer contribution and ask for the employee's annual contribution or waiver.",
+      "completed": false,
+      "actualResponse": "With the selected HSA Advantage HDHP medical plan, you have the option to enroll in a Health Savings Account (HSA). Here's how it works:\n\n- **Employer Contribution:** Northstar Works contributes $1,500 annually to your HSA.\n- **Employee Contribution:** You can contribute additional funds to your HSA. The combined contribution limit for this demo plan year is $9,000.\n\nThe HSA is a tax-advantaged account that helps you pay for qualified medical expenses. The funds roll over from year to year, and you own the account even if you change jobs or retire.\n\nPlease provide the amount you wish to contribute to your HSA for the year (in whole dollars). Remember, your total contribution combined with the employer's contribution cannot exceed $9,000.",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The assistant correctly validated and saved the HDHP_HSA selection, explained the HSA annual limit and employer contribution, and asked for the employee's annual contribution.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "reject excessive HSA contribution",
+      "input": "I want to contribute $8,000 to the HSA.",
+      "expectedResponse": "Reject the election because the employee $8,000 plus employer $1,500 totals $9,500, above the $9,000 fictional limit, and ask for a corrected amount.",
+      "completed": false,
+      "actualResponse": "The requested $8,000 employee contribution, combined with the $1,500 employer contribution, exceeds the annual limit of $9,000 for the plan. Therefore, your maximum allowable personal contribution can be up to $7,500.\n\nPlease provide a corrected annual employee contribution amount, up to $7,500, for your HSA.",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The response correctly identifies that the requested contribution exceeds the limit and asks for a corrected amount within the allowable range.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "accept HSA and begin ancillary choices",
+      "input": "Make my HSA contribution $6,000 instead.",
+      "expectedResponse": "Proceed to the dental and vision stage and ask about the supported choices. The response does not need to acknowledge, repeat, or confirm the corrected HSA amount because the preceding tool call already validated and saved it.",
+      "completed": false,
+      "actualResponse": "Let's start with your dental and vision options.\n\n### Dental Plan Options\n\n- **Waive**: No dental coverage.\n- **Basic**: Standard dental coverage for you and eligible family members.\n- **Premium**: Enhanced dental coverage with additional benefits.\n\nWould you like to select `waive`, `basic`, or `premium` for your dental plan?\n\n### Vision Plan Options\n\n- **Waive**: No vision coverage.\n- **Standard**: Standard vision coverage for you and eligible family members.\n\nWould you like to select `waive` or `standard` for your vision plan? \n\nPlease let me know your choices for both plans.",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The response correctly proceeds to the dental and vision stage without acknowledging the HSA contribution change, as expected.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "dental option comparison",
+      "input": "What is the difference between Basic and Premium dental?",
+      "expectedResponse": "Return an exact Basic versus Premium dental comparison with family payroll costs, annual maximums, orthodontia terms, and a fictional-plan disclaimer.",
+      "completed": false,
+      "actualResponse": "### Dental options\n\n| Option | Per paycheck | Annual maximum | Orthodontia |\n|---|---:|---:|---|\n| Basic | $28.00 | $1,500.00 | Not included |\n| Premium | $48.00 | $2,500.00 | 50% up to a $2,000.00 lifetime maximum |\n| Waive | $0.00 | — | — |\n\nFictional demo terms; the official certificate controls.",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The response provides a detailed comparison of Basic and Premium dental options, including per paycheck costs, annual maximums, orthodontia terms, and a fictional-plan disclaimer, as expected.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "life and disability prompt",
+      "input": "Choose Premium dental and Standard vision.",
+      "expectedResponse": "Retain Premium dental and Standard vision, then ask for supplemental-life multiple and short-term and long-term disability choices.",
+      "completed": false,
+      "actualResponse": "Great! You've chosen:\n\n- **Dental Plan**: Premium\n- **Vision Plan**: Standard\n\nNext, let's move on to your elections for supplemental life insurance and disability coverage.\n\n### Supplemental Life Insurance\n\nThis is additional life insurance above the standard employee coverage. You can choose a multiple of your annual salary:\n\n- **0×**: No additional coverage\n- **1×**: Once your annual salary\n- **2×**: Twice your annual salary\n- **3×**: Three times your annual salary\n\n### Disability Coverage Options\n\n- **Short-Term Disability**: Provides a portion of your income for a short period if you're unable to work due to illness or injury.\n- **Long-Term Disability**: Provides income for a longer period if you're unable to work due to a serious condition.\n\nWould you like to elect any supplemental life coverage and/or disability options? Please specify your choices for all three.",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The actual response correctly retains the Premium dental and Standard vision plans and proceeds to ask for supplemental life insurance and disability coverage choices, as expected.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "three-times life explanation",
+      "input": "How much coverage and payroll cost would 3 times salary provide?",
+      "expectedResponse": "Use code-owned salary and pricing to explain $234,000 of supplemental life for $9.36 per paycheck, that evidence of insurability is required, and that no health details are collected in chat.",
+      "completed": false,
+      "actualResponse": "Supplemental life at 3× salary provides $234,000.00 of fictional demo coverage for $9.36 per paycheck. This amount requires evidence of insurability. The election can be submitted, but coverage above the guaranteed amount remains pending until approved. No health details are collected in this chat.",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The response correctly explains the coverage amount, payroll cost, and requirement for evidence of insurability without asking for health details.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "complete ancillary elections",
+      "input": "Choose 3 times salary life insurance, plus both short-term and long-term disability. Keep Premium dental and Standard vision.",
+      "expectedResponse": "Validate and save the complete ancillary election, preserve the evidence-of-insurability requirement, and ask for beneficiary names, relationships, and percentages totaling 100.",
+      "completed": false,
+      "actualResponse": "Please provide the following information for each beneficiary you'd like to designate for your supplemental life insurance:\n\n1. **Name**: The full name of the beneficiary.\n2. **Relationship**: Your relationship to the beneficiary in your own words.\n3. **Percentage**: The whole-number percentage of the benefit you wish to allocate to this beneficiary. The total must equal exactly 100%.\n\nYou can list up to 6 beneficiaries. Let me know if you need any assistance or wish to stop the process.",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The response correctly asks for beneficiary names, relationships, and percentages totaling 100% after validating and saving the ancillary elections.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "reject beneficiary allocation below 100",
+      "input": "Set Morgan Rivera, spouse, to 60 percent and Sam Rivera, child, to 30 percent.",
+      "expectedResponse": "Reject the 90 percent total and ask the employee to complete an allocation totaling exactly 100 percent without requesting Social Security numbers. Either adjusting the existing percentages or adding another beneficiary for the remaining 10 percent is valid.",
+      "completed": false,
+      "actualResponse": "You've allocated 90 percent of the benefit. Please provide the details for additional beneficiary/beneficiaries to allocate the remaining 10 percent. If you need further assistance or wish to stop, feel free to let me know.",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The response correctly identifies the issue with the 90 percent total and prompts the user to allocate the remaining 10 percent without requesting Social Security numbers. It offers a valid path to correct the allocation.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "accept beneficiary correction",
+      "input": "Correction: Morgan gets 70 percent and Sam gets 30 percent.",
+      "expectedResponse": "Accept the corrected 100 percent allocation and ask whether to elect or waive the dependent-care FSA, noting the code-owned eligible dependent context or limit.",
+      "completed": false,
+      "actualResponse": "The dependent-care FSA can reimburse eligible work-related childcare expenses under the fictional demo plan. It is separate from a healthcare FSA, has a $5,000 annual demo limit, and tax eligibility should be verified with the official plan materials or a tax adviser. Would you like to elect an annual contribution amount or waive this benefit with $0?",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The assistant correctly accepted the beneficiary correction and asked about the dependent-care FSA election, providing relevant plan details.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "dependent care explanation",
+      "input": "What can the dependent-care FSA pay for?",
+      "expectedResponse": "Explain eligible work-related childcare in the fictional demo, distinguish it from a healthcare FSA, state the $5,000 demo limit, and avoid guaranteeing tax eligibility.",
+      "completed": false,
+      "actualResponse": "The dependent-care FSA can reimburse eligible work-related childcare expenses under the fictional demo plan. It is separate from a healthcare FSA, has a $5,000 annual demo limit, and tax eligibility should be verified with the official plan materials or a tax adviser. Would you like to elect an annual contribution amount or waive this benefit with $0?",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The response correctly explains eligible work-related childcare expenses, distinguishes the dependent-care FSA from a healthcare FSA, states the $5,000 demo limit, and avoids guaranteeing tax eligibility.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "reject excessive dependent care election",
+      "input": "Contribute $6,000 to dependent care.",
+      "expectedResponse": "Reject the $6,000 election because it exceeds the $5,000 fictional limit and ask for a correction.",
+      "completed": false,
+      "actualResponse": "The dependent-care FSA can reimburse eligible work-related childcare expenses under the fictional demo plan. It is separate from a healthcare FSA, has a $5,000 annual demo limit, and tax eligibility should be verified with the official plan materials or a tax adviser. Would you like to elect an annual contribution amount or waive this benefit with $0?",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The response correctly identifies the $5,000 limit and prompts for a valid election without accepting the excessive $6,000 contribution.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "complete elections and show review",
+      "input": "Use $3,000 for dependent care.",
+      "expectedResponse": "Accept the dependent-care election and present a complete authoritative review covering household, medical, HSA, dental, vision, life, disability, beneficiaries, dependent care, payroll costs, and pending evidence of insurability.",
+      "completed": false,
+      "actualResponse": "### Benefits enrollment review for Alex Rivera\n\n- Plan year / event: 2027 / open enrollment\n- Household: family with Morgan Rivera, Sam Rivera, Riley Rivera\n- Medical: HSA Advantage HDHP (HDHP_HSA), $125.00 per paycheck\n- Health account: HSA, employee $6,000.00 + employer $1,500.00 annually\n- Dental / vision: premium / standard\n- Supplemental life: 3× salary ($234,000.00)\n- Disability: short-term elected; long-term elected\n- Beneficiaries: Morgan Rivera 70%, Sam Rivera 30%\n- Dependent-care FSA: $3,000.00 annually\n- Ancillary payroll cost: $86.86 per paycheck\n- Pending requirements: EVIDENCE_OF_INSURABILITY\n\nConfirm submission or request a contribution correction. Official plan documents control, and pending evidence-of-insurability coverage is not active until approved.",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The response correctly accepts the dependent-care election and presents a complete authoritative review covering all required aspects, including household, medical, HSA, dental, vision, life, disability, beneficiaries, dependent care, payroll costs, and pending evidence of insurability.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "review-time HSA correction",
+      "input": "Before submitting, reduce my HSA contribution to $5,500.",
+      "expectedResponse": "Validate and save the $5,500 HSA correction and return an updated complete review without losing any other election.",
+      "completed": false,
+      "actualResponse": "### Benefits enrollment review for Alex Rivera\n\n- Plan year / event: 2027 / open enrollment\n- Household: family with Morgan Rivera, Sam Rivera, Riley Rivera\n- Medical: HSA Advantage HDHP (HDHP_HSA), $125.00 per paycheck\n- Health account: HSA, employee $5,500.00 + employer $1,500.00 annually\n- Dental / vision: premium / standard\n- Supplemental life: 3× salary ($234,000.00)\n- Disability: short-term elected; long-term elected\n- Beneficiaries: Morgan Rivera 70%, Sam Rivera 30%\n- Dependent-care FSA: $3,000.00 annually\n- Ancillary payroll cost: $86.86 per paycheck\n- Pending requirements: EVIDENCE_OF_INSURABILITY\n\nConfirm submission or request a contribution correction. Official plan documents control, and pending evidence-of-insurability coverage is not active until approved.",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The response correctly validated and saved the HSA contribution correction to $5,500 and provided an updated review without losing any other election.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "pending requirement explanation",
+      "input": "What does the evidence-of-insurability item mean?",
+      "expectedResponse": "Explain that separate carrier review is required for 3-times supplemental life, enrollment can be submitted while excess coverage remains pending, and no health details are collected in chat.",
+      "completed": false,
+      "actualResponse": "Evidence of insurability is a separate carrier review for the 3× supplemental-life election. The enrollment can be submitted now, but coverage above the guaranteed amount remains pending. No health details are collected in this chat.",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The actual response correctly explains the evidence-of-insurability requirement, submission process, and privacy policy regarding health details, matching the expected semantic behavior.",
+        "missing": [],
+        "contradictions": []
+      }
+    },
+    {
+      "label": "confirmed deterministic enrollment",
+      "input": "Everything is correct. Submit my enrollment.",
+      "expectedResponse": "Create and confirm a deterministic BEN-2027 enrollment record, identify HDHP_HSA, January 1 2027 effective date, submitted-with-pending-requirements status, $566.03 estimated total deduction per paycheck, pending evidence of insurability, no chat payment, and complete the session.",
+      "completed": true,
+      "actualResponse": "Your enrollment for BEN-2027-61F7824BF5 for the plan year 2027 has been confirmed. The status is submitted_with_pending_requirements, with an effective date of 2027-01-01. You have selected the medical plan HDHP_HSA, and the total estimated payroll deduction will be $566.03 per paycheck. Please note that there are pending requirements: EVIDENCE_OF_INSURABILITY.\n\nNo payment has been taken during this chat. Remember, this is a fictional benefits demonstration, and official plan documents control. Your coverage is pending and will not be active until all requirements are approved. If you have any other questions or need further assistance, feel free to ask!",
+      "judge": {
+        "pass": true,
+        "score": 1,
+        "reason": "The actual response correctly confirms the enrollment with the expected details, including the plan selection, effective date, status, estimated deduction, and pending requirements. It does not claim submission before confirmation and aligns with the expected semantic behavior.",
+        "missing": [],
+        "contradictions": []
+      }
+    }
+  ]
+}

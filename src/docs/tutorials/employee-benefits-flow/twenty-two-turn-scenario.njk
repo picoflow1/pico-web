@@ -1,0 +1,67 @@
+---
+title: 1. A twenty-two-turn live replay
+eyebrow: EmployeeBenefitsFlow tutorial
+lede: "Start with a completed model-backed enrollment: eligibility, exact plans, recoverable corrections, review, and deterministic submission."
+source: pico-demo/test/employee-benefits-flow/employee-benefits-flow.e2e-spec.ts, pico-demo/test/employee-benefits-flow/employee-benefits-flow.scenario.json
+---
+
+<p>Read this first. The 22 responses below were captured from a successful live <code>EmployeeBenefitsFlow</code> run with the test clock frozen to <code>2026-11-05</code>. This is a fictional benefits demonstration; all employee and dependent names are test fixtures.</p>
+
+<p>Collection language can vary on another run. Eligibility, plan terms, provider lookup, contribution limits, beneficiary totals, payroll costs, pending requirements, and the final enrollment record are code-owned assertions.</p>
+
+<h2 id="run-it-yourself">Run it yourself</h2>
+
+<p>From the demo repository, with <code>OPENAI_API_KEY</code> and <code>PICOFLOW_KEY</code> configured:</p>
+
+<pre><code class="language-bash">cd pico-demo
+npm run test:employee-benefits-flow</code></pre>
+
+<p>The test sends all 22 requests to <code>POST /ai/run</code> with one durable session ID, semantically evaluates every response, and reads the final SQLite session document. It verifies the selected HDHP, corrected $5,500 HSA election, ancillary choices, 100% beneficiary allocation, $3,000 dependent-care election, pending evidence-of-insurability requirement, and completed status.</p>
+
+<p>For a fast provider-free check of the same policy rules:</p>
+
+<pre><code class="language-bash">RUN_LIVE_EMPLOYEE_BENEFITS_FLOW_TEST=0 npm run test:employee-benefits-flow</code></pre>
+
+<h2 id="captured-live-transcript">Captured live transcript</h2>
+
+<div class="quote-replay">
+  <div class="quote-replay__header">
+    <span class="quote-replay__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+    <a href="https://github.com/picoflowio/pico-demo/blob/main/test/employee-benefits-flow/employee-benefits-flow.scenario.json">test/employee-benefits-flow/employee-benefits-flow.scenario.json</a>
+    <span>22 turns · recorded e2e</span>
+  </div>
+  <ol class="quote-replay__list">
+  {%- for turn in replay.turns %}
+    <li class="quote-replay__turn{% if turn.completed %} quote-replay__turn--completed{% endif %}">
+      <p class="quote-replay__meta">{{ loop.index }} · {{ turn.stage }}{% if turn.completed %} · completed{% endif %}</p>
+      <div class="quote-replay__message quote-replay__message--you">
+        <span class="quote-replay__who">You</span>
+        <div class="quote-replay__bubble">{{ turn.user | escape }}</div>
+      </div>
+      <div class="quote-replay__message quote-replay__message--bot">
+        <span class="quote-replay__who">Bot</span>
+        <div class="quote-replay__bubble">{{ turn.bot | renderTranscriptMarkdown | safe }}</div>
+      </div>
+    </li>
+  {%- endfor %}
+  </ol>
+</div>
+
+<p>The final HTTP response sets <code>completed: true</code>. The terminal step is the last active cursor; an API client must not submit a further employee message to that session.</p>
+
+<h2 id="what-to-compare-when-your-replay-differs">What to compare when your replay differs</h2>
+
+<table>
+  <thead><tr><th>Point in replay</th><th>Contract to preserve</th></tr></thead>
+  <tbody>
+    <tr><td>Turns 1–4</td><td>Collect only the enrollment and covered-household facts required for policy evaluation; do not request diagnoses or government IDs.</td></tr>
+    <tr><td>Turns 5–7</td><td>Medical plans, terms, and network status are deterministic output; no plan fact is invented.</td></tr>
+    <tr><td>Turns 9, 15, and 18</td><td>Invalid contribution or beneficiary values stay in their owning stage and ask for a correction.</td></tr>
+    <tr><td>Turns 19–20</td><td>The review is read from saved application state and shows the corrected $5,500 HSA election.</td></tr>
+    <tr><td>Turn 22</td><td>Submission is confirmed, pending evidence of insurability remains pending, and no payment or active coverage is claimed.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="next">Next</h2>
+
+<p><a href="/docs/tutorials/employee-benefits-flow/multi-stage-design/">2. Designing an enrollment journey</a> maps the stage boundaries, deterministic policy, corrections, and state owners that produce this replay.</p>

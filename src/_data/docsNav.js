@@ -299,6 +299,19 @@ export default {
 						},
 					],
 				},
+				{
+					label: "EmployeeBenefitsFlow \u2014 guided enrollment",
+					items: [
+						{ title: "Flow overview", url: "/docs/tutorials/employee-benefits-flow/" },
+						{ title: "1. A twenty-two-turn live replay", url: "/docs/tutorials/employee-benefits-flow/twenty-two-turn-scenario/" },
+						{ title: "2. Designing an enrollment journey", url: "/docs/tutorials/employee-benefits-flow/multi-stage-design/" },
+						{ title: "3. Prompt files and bounded collection", url: "/docs/tutorials/employee-benefits-flow/prompt-files/" },
+						{ title: "4. Deterministic eligibility, plans, and limits", url: "/docs/tutorials/employee-benefits-flow/policy-and-plan-catalog/" },
+						{ title: "5. Memory namespaces and expiry", url: "/docs/tutorials/employee-benefits-flow/memory-and-expiry/" },
+						{ title: "6. Correct, review, and submit", url: "/docs/tutorials/employee-benefits-flow/correct-and-review/" },
+						{ title: "7. Exact plan tables and response fallback", url: "/docs/tutorials/employee-benefits-flow/direct-plan-tables/" },
+					],
+				},
 			],
 		},
 		{

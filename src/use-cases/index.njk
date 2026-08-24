@@ -1,7 +1,7 @@
 ---
 layout: layouts/marketing.njk
 title: Use cases for conversational applications
-description: Representative customer-facing workflows built as PicoFlow conversational applications — reservations, support resolution, claims intake, onboarding, procurement, and document processing — each with the proven flow pattern behind it.
+description: Representative customer-facing workflows built as PicoFlow conversational applications — insurance quotes, employee benefits enrollment, reservations, support resolution, claims intake, onboarding, procurement, and document processing — each with the proven flow pattern behind it.
 ---
 <section class="page-hero">
   <div class="shell">
@@ -17,11 +17,31 @@ description: Representative customer-facing workflows built as PicoFlow conversa
 
 <section class="section section--white" aria-labelledby="patterns-title">
   <div class="shell">
-    <p class="eyebrow">Proven patterns, not blank pages</p>
+    <p class="eyebrow">Flagship flows and proven patterns</p>
     <h2 class="section-heading" id="patterns-title">Use AI for perception and ambiguity. Use explicit steps for decisions.</h2>
     <p class="section-lede">The engineering knowledge that matters is knowing which responsibilities belong to an LLM and which must be deterministic: where validation lives, how failures recover, and when a human must review. Each pattern below encodes that division for one class of workflow — and the flows are ordinary PicoFlow steps, so a new project starts from a proven envelope instead of inventing its architecture from scratch.</p>
 
     <div class="pattern-list">
+      <article class="pattern" id="insurance-quote">
+        <div class="pattern__head">
+          <p class="pattern__tag">Insurance quoting</p>
+          <h3>Home insurance quote</h3>
+        </div>
+        <p class="pattern__stages">Qualify → collect → rate → compare → correct → consent</p>
+        <p>Guide a prospective customer through a preliminary quote while code owns eligibility, referral reasons, premiums, quote IDs, re-rating, and consent. The model collects and explains; it never fabricates a price or binds coverage.</p>
+        <a href="/docs/tutorials/home-insurance-flow/">Built as a complete tutorial — walk through it <span aria-hidden="true">→</span></a>
+      </article>
+
+      <article class="pattern" id="employee-benefits">
+        <div class="pattern__head">
+          <p class="pattern__tag">Benefits enrollment</p>
+          <h3>Employee benefits enrollment</h3>
+        </div>
+        <p class="pattern__stages">Verify → cover → compare → elect → review → submit</p>
+        <p>Verify eligibility, collect household coverage, compare plan options, validate account limits and beneficiaries, disclose pending requirements, and submit only after review. Policy code owns plan terms, limits, payroll totals, and the final enrollment record.</p>
+        <a href="/docs/tutorials/employee-benefits-flow/">Built as a complete tutorial — walk through it <span aria-hidden="true">→</span></a>
+      </article>
+
       <article class="pattern" id="reservations">
         <div class="pattern__head">
           <p class="pattern__tag">Reservations &amp; commerce</p>
