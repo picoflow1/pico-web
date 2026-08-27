@@ -1,0 +1,1404 @@
+---
+layout: layouts/ezgraph.njk
+title: EZGraph — the application layer for LangGraph
+description: EZGraph adds a durable, typed application layer to LangGraph with no EZGraph account, license key, or runtime fee for personal and enterprise production use.
+permalink: /ezgraph/
+ezgraph: true
+---
+<!-- ============================== HERO ============================== -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="hero-badge">
+          <span class="pill">v1.0</span>
+          TypeScript · runs on LangGraph 1.4 · no account required
+        </span>
+
+        <h1>LangGraph's missing layer<br>is <span class="grad-text">EZGraph</span></h1>
+
+        <p class="sub">
+          LangGraph is a runtime, not an application framework. Every team building a
+          reliable guided chatbot still writes the same agent loop, the same tool dispatch,
+          the same concurrency bugs. EZGraph is the layer on top: same engine, one node
+          contract, <strong>40.9% less framework-facing code</strong> — measured on one
+          chatbot built twice.
+        </p>
+
+        <div class="btn-row">
+          <a class="btn btn-primary" href="/ezgraph/tutorial/">
+            Build your first graph
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M3 8h9M8.5 4.5L12 8l-3.5 3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <a class="btn btn-ghost" href="/ezgraph/compare/langgraph/">See the 525 lines you delete</a>
+        </div>
+
+        <ul class="trust-row">
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            No EZGraph account or key
+          </li>
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Production use, no runtime fee
+          </li>
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Public TypeScript declarations
+          </li>
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            No cloud control plane
+          </li>
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Private source/debug with support
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <figure class="chat-demo">
+          <picture>
+            <source srcset="/assets/ezgraph/img/quote-graph-chat.png" type="image/png" media="(prefers-reduced-motion: no-preference)">
+            <img
+              src="/assets/ezgraph/img/quote-graph-chat-still.png"
+              width="440"
+              height="560"
+              alt="QuoteGraph guided quote: Driver, Vehicle, History, Coverage, then Quote. Jamie Rivera finances a 2019 Camry SE; the graph rejects liability-only because the lender requires collision, presents three tiers, adjusts deductibles, and locks in Selected as QT-482910."
+            >
+          </picture>
+          <figcaption>QuoteGraph — five stages, one session, no dropped state</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== PAIN ============================== -->
+<section id="pain" class="band">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">The problem</span>
+      <h2>You didn't set out to build a session store</h2>
+      <p>
+        You set out to build a chatbot that collects a driver, a vehicle, and a coverage
+        selection, then quotes a price — reliably, for months, at 3 a.m. Here is what
+        LangGraph hands back to you instead. Every item below is documented by LangGraph's
+        own docs, its v1 feedback thread, or a public production postmortem.
+      </p>
+    </div>
+
+    <div class="grid grid-3">
+
+      <article class="card pain reveal">
+        <div class="ico">01</div>
+        <h3>A schema change silently kills live threads</h3>
+        <p>
+          Checkpointers store framework snapshots as an opaque blob. Add one field to your
+          state and every checkpoint written before that change deserializes into a shape
+          your code no longer expects — successful writes, failed reads, no migration error.
+        </p>
+        <span class="cite">
+          One team lost ~200 agent runs over three weeks to exactly this. Another watched
+          checkpoint tables reach 40&nbsp;GB in six weeks with no retention policy.
+          <a href="https://pub.towardsai.net/langgraph-checkpointing-is-not-free-a-production-postmortem-398bc86861f4" target="_blank" rel="noopener">postmortem</a>,
+          <a href="https://dev.to/elenarevicheva/langgraph-checkpointing-three-production-rewrites-to-stop-losing-state-231b" target="_blank" rel="noopener">three rewrites</a>
+          <b class="fix">EZGraph: versioned session document + ordered migrations, applied before your code sees it.</b>
+        </span>
+      </article>
+
+      <article class="card pain reveal">
+        <div class="ico">02</div>
+        <h3>Nothing stops two turns on one conversation</h3>
+        <p>
+          A user double-taps send. Two pods load the same checkpoint and both write. LangGraph
+          does not arbitrate this — and <code>PostgresSaver</code>'s instance-level lock is a
+          throughput bottleneck, not a correctness guarantee.
+        </p>
+        <span class="cite">
+          Reported as silent lost updates, forked checkpoints, and cross-thread
+          contamination under concurrency.
+          <a href="https://github.com/langchain-ai/langgraphjs/issues/2040" target="_blank" rel="noopener">langgraphjs#2040</a>,
+          <a href="https://azguards.com/ai-engineering/mitigating-checkpoint-collisions-write-skew-in-langgraph/" target="_blank" rel="noopener">write-skew</a>
+          <b class="fix">EZGraph: exclusive turn lease + compare-and-swap. Second turn gets 409. Zero app code.</b>
+        </span>
+      </article>
+
+      <article class="card pain reveal">
+        <div class="ico">03</div>
+        <h3>"Wait for the user" has no first-class form</h3>
+        <p>
+          The core move of a guided conversation. <code>interrupt()</code> re-runs the node
+          from the top on resume, so the obvious "loop until the answer validates" pattern is
+          quietly wrong — LangGraph's own docs warn it causes exponential re-execution.
+        </p>
+        <span class="cite">
+          The documented workaround is to rebuild a state machine around the primitive:
+          one interrupt per node, error in state, conditional edge back.
+          <a href="https://docs.langchain.com/oss/python/langgraph/interrupts" target="_blank" rel="noopener">interrupts doc</a>
+          <b class="fix">EZGraph: <code>stay()</code>. The wait is a persisted string. Nothing re-executes.</b>
+        </span>
+      </article>
+
+      <article class="card pain reveal">
+        <div class="ico">04</div>
+        <h3>The model↔tool loop gets rewritten per stage</h3>
+        <p>
+          Bind tools, call the model, execute <em>every</em> call in the batch, append one
+          <code>ToolMessage</code> each, bound the iterations. <code>create_agent</code> covers
+          one ReAct loop — not five gated stages with per-stage tool sets. So you hand-roll,
+          five times, and the copies drift.
+        </p>
+        <span class="cite">
+          In our own benchmark the hand-rolled version quietly regressed: it can only
+          service one tool call per pass, so a real multi-tool batch drops a
+          <code>ToolMessage</code> — which providers reject.
+          <b class="fix">EZGraph: one <code>ConversationRunner</code>, full batch semantics, round cap. 0 app lines.</b>
+        </span>
+      </article>
+
+      <article class="card pain reveal">
+        <div class="ico">05</div>
+        <h3>Bad tool arguments become exceptions, not conversation</h3>
+        <p>
+          The model sends malformed JSON or a field that fails your schema. The right product
+          behavior is to tell the model exactly what was wrong and let it fix itself. The
+          default behavior is a stack trace and a 500.
+        </p>
+        <span class="cite">
+          Measured in our benchmark: 8 hand-written <code>try</code>/<code>catch</code> parse
+          blocks and 14 tool-name dispatch checks — one more copy for every tool you add.
+          <b class="fix">EZGraph: returns <code>{ accepted: false, error }</code> to the model and keeps going. A schema violation becomes a follow-up question.</b>
+        </span>
+      </article>
+
+      <article class="card pain reveal">
+        <div class="ico">06</div>
+        <h3>Every team invents its own convention</h3>
+        <p>
+          The cost that compounds. Because state shape, persistence, waiting, routing, and
+          tool dispatch are all left to the application, two teams solving the same problem
+          ship two unrecognizable codebases. Onboarding starts from zero each time.
+        </p>
+        <span class="cite">
+          LangGraph's v1 thread is full of this: "the first node in my graphs is always an
+          <code>init_graph</code> node that just sets everything up."
+          <a href="https://github.com/langchain-ai/langgraph/issues/4973" target="_blank" rel="noopener">langgraph#4973</a>
+          <b class="fix">EZGraph: five members per node, same order, every graph, every team.</b>
+        </span>
+      </article>
+
+    </div>
+
+    <div class="callout tip mt-40">
+      <span class="label">To be clear</span>
+      <p>
+        None of this means LangGraph is bad — it means LangGraph is <em>low-level</em>, which
+        is exactly what it says on the tin. EZGraph does not replace it. Your graph still
+        compiles to a real <code>StateGraph</code> and runs on the LangGraph engine. The
+        choice here isn't between two runtimes; it's between <b>writing the application layer
+        yourself</b> and <b>adopting one</b>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== PROOF ============================== -->
+<section id="proof">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">The proof</span>
+      <h2>One chatbot. Built twice. Measured.</h2>
+      <p>
+        Marketing claims are cheap, so we built the same product both ways and counted.
+        <b>Sequoia Auto Insurance</b> — a five-stage guided quoting chatbot with 8 tools,
+        3 isolated history channels, real slot validation, backward transitions, and idle
+        expiry — implemented once on EZGraph (<code>quote-graph</code>) and once directly on
+        LangGraph with no EZGraph import (<code>quote-langgraph</code>).
+      </p>
+    </div>
+
+    <div class="metric-hero reveal">
+      <div>
+        <div class="big-stat grad-text">40.9%</div>
+        <p class="big-stat-label">
+          less framework-facing code for <strong>identical behavior</strong>
+        </p>
+        <p class="big-stat-sub">758 vs 1,283 normalized executable lines</p>
+      </div>
+      <div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Scope</th>
+                <th class="num">EZGraph</th>
+                <th class="num">LangGraph</th>
+                <th class="num">Δ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Framework-facing graph code</strong></td>
+                <td class="num">758</td>
+                <td class="num">1,283</td>
+                <td class="num win">−40.9%</td>
+              </tr>
+              <tr>
+                <td>Shared domain backend</td>
+                <td class="num">310</td>
+                <td class="num">310</td>
+                <td class="num zero">identical</td>
+              </tr>
+              <tr>
+                <td>NestJS controller</td>
+                <td class="num">47</td>
+                <td class="num">74</td>
+                <td class="num win">−36.5%</td>
+              </tr>
+              <tr>
+                <td>Raw lines, nothing removed</td>
+                <td class="num">1,002</td>
+                <td class="num">1,482</td>
+                <td class="num win">−32.4%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-note">
+          The rating engine, prompts, vehicle catalog, and clock helpers are the same in both
+          and measure <b>310 lines each</b> — which is how we know the delta is framework cost
+          and not a difference in what the two products do.
+        </p>
+      </div>
+    </div>
+
+    <div class="stat-strip reveal">
+      <div class="stat">
+        <span class="n">0</span>
+        <span class="l">hand-written reducers<br><span class="dim">LangGraph: 17 channels</span></span>
+      </div>
+      <div class="stat">
+        <span class="n">0</span>
+        <span class="l">lines of session store<br><span class="dim">LangGraph: 177</span></span>
+      </div>
+      <div class="stat">
+        <span class="n">0</span>
+        <span class="l">manual arg-parse blocks<br><span class="dim">LangGraph: 8</span></span>
+      </div>
+      <div class="stat">
+        <span class="n dim">5 <span style="color:var(--text-faint);font-weight:500">vs</span> 14</span>
+        <span class="l">edit sites to add a stage<br><span class="dim">lower is more modular</span></span>
+      </div>
+    </div>
+
+    <h3 class="mt-40" style="font-size:1.3rem">Where the 525 lines went</h3>
+    <p class="dim" style="max-width:70ch">
+      This table, not the headline percentage, is the honest argument — because it says
+      <em>which</em> work disappears. Five buckets account for essentially the whole delta,
+      and not one of them has anything to do with car insurance.
+    </p>
+
+    <div class="table-wrap reveal">
+      <table>
+        <thead>
+          <tr>
+            <th>Concern</th>
+            <th class="num">LangGraph</th>
+            <th class="num">EZGraph</th>
+            <th class="num">Delta</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Session store — 3 backends + serialize/hydrate</td><td class="num">177</td><td class="num">0</td><td class="num win">−177</td></tr>
+          <tr><td>Request boundary — run, validate, load, save, idle</td><td class="num">199</td><td class="num">12</td><td class="num win">−187</td></tr>
+          <tr><td>Tool dispatch + argument validation</td><td class="num">≈113</td><td class="num">0</td><td class="num win">−113</td></tr>
+          <tr><td>Agent loop + message/tool-message plumbing</td><td class="num">79</td><td class="num">0</td><td class="num win">−79</td></tr>
+          <tr><td>State channels and reducers</td><td class="num">83</td><td class="num">19</td><td class="num win">−64</td></tr>
+          <tr><td>Topology + router functions</td><td class="num">68</td><td class="num">14</td><td class="num win">−54</td></tr>
+          <tr><td>Prompt assembly per stage</td><td class="num">50</td><td class="num">29</td><td class="num win">−21</td></tr>
+          <tr><td>Tool declaration + per-stage registration</td><td class="num">123</td><td class="num">122</td><td class="num zero">−1</td></tr>
+          <tr><td>Transition decisions <span class="badge warn">we add code here</span></td><td class="num">≈16</td><td class="num">100</td><td class="num loss">+84</td></tr>
+          <tr><td>Domain validation &amp; formatting — <em>the actual product</em></td><td class="num">same</td><td class="num">same</td><td class="num zero">≈0</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="verdict reveal">
+      <b>Note the last two rows.</b> Declaring tools is a wash — 122 vs 123 lines — because
+      the win is in <em>handling</em> them, not declaring them. And EZGraph gives 84 lines
+      <em>back</em> in explicit <code>nextStep()</code> transitions. That is a deliberate
+      trade: every transition becomes greppable and type-checked instead of a string written
+      into a state field. We count it against our own headline number.
+    </div>
+
+    <div class="btn-row mt-32">
+      <a class="btn btn-primary" href="/ezgraph/compare/langgraph/">Full benchmark, side-by-side code &amp; method</a>
+      <a class="btn btn-ghost" href="/ezgraph/docs/langgraph-pain-points/">Read the raw analysis</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== SIDE BY SIDE ============================== -->
+<section class="band">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Same behavior, different code</span>
+      <h2>Four excerpts that make the case</h2>
+      <p>
+        Real code from both implementations. Nothing here is a strawman — the LangGraph side
+        is a competent, working, reviewed implementation of the same chatbot.
+      </p>
+    </div>
+
+    <div data-tabs>
+      <div class="tabs" role="tablist" aria-label="Code comparisons">
+        <button class="tab" role="tab" aria-selected="true" id="t-state">State</button>
+        <button class="tab" role="tab" aria-selected="false" id="t-tool">Handling a tool</button>
+        <button class="tab" role="tab" aria-selected="false" id="t-back">Going backward</button>
+        <button class="tab" role="tab" aria-selected="false" id="t-topo">Topology</button>
+      </div>
+
+      <!-- STATE -->
+      <div class="panel" role="tabpanel" aria-labelledby="t-state">
+        <p>Every channel in LangGraph needs a reducer and a default. Get one wrong and you get
+          a silent overwrite that surfaces three turns later.</p>
+        <div class="split">
+          <figure>
+            <div class="code">
+              <div class="code-head">
+                <span class="dots"><i></i><i></i><i></i></span>
+                <span class="file">quote-langgraph.state.ts</span>
+                <span class="note bad">83 lines</span>
+              </div>
+<pre class="sm"><code>const replace = &lt;T&gt;(_: T, next: T): T =&gt; next;
+const appendMessages = (cur: BaseMessage[], up: BaseMessage | BaseMessage[]) =&gt;
+  cur.concat(Array.isArray(up) ? up : [up]);
+
+export const QuoteLanggraphState = Annotation.Root({
+  phase: Annotation&lt;Phase&gt;({ reducer: replace, default: () =&gt; "driver" }),
+  route: Annotation&lt;Route&gt;({ reducer: replace, default: () =&gt; "end" }),
+  completed: Annotation&lt;boolean&gt;({ reducer: replace, default: () =&gt; false }),
+  response: Annotation&lt;string&gt;({ reducer: replace, default: () =&gt; "" }),
+  userInput: Annotation&lt;string&gt;({ reducer: replace, default: () =&gt; "" }),
+  inputConsumed: Annotation&lt;boolean&gt;({ reducer: replace, default: () =&gt; false }),
+  config: Annotation&lt;Record&lt;string, unknown&gt;&gt;({
+    reducer: (cur, up) =&gt; ({ ...cur, ...up }),
+    default: () =&gt; ({}),
+  }),
+  driver: Annotation&lt;DriverProfile | undefined&gt;({
+    reducer: replace, default: () =&gt; undefined,
+  }),
+  // ...9 more domain channels, each with reducer + default...
+  intakeMessages: Annotation&lt;BaseMessage[], BaseMessage | BaseMessage[]&gt;({
+    reducer: appendMessages, default: () =&gt; [],
+  }),
+  // ...2 more message channels...
+});</code></pre>
+            </div>
+            <figcaption>17 channels · 2 hand-rolled reducers · 2 string unions to keep in sync by hand</figcaption>
+          </figure>
+          <figure>
+            <div class="code">
+              <div class="code-head">
+                <span class="dots"><i></i><i></i><i></i></span>
+                <span class="file">quote-graph.state.ts</span>
+                <span class="note good">19 lines · −77%</span>
+              </div>
+<pre class="sm"><code>export type QuoteGraphNodes = {
+  DriverNode?: NodeStateValue&lt;{ driver?: DriverProfile }&gt;;
+  VehicleNode?: NodeStateValue&lt;{
+    resolvedVehicleId?: string;
+    vehicle?: VehicleUse;
+  }&gt;;
+  HistoryNode?: NodeStateValue&lt;{ history?: InsuranceHistory }&gt;;
+  CoverageNode?: NodeStateValue&lt;{ coverage?: CoverageSelection }&gt;;
+  QuoteNode?: NodeStateValue&lt;{
+    tiers?: QuoteTier[];
+    acceptedTier?: QuoteTierName;
+    referenceNumber?: string;
+  }&gt;;
+};
+
+export const QuoteGraphState = createGraphStateAnnotation(
+  DriverNode.id(),
+  () =&gt; ({} as QuoteGraphNodes),
+);
+
+export type QuoteGraphStateType = typeof QuoteGraphState.State;</code></pre>
+            </div>
+            <figcaption>Zero reducers · per-node slices, so two stages cannot collide on a key</figcaption>
+          </figure>
+        </div>
+        <div class="verdict">
+          Note what the EZGraph version <b>cannot express</b>: two stages writing the same
+          state key. Each slice is keyed by node, so a collision is a compile error instead of
+          a debugging session.
+        </div>
+      </div>
+
+      <!-- TOOL -->
+      <div class="panel" role="tabpanel" aria-labelledby="t-tool">
+        <p>Capturing a driver. Both versions run the same 25 lines of insurance validation —
+          the difference is everything wrapped around it.</p>
+        <div class="split">
+          <figure>
+            <div class="code">
+              <div class="code-head">
+                <span class="dots"><i></i><i></i><i></i></span>
+                <span class="file">quote-langgraph.ts → driverTools</span>
+                <span class="note bad">dispatch + parse + transition</span>
+              </div>
+<pre class="sm"><code>private readonly driverTools = async (state) =&gt; {
+  const call = latestToolCall(state.intakeMessages);
+  if (!call) return { route: "end" };
+  if (call.name === "terminate_session")
+    return terminateUpdate("intakeMessages", call);
+  if (call.name !== "capture_driver") {
+    return invalidToolUpdate("intakeMessages", call,
+      `Tool '${call.name}' is not available here.`, "driverAgent");
+  }
+  let parsed: z.infer&lt;typeof captureDriverSchema&gt;;
+  try {
+    parsed = captureDriverSchema.parse(call.args);
+  } catch (error) {
+    return invalidToolUpdate("intakeMessages", call, zodError(error), "driverAgent");
+  }
+  const reject = (e: string) =&gt;
+    invalidToolUpdate("intakeMessages", call, e, "driverAgent");
+
+  // ...25 lines of actual driver validation...
+
+  return {
+    driver,
+    intakeMessages: toolResult(call, { accepted: true, driver }),
+    phase: "vehicle",
+    response: "",
+    route: "vehicleAgent",
+  };
+};</code></pre>
+            </div>
+            <figcaption>Five invariants you must remember to set together, on every return path</figcaption>
+          </figure>
+          <figure>
+            <div class="code">
+              <div class="code-head">
+                <span class="dots"><i></i><i></i><i></i></span>
+                <span class="file">nodes/driver.node.ts</span>
+                <span class="note good">handler + decision</span>
+              </div>
+<pre class="sm"><code>@Tool("capture_driver")
+async captureDriver(
+  input: DriverInput,          // already parsed and Zod-validated
+  context: DriverContext,
+): Promise&lt;ConversationToolResult&gt; {
+
+  // ...the same 25 lines of driver validation, and nothing else...
+
+  context.driver = { /* ... */ };
+  return {
+    output: { accepted: true, driver: context.driver },
+    stopAfterBatch: true,
+  };
+}
+
+protected nextStep(
+  _state: QuoteGraphStateType,
+  context: DriverContext,
+  conversation: ConversationNodeRunResult,
+): GraphNodeUpdate&lt;QuoteGraphStateType&gt; {
+  if (conversation.quitRequested) return this.quit(conversation);
+  if (context.driver) {
+    return this.advance(VehicleNode, conversation)
+      .withState({ driver: context.driver });
+  }
+  return this.stay(conversation);
+}</code></pre>
+            </div>
+            <figcaption>One outcome sets response, history, tokens, currentNode and route — together</figcaption>
+          </figure>
+        </div>
+        <div class="verdict">
+          <code>advance(VehicleNode, conversation).withState({…})</code> sets all five fields
+          the LangGraph version sets by hand — and <b>cannot set only some of them</b>. A
+          half-updated turn is not representable.
+        </div>
+      </div>
+
+      <!-- BACKWARD -->
+      <div class="panel" role="tabpanel" aria-labelledby="t-back">
+        <p>"Actually, raise my deductible." The customer's current message has to travel
+          backward with them into the coverage stage — the transition hand-rolled graphs get
+          subtly wrong most often.</p>
+        <div class="split">
+          <figure>
+            <div class="code">
+              <div class="code-head">
+                <span class="dots"><i></i><i></i><i></i></span>
+                <span class="file">quote-langgraph.ts → quoteTools</span>
+                <span class="note bad">7 fields, by hand</span>
+              </div>
+<pre class="sm"><code>return {
+  presentMessages: toolResult(call, { accepted: true }),
+  intakeMessages: new HumanMessage(
+    "Review and update the coverage selections.",
+  ),
+  phase: "coverage",
+  // Forward the customer's current message into the coverage stage.
+  inputConsumed: false,
+  response: "",
+  route: "coverageAgent",
+};</code></pre>
+            </div>
+            <figcaption>Miss <code>inputConsumed: false</code> and the customer has to repeat themselves</figcaption>
+          </figure>
+          <figure>
+            <div class="code">
+              <div class="code-head">
+                <span class="dots"><i></i><i></i><i></i></span>
+                <span class="file">nodes/quote.node.ts → nextStep</span>
+                <span class="note good">1 call</span>
+              </div>
+<pre class="sm"><code>if (context.revise) {
+  return this.advance(CoverageNode, conversation)
+    .forwardInput(state, "Review and update the coverage selections.");
+}</code></pre>
+            </div>
+            <figcaption><code>forwardInput()</code> marks the input unconsumed and copies the
+              message across history spaces</figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <!-- TOPOLOGY -->
+      <div class="panel" role="tabpanel" aria-labelledby="t-topo">
+        <p>Routing in LangGraph lives in three places that must agree — a state field, a
+          router function, and an edge map — and nothing checks that they do. An unmapped
+          return is a <code>KeyError</code> at invoke time, not at <code>compile()</code>.</p>
+        <div class="split">
+          <figure>
+            <div class="code">
+              <div class="code-head">
+                <span class="dots"><i></i><i></i><i></i></span>
+                <span class="file">quote-langgraph.ts → buildGraph</span>
+                <span class="note bad">68 lines with the routers</span>
+              </div>
+<pre class="sm"><code>return new StateGraph(QuoteLanggraphState)
+  .addNode("driverAgent", this.driverAgent)
+  .addNode("driverTools", this.driverTools)
+  .addNode("vehicleAgent", this.vehicleAgent)
+  .addNode("vehicleTools", this.vehicleTools)
+  // ...6 more addNode calls...
+  .addConditionalEdges(START, routeFromPhase, agentRoutes)
+  .addConditionalEdges("driverAgent",
+    (s) =&gt; afterAgent(s, "driver"), { driverTools: "driverTools", end: END })
+  .addConditionalEdges("vehicleAgent",
+    (s) =&gt; afterAgent(s, "vehicle"), { vehicleTools: "vehicleTools", end: END })
+  // ...3 more agent branches...
+  .addConditionalEdges("driverTools", routeAfterTools, agentRoutes)
+  .addConditionalEdges("vehicleTools", routeAfterTools, agentRoutes)
+  // ...3 more tool branches...
+  .compile();
+
+// Plus: the agentRoutes map, routeFromPhase(), afterAgent(),
+// routeAfterTools(), a Route string union in another file, and
+// 16 inline `route:` writes scattered across the tool nodes.</code></pre>
+            </div>
+            <figcaption>Every node name appears as a string literal in at least three places</figcaption>
+          </figure>
+          <figure>
+            <div class="code">
+              <div class="code-head">
+                <span class="dots"><i></i><i></i><i></i></span>
+                <span class="file">quote-graph.ts → buildGraph</span>
+                <span class="note good">14 lines · −79%</span>
+              </div>
+<pre class="sm"><code>protected buildGraph() {
+  const graph = this.createStateGraph(QuoteGraphState);
+  graph.registerTurnNodes(
+    DriverNode,
+    VehicleNode,
+    HistoryNode,
+    CoverageNode,
+    QuoteNode,
+    TerminateSessionNode,
+  );
+  graph.configAutoRoute();
+  graph.addEdge(TerminateSessionNode, END);
+  return graph.compile();
+}</code></pre>
+            </div>
+            <figcaption>Endpoints are <b>classes</b>, validated at <code>compile()</code> — a
+              typo is a build error, not a 3 a.m. <code>KeyError</code></figcaption>
+          </figure>
+        </div>
+        <div class="verdict">
+          <code>configAutoRoute()</code> derives the topology from what each node
+          <em>returns</em>. Add a stage and routing needs no edit at all.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================== HOW IT WORKS ============================== -->
+<section id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">How it works</span>
+      <h2>The whole mental model, in five concepts</h2>
+      <p>
+        That's the entire thing. If you know these five, you can read any EZGraph graph in
+        any team's repository.
+      </p>
+    </div>
+
+    <dl class="concepts">
+      <div class="concept reveal">
+        <dt>A session is a document</dt>
+        <dd>
+          One JSON row per conversation, keyed by session id, holding the chat histories, the
+          active node, your per-node state, accumulated token usage, warnings and errors.
+          <b>Nothing lives in process memory between turns</b> — and you can open the row in a
+          database browser and read it.
+        </dd>
+      </div>
+      <div class="concept reveal">
+        <dt>A turn is one <code>run()</code></dt>
+        <dd>
+          <code>engine.run({ graphName, sessionId, userMessage })</code> loads the document,
+          takes an exclusive lease, runs the graph, saves, and returns an HTTP-shaped result.
+          The turn is the unit of concurrency, cancellation, logging, and persistence.
+        </dd>
+      </div>
+      <div class="concept reveal">
+        <dt>A node is a stage</dt>
+        <dd>
+          A class with a prompt, some tools, and a decision. It does <b>not</b> own
+          persistence, message plumbing, or routing tables. Nodes are constructed once, shared
+          across sessions, and frozen — so a per-turn value stored on <code>this</code> throws
+          immediately instead of leaking across customers.
+        </dd>
+      </div>
+      <div class="concept reveal">
+        <dt>An outcome is the decision</dt>
+        <dd>
+          <code>stay()</code>, <code>advance(Next)</code>, <code>quit()</code>,
+          <code>finish(text)</code>. Each is a <b>complete, consistent state update</b> —
+          response text, history append, token accounting, <code>currentNode</code>, the
+          completion flag and the route, all set correctly together. You cannot produce a
+          half-updated turn.
+        </dd>
+      </div>
+      <div class="concept reveal">
+        <dt><code>currentNode</code> resumes</dt>
+        <dd>
+          The document remembers which stage the conversation is sitting in. The next request
+          enters that stage directly. That is why an interrupt here is <b>a persisted string
+          instead of a suspended coroutine</b> — and why nothing re-executes on resume.
+        </dd>
+      </div>
+    </dl>
+
+    <div class="grid grid-2 mt-40">
+      <div class="card">
+        <h3>The contract every team learns once</h3>
+        <p style="margin-bottom:18px">
+          Verified mechanically across all five stages of the benchmark app. Five members,
+          always in the same order. <code>getLlmConfig</code> is the single deliberate
+          addition, on the one stage that pays for a stronger model.
+        </p>
+        <div class="table-wrap">
+          <table style="min-width:0">
+            <thead><tr><th>Node</th><th>Members</th></tr></thead>
+            <tbody>
+              <tr><td><code>DriverNode</code></td><td class="mono" style="font-size:0.8rem">getPrompt · defineTool · @Tool ×1 · createContext · nextStep</td></tr>
+              <tr><td><code>VehicleNode</code></td><td class="mono" style="font-size:0.8rem">getPrompt · defineTool · @Tool ×2 · createContext · nextStep</td></tr>
+              <tr><td><code>HistoryNode</code></td><td class="mono" style="font-size:0.8rem">getPrompt · defineTool · @Tool ×1 · createContext · nextStep</td></tr>
+              <tr><td><code>CoverageNode</code></td><td class="mono" style="font-size:0.8rem">getPrompt · defineTool · @Tool ×1 · createContext · nextStep</td></tr>
+              <tr><td><code>QuoteNode</code></td><td class="mono" style="font-size:0.8rem">getPrompt · <span class="win">getLlmConfig</span> · defineTool · @Tool ×3 · createContext · nextStep</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-note">
+          The LangGraph version's five stages are <em>not</em> uniform: each is split across two
+          arrow-function properties plus entries in four module-level maps, and each organizes
+          its dispatch differently depending on how many tools it owns.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>Adding a sixth stage</h3>
+        <p style="margin-bottom:18px">
+          The honest test of modularity: how many places do you touch? In EZGraph, <b>a stage
+          is a file.</b>
+        </p>
+        <ul class="checks">
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>1.</b> Write <code>nodes/discounts.node.ts</code> — prompt, tools, handlers, validation, transition, all in one place</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>2.</b> Add one key to <code>QuoteGraphNodes</code></span>
+          </li>
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>3.</b> Add one line to <code>historySpaces</code></span>
+          </li>
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>4.</b> Add the class to <code>registerTurnNodes(...)</code></span>
+          </li>
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>5.</b> Point the upstream <code>advance()</code> at it</span>
+          </li>
+        </ul>
+        <div class="verdict" style="margin-top:20px">
+          Steps 3–5 take the <b>class</b>, so forgetting one is a compile error. Routing needs
+          no edit. <b>The LangGraph equivalent is 14 edit sites</b>, eleven of them one-line
+          changes to shared maps and string unions that nothing cross-checks.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== RELIABILITY ============================== -->
+<section class="band">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Enterprise-grade means it survives real models</span>
+      <h2>The failure modes, handled by default</h2>
+      <p>
+        A demo works on the happy path. Production is providers refusing requests, models
+        inventing arguments, users double-tapping send, and pods dying mid-turn. All of the
+        following is automatic — no configuration, no application code.
+      </p>
+    </div>
+
+    <div class="grid grid-3">
+      <div class="card reveal">
+        <div class="ico">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2l6.5 3v5c0 3.6-2.6 6.6-6.5 8-3.9-1.4-6.5-4.4-6.5-8V5L10 2z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.4 10.1l1.9 1.9 3.6-3.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Malformed tool arguments</h3>
+        <p>
+          Invalid JSON or a field that fails your Zod schema returns
+          <code>{ accepted: false, error }</code> to the model as the tool result, with the
+          exact per-field message, plus a persisted warning. The loop continues and the model
+          corrects itself. <b>No throw, no hidden extra model call.</b>
+        </p>
+      </div>
+
+      <div class="card reveal">
+        <div class="ico">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 6v5m0 3h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="10" cy="10" r="7.4" stroke="currentColor" stroke-width="1.6"/></svg>
+        </div>
+        <h3>Empty &amp; blocked responses</h3>
+        <p>
+          Classified as <code>blocked</code>, <code>truncated</code>,
+          <code>malformed_tool_call</code>, <code>complete</code>, or
+          <code>unspecified</code>. Retryable reasons get nudged and retried; the rest reach
+          <code>onEmptyModelResponse()</code> with the classification, so a safety block can
+          answer gracefully instead of returning silence.
+        </p>
+      </div>
+
+      <div class="card reveal">
+        <div class="ico">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="3" y="8.5" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M6.6 8.5V6.4a3.4 3.4 0 016.8 0v2.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Overlapping turns</h3>
+        <p>
+          An in-process guard plus an exclusive turn lease with compare-and-swap on
+          <code>revision</code>. The second turn gets <code>409 SESSION_BUSY</code>; a stale
+          writer cannot overwrite a newer document. Leases expire, so a crashed pod never
+          wedges a conversation forever.
+        </p>
+      </div>
+
+      <div class="card reveal">
+        <div class="ico">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3.5 6.5h13M3.5 10h13M3.5 13.5h13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Multi-tool batches</h3>
+        <p>
+          Every call in an assistant-message batch is executed and every corresponding
+          <code>ToolMessage</code> appended <em>before</em> a stop is honored — because
+          providers reject a conversation with a dangling tool call. A stop can never leave
+          one unanswered.
+        </p>
+      </div>
+
+      <div class="card reveal">
+        <div class="ico">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 5.5V10l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="10" r="7.4" stroke="currentColor" stroke-width="1.6"/></svg>
+        </div>
+        <h3>Runaway loops &amp; slow providers</h3>
+        <p>
+          <code>maxAgentRounds</code> bounds one node invocation instead of burning tokens
+          forever. <code>llmTimeoutMs</code> bounds each provider request. The caller's
+          <code>AbortSignal</code> cancels in-flight calls when the user disconnects, reaching
+          shared node instances through <code>AsyncLocalStorage</code>.
+        </p>
+      </div>
+
+      <div class="card reveal">
+        <div class="ico">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 15V8m4 7V5m4 10v-4m4 4V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Fails at boot, not mid-conversation</h3>
+        <p>
+          Unknown models, illegal model parameters, invalid round caps, non-contiguous
+          migrations, duplicate tool definitions across nodes, handled-but-undefined tools,
+          unregistered edge endpoints — all validated up front, before a customer ever sends
+          a message.
+        </p>
+      </div>
+    </div>
+
+    <div class="callout mt-40">
+      <span class="label">Boilerplate you simply never write</span>
+      <p>
+        Message array plumbing · tool-call ↔ tool-message pairing · tool argument parsing ·
+        session load and save · optimistic-concurrency retries · state reducers · resume
+        dispatch from a persisted node · token counters · per-node model bookkeeping ·
+        provider client construction and caching · a mock gateway for tests.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== ENTERPRISE ============================== -->
+<section id="enterprise">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">For the enterprise</span>
+      <h2>No account. No key. No control plane.</h2>
+      <p>
+        EZGraph is a library, not a platform. There is nothing to sign up for, no licence key
+        to install, no telemetry endpoint, and no vendor observability cloud in the critical
+        path. That is a deliberate architectural position, not a pricing tier.
+      </p>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>Everything can stay inside your firewall</h3>
+        <ul class="checks">
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>No LangSmith requirement.</b> No EZGraph cloud, no mandatory tracing vendor.</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>Your database.</b> SQLite, self-managed MongoDB, Cosmos DB, or an in-memory store — or implement <code>SessionDocumentContainer</code> for your own.</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>Your models.</b> OpenAI, Azure OpenAI, Anthropic, Google — or an in-network endpoint via a custom provider adapter.</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>Your audit trail.</b> The session document is the operational record: histories, node state, token totals, warnings, errors, and which model actually answered.</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>Credentials never enter a cache key.</b> Provider config is excluded from the model cache identifier by construction.</span>
+          </li>
+        </ul>
+        <div class="callout warn" style="margin-bottom:0">
+          <p>
+            <b>Said precisely, because you will check:</b> EZGraph itself needs no key. You
+            still bring your own model credentials — or point it at a self-hosted endpoint, in
+            which case no data leaves your network. Choosing a hosted model or database
+            obviously sends data to that provider; that is your choice, not a framework
+            requirement.
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>The commercial runtime licence, in plain terms</h3>
+        <p>
+          Production use is permitted with <b>no runtime fee</b>. The public package ships
+          minified runtime code and TypeScript declarations; an active support subscription
+          includes a private source and debug package.
+        </p>
+        <div class="table-wrap" style="margin-bottom:18px">
+          <table style="min-width:0">
+            <tbody>
+              <tr><td>Commercial SaaS built on it</td><td><span class="badge ok">allowed</span></td></tr>
+              <tr><td>Internal enterprise production</td><td><span class="badge ok">allowed</span></td></tr>
+              <tr><td>Client and consulting work</td><td><span class="badge ok">allowed</span></td></tr>
+              <tr><td>Keeping your app code closed</td><td><span class="badge ok">allowed</span></td></tr>
+              <tr><td>Using the published runtime in production</td><td><span class="badge ok">allowed</span></td></tr>
+              <tr><td>Paying a runtime licence fee</td><td><span class="badge ok">not required</span></td></tr>
+              <tr><td>Private source/debug package with active support</td><td><span class="badge ok">included</span></td></tr>
+              <tr><td>Repackaging it as a rival agent SDK</td><td><span class="badge warn">not allowed</span></td></tr>
+              <tr><td>Reselling it as a hosted competing service</td><td><span class="badge warn">not allowed</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin-bottom:0">
+          In one sentence: <b>build and run your application with it — just do not repackage
+          it as a competing library, framework, or hosted service.</b>
+          <a href="/ezgraph/license/">Read the licence</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== DEMO ============================== -->
+<section class="band" id="demo">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">The demo</span>
+      <h2>A running reference app, not a snippet</h2>
+      <p>
+        <a href="https://github.com/picoflowio/ezgraph-demo"><code>ezgraph-demo</code></a>
+        is a real NestJS + Fastify service with Swagger, three graphs, and both sides of the
+        benchmark. Clone it and the whole comparison on this site is reproducible on your
+        machine. The <a href="/ezgraph/quote-graph/">QuoteGraph walkthrough</a> is the reading
+        guide.
+      </p>
+    </div>
+
+    <div class="grid grid-3" style="margin-bottom:30px">
+      <div class="card">
+        <div class="ico">Q</div>
+        <h3><code>QuoteGraph</code></h3>
+        <p>
+          The five-stage insurance quoting chatbot on EZGraph. Slot validation, a deterministic
+          rating engine, three history channels, per-node model override, backward transitions,
+          idle expiry.
+        </p>
+      </div>
+      <div class="card">
+        <div class="ico">L</div>
+        <h3><code>QuoteLanggraph</code></h3>
+        <p>
+          The identical product written directly on LangGraph, importing no EZGraph code. This
+          is the control group — read it and judge the comparison yourself.
+        </p>
+      </div>
+      <div class="card">
+        <div class="ico">E</div>
+        <h3><code>ExpenseGraph</code></h3>
+        <p>
+          A JSON-mode graph that extracts structured expense data from an uploaded receipt —
+          showing provider file uploads, cleanup ownership, and validated JSON output.
+        </p>
+      </div>
+    </div>
+
+    <div class="split">
+      <figure style="margin:0">
+        <div class="code">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="file">try it</span>
+          </div>
+<pre><code data-lang="shell"># One HTTP call per turn. The SESSION_ID header carries the conversation.
+curl -s localhost:8000/ai/run \
+  -H 'content-type: application/json' \
+  -H 'SESSION_ID: demo-1' \
+  -d '{"graphName":"QuoteGraph","message":"I need car insurance"}'
+
+# =&gt; { "success": true, "completed": false,
+#      "message": "Happy to help. Can I start with your full name..." }
+#
+# Send the next message with the same SESSION_ID days later,
+# from a different pod. It resumes at exactly the right stage.</code></pre>
+        </div>
+      </figure>
+      <figure style="margin:0">
+        <div class="code">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="file">wiring it to your framework</span>
+            <span class="note good">the whole adapter</span>
+          </div>
+<pre><code>@Post("run")
+async run(
+  @Res() reply: FastifyReply,
+  @Body() body: ApiRunBodyDto,
+  @Headers("SESSION_ID") sessionId?: string,
+) {
+  const result = await this.graphEngine.run({
+    graphName: body?.graphName,
+    userMessage: body?.message,
+    sessionId,
+  });
+
+  if (result.session) reply.header("SESSION_ID", result.session);
+  return reply.status(result.status).send(result.body);
+}</code></pre>
+        </div>
+        <figcaption><code>run()</code> returns <code>{ status, body, session }</code> — HTTP
+          shaped, with no HTTP dependency in the framework. Express, Fastify and NestJS are all
+          pass-throughs.</figcaption>
+      </figure>
+    </div>
+
+    <div class="install" style="margin-top:28px">
+      <span class="prompt">$</span>
+      <code>git clone https://github.com/picoflowio/ezgraph-demo.git</code>
+    </div>
+    <div class="btn-row" style="margin-top:18px">
+      <a class="btn btn-primary" href="/ezgraph/quote-graph/">Walk QuoteGraph</a>
+      <a class="btn btn-ghost" href="https://github.com/picoflowio/ezgraph-demo" target="_blank" rel="noopener">Open the repo</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== LIMITS ============================== -->
+<section id="limits">
+  <div class="wrap wrap-narrow">
+    <div class="section-head">
+      <span class="eyebrow">Read this before you adopt</span>
+      <h2>What EZGraph does <em>not</em> do</h2>
+      <p>
+        Any comparison that finds no downsides is marketing. These are real, and we would
+        rather you hit them on this page than in week three.
+      </p>
+    </div>
+
+    <div class="callout warn">
+      <span class="label">The big one</span>
+      <p>
+        <b>No streaming.</b> Turns are request/response today. LangGraph's token-by-token
+        streaming and <code>astream_events</code> have no EZGraph equivalent. If your product
+        needs streaming output now, <b>use LangGraph directly</b> — this is disqualifying and
+        we are not going to pretend otherwise.
+      </p>
+    </div>
+
+    <ul class="checks" style="margin-top:26px">
+      <li>
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" style="color:var(--amber)"><path d="M8 3.5v6m0 2.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span><b>No escape hatch to <code>StateGraph</code>.</b> The underlying graph is
+          private and there is no sanctioned <code>wrapLangGraph()</code> adapter. Exotic
+          LangGraph features are reachable only if the facade exposes them. That is the price
+          of validated topology.</span>
+      </li>
+      <li>
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" style="color:var(--amber)"><path d="M8 3.5v6m0 2.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span><b>No arbitrary node functions.</b> Every node is a class registered through the
+          facade, so the framework can construct it, register its tools, and verify its durable
+          id.</span>
+      </li>
+      <li>
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" style="color:var(--amber)"><path d="M8 3.5v6m0 2.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span><b>Topology validation is lazy.</b> <code>buildGraph()</code> runs on first
+          access, so a duplicate tool definition surfaces as a <code>400</code> on the first
+          message rather than at boot. Work around it with
+          <code>void new MyGraph(gateway).graph;</code> after registration. A proper eager-
+          validation entry point is a known gap.</span>
+      </li>
+      <li>
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" style="color:var(--amber)"><path d="M8 3.5v6m0 2.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span><b>Class names are durable ids.</b> Renaming a node or graph class orphans live
+          sessions unless you override <code>static id()</code> to return the old string. This
+          is the sharpest edge in the framework.</span>
+      </li>
+      <li>
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" style="color:var(--amber)"><path d="M8 3.5v6m0 2.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span><b>Fixed top-level state shape.</b> You extend <code>nodes</code> and
+          <code>config</code>; you don't add top-level fields.</span>
+      </li>
+      <li>
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" style="color:var(--amber)"><path d="M8 3.5v6m0 2.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span><b>Not built yet:</b> history compaction and context budgets, per-session token
+          or cost budgets, OpenTelemetry spans.</span>
+      </li>
+      <li>
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" style="color:var(--amber)"><path d="M8 3.5v6m0 2.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span><b>TypeScript / Node only.</b> Node ≥ 22.5. If you're in Python, this isn't for
+          you.</span>
+      </li>
+      <li>
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" style="color:var(--amber)"><path d="M8 3.5v6m0 2.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span><b>The 40.9% figure is one data point.</b> One five-stage guided conversation,
+          written by the same authors on both sides. The
+          <a href="/ezgraph/compare/langgraph/">per-concern table</a> is far more portable than the headline
+          percentage, because it tells you <em>which</em> work disappears — persistence,
+          request boundary, tool dispatch, agent loop, reducers. Need all five? Expect a
+          similar result. Need none of them? Don't adopt this.</span>
+      </li>
+    </ul>
+
+    <div class="verdict" style="margin-top:30px">
+      <b>Still the right call when:</b> the product is a multi-turn guided conversation on a
+      TypeScript backend — ordered stages with gates, slot filling with real validation, waits
+      measured in days, an auditable per-conversation record, ordinary HTTP semantics. Above
+      all when <b>more than one team</b> will build these, because a shared contract compounds
+      in a way that a line count never does.
+    </div>
+  </div>
+</section>
+
+<!-- ============================== QUICK START ============================== -->
+<section class="band" id="start">
+  <div class="wrap wrap-narrow">
+    <div class="section-head center">
+      <span class="eyebrow">Quick start</span>
+      <h2>Three minutes to a running graph</h2>
+      <p>Install the published <a href="https://www.npmjs.com/package/@picoflow/ezgraph"><code>@picoflow/ezgraph</code> npm package</a>,
+        then follow the <a href="/ezgraph/tutorial/">tutorial</a> to build a real two-stage
+        conversation end to end.</p>
+    </div>
+
+    <div class="install" style="margin-bottom:14px">
+      <span class="prompt">$</span>
+      <code>npm install @picoflow/ezgraph</code>
+    </div>
+    <div class="install" style="margin-bottom:26px">
+      <span class="prompt">$</span>
+      <code>npm install @langchain/openai   # or @langchain/anthropic, @langchain/google</code>
+    </div>
+
+    <div class="code">
+      <div class="code-head">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="file">main.ts</span>
+      </div>
+<pre><code>import "reflect-metadata";          // once, at the very top of your entry point
+import { GraphEngine } from "@picoflow/ezgraph";
+import { WeatherGraph } from "./weather-graph.js";
+
+const engine = await GraphEngine.create({ graphs: [WeatherGraph] });
+
+const result = await engine.run({
+  graphName: "WeatherGraph",
+  sessionId: "demo-1",
+  userMessage: "hi",
+});
+
+// { status: 200, body: { success: true, completed: false,
+//                        message: "Which city would you like the weather for?" } }
+// Persisted: currentNode = "CollectNode"</code></pre>
+    </div>
+
+    <div class="callout tip">
+      <span class="label">Two setup gotchas, up front</span>
+      <p>
+        Tool handlers use a method decorator, so your <code>tsconfig.json</code> needs
+        <code>experimentalDecorators</code> and <code>emitDecoratorMetadata</code>. And
+        <code>reflect-metadata</code> must be imported <b>once, before any node module loads</b>
+        — without it, <code>@Tool</code> metadata isn't collected and your nodes will look like
+        they have no tools. Both are covered in
+        <a href="/ezgraph/docs/developer-guide/">§3 of the developer guide</a>.
+      </p>
+    </div>
+
+    <div class="btn-row" style="justify-content:center;margin-top:30px">
+      <a class="btn btn-primary" href="/ezgraph/tutorial/">Start the tutorial</a>
+      <a class="btn btn-ghost" href="/ezgraph/docs/developer-guide/">Full developer guide</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== FAQ ============================== -->
+<section id="faq">
+  <div class="wrap wrap-narrow">
+    <div class="section-head center">
+      <span class="eyebrow">FAQ</span>
+      <h2>The questions a LangGraph developer actually asks</h2>
+    </div>
+
+    <div class="faq">
+      <details open>
+        <summary>Does this replace LangGraph?</summary>
+        <div class="answer">
+          <p>
+            No — it runs on it. Your graph compiles to a real <code>StateGraph</code> and
+            LangGraph executes it. EZGraph replaces the layer <em>around</em> the runtime:
+            checkpointers become an application-owned session document, hand-written reducers
+            become a fixed state shape, conditional-edge tables become semantic outcomes, and
+            the model↔tool loop moves into the framework. LangGraph and LangChain stay in your
+            dependency tree.
+          </p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Is it really free for commercial and enterprise use?</summary>
+        <div class="answer">
+          <p>
+            Yes. The EZGraph Commercial Runtime License permits commercial SaaS, internal
+            production, client work, and closed application code with no runtime licence fee or
+            key. You may not repackage it as a competing agent SDK, developer library, plugin
+            framework, or competing hosted service. Optional support is separately priced and
+            includes the private source and debug package while the subscription is active.
+          </p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Do I need an API key or an account?</summary>
+        <div class="answer">
+          <p>
+            Not for EZGraph. There is no signup, no licence key, no telemetry endpoint and no
+            cloud control plane. You do need credentials for whichever <em>model provider</em>
+            you choose — or you can point EZGraph at a self-hosted in-network endpoint through a
+            custom provider adapter, in which case nothing leaves your firewall.
+          </p>
+        </div>
+      </details>
+
+      <details>
+        <summary>What happens to my existing LangGraph app?</summary>
+        <div class="answer">
+          <p>
+            There's an eight-step migration recipe in
+            <a href="/ezgraph/docs/developer-guide/">§16.6 of the guide</a>. In short: per-stage
+            state fields become typed <code>nodes</code> slices; each node function becomes a
+            class with <code>getPrompt()</code> and <code>defineTool()</code>; the hand-rolled
+            model↔tool loop gets <em>deleted</em>; stage flags plus conditional edges become
+            <code>stay()</code>/<code>advance()</code>/<code>finish()</code> plus
+            <code>configAutoRoute()</code>; genuinely internal worker edges stay as
+            <code>addEdge(...)</code>; the checkpointer becomes a <code>SESSION_STORE</code>
+            plus an <code>onRestoreSessionDoc()</code> policy.
+          </p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Does it add runtime overhead?</summary>
+        <div class="answer">
+          <p>
+            The execution path is LangGraph's. What EZGraph adds per turn is a session-document
+            read, a lease compare-and-swap, and a write — the same work a production LangGraph
+            app does with a checkpointer, minus a snapshot per super-step. Node instances are
+            constructed once and shared, the compiled graph is built once and cached, and
+            provider clients are cached with credentials excluded from the cache key.
+          </p>
+        </div>
+      </details>
+
+      <details>
+        <summary>How do I test a conversation without burning tokens?</summary>
+        <div class="answer">
+          <p>
+            <code>ezgraph/testing</code> is a separate entry point, so nothing in it ships in
+            your runtime path. <code>scriptedGateway()</code> queues model turns declaratively
+            — <code>.text()</code>, <code>.callsTool()</code>, <code>.callsTools()</code>,
+            <code>.empty(finishReason)</code> to simulate a safety block, <code>.fail()</code>
+            for a provider outage — and records what the graph actually asked for.
+            <code>createTurnHarness()</code> drives real <code>GraphEngine.run()</code> calls
+            against an in-memory store, so a test exercises the whole path: lease, restore,
+            invoke, persist.
+          </p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Can I use multiple models in one graph?</summary>
+        <div class="answer">
+          <p>
+            Yes, and the benchmark app does exactly that: collection stages run on
+            <code>gpt-4o-mini</code> and only the stage that explains price trade-offs overrides
+            to <code>gpt-5.1</code>. Override <code>getLlmConfig()</code> per node. Model
+            parameters are typed against that model's family profile, so
+            <code>temperature</code> on a reasoning model is a <em>compile</em> error. You can
+            also declare <code>requiredCapabilities</code> (<code>pdfInputs</code>,
+            <code>toolCalling</code>, <code>structuredOutput</code>…) and have startup fail
+            loudly if the model can't do it. The effective model is persisted into the session
+            document, so you always know which one answered.
+          </p>
+        </div>
+      </details>
+
+      <details>
+        <summary>What if I need something the facade doesn't expose?</summary>
+        <div class="answer">
+          <p>
+            Then this is the honest answer: you may be stuck. The underlying
+            <code>StateGraph</code> is deliberately private, because raw access would bypass
+            node registration, tool validation, and endpoint checks — the very things that turn
+            a routing typo into a build error. Fixed edges, fan-in, explicit
+            <code>branchBy()</code> routing and fully custom <code>run()</code> node bodies are
+            all supported. Beyond that, <a href="#limits">read the limits</a> before you commit.
+          </p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Is the source available? Can I audit it?</summary>
+        <div class="answer">
+          <p>
+            The public distribution contains a minified runtime and public TypeScript
+            declarations, with selective obfuscation of implementation-sensitive internals. It
+            has no phone-home. An active support subscription includes a private source and
+            debug package for audit and troubleshooting. For a security review the interesting
+            surfaces are the session document, the lease compare-and-swap, and the provider
+            adapters.
+          </p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== OPTIONAL PICOFlow PATH ============================== -->
+<section class="band" id="picoflow-path">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">An on-ramp, not a forced migration</span>
+      <h2>Stay with LangGraph. Move toward PicoFlow only when the fit changes.</h2>
+      <p>
+        EZGraph is a complete production option for teams that want to keep LangGraph as
+        their graph runtime. PicoFlow is a separate, broader application model for teams that
+        want customer-facing business flows expressed as ordinary composable steps.
+      </p>
+    </div>
+    <div class="grid grid-2">
+      <article class="card">
+        <div class="ico">EZ</div>
+        <h3>Choose EZGraph</h3>
+        <p>
+          You already use LangGraph, want its execution model to remain underneath your
+          application, and want the repeated session, tool-loop, persistence, and testing
+          machinery supplied without an EZGraph key or runtime fee.
+        </p>
+      </article>
+      <article class="card">
+        <div class="ico">PF</div>
+        <h3>Consider PicoFlow later</h3>
+        <p>
+          Your requirements have shifted from graph-level orchestration toward a shared
+          conversational-application runtime built around named flows, domain steps, durable
+          business state, and normal program composition.
+        </p>
+        <p><a href="/product/">See how PicoFlow works</a> · <a href="/compare/langgraph/">Compare PicoFlow with LangGraph</a></p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== CTA ============================== -->
+<section class="tight">
+  <div class="wrap">
+    <div class="cta">
+      <h2>You already picked LangGraph. Don't write the application twice.</h2>
+      <p>
+        Read the benchmark, judge the code, and decide in an afternoon. Nothing to sign up
+        for, and the control-group implementation is in the repo so you can check every number
+        on this page.
+      </p>
+      <div class="btn-row">
+        <a class="btn btn-primary" href="/ezgraph/tutorial/">Build your first graph</a>
+        <a class="btn btn-ghost" href="/ezgraph/quote-graph/">Walk QuoteGraph</a>
+        <a class="btn btn-ghost" href="/ezgraph/compare/langgraph/">See the benchmark</a>
+      </div>
+    </div>
+  </div>
+</section>

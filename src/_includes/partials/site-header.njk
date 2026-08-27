@@ -7,7 +7,7 @@
     </a>
     <nav class="site-nav" aria-label="Primary navigation">
       {% for item in marketing.nav %}
-      <a href="{{ item.href }}" {% if page.url == item.href %}aria-current="page"{% endif %}>{{ item.label }}</a>
+      <a{% if item.href == "/ezgraph/" %} class="site-nav__ezgraph"{% endif %} href="{{ item.href }}" {% if page.url == item.href or (item.href == "/ezgraph/" and page.url.startsWith("/ezgraph/")) %}aria-current="page"{% endif %}>{{ item.label }}</a>
       {% endfor %}
     </nav>
     <a class="button button--small button--gold header-cta" href="/demo/">Book a demo <span aria-hidden="true">→</span></a>

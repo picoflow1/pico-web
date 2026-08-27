@@ -5,9 +5,13 @@ import markdownItAnchor from "markdown-it-anchor";
 import hljs from "highlight.js/lib/core";
 import typescript from "highlight.js/lib/languages/typescript";
 import json from "highlight.js/lib/languages/json";
+import bash from "highlight.js/lib/languages/bash";
+import javascript from "highlight.js/lib/languages/javascript";
 
 hljs.registerLanguage("typescript", typescript);
 hljs.registerLanguage("json", json);
+hljs.registerLanguage("bash", bash);
+hljs.registerLanguage("javascript", javascript);
 
 const highlightedFences = new Set(["ts", "typescript", "json"]);
 const transcriptMarkdown = markdownIt({ typographer: true, linkify: true });
@@ -50,6 +54,44 @@ function highlightTypescript(source, language) {
   } catch {
     return "";
   }
+}
+
+function ezgraphCodeLanguage(codeAttributes, source) {
+  const explicitLanguage =
+    codeAttributes.match(/\blanguage-([\w-]+)/i)?.[1] ||
+    codeAttributes.match(/\bdata-lang=["']([^"']+)["']/i)?.[1];
+  const normalized = explicitLanguage?.toLowerCase();
+  if (normalized === "ts") return "typescript";
+  if (normalized === "js") return "javascript";
+  if (normalized === "shell" || normalized === "sh") return "bash";
+  if (["typescript", "javascript", "json", "bash"].includes(normalized)) return normalized;
+
+  const plainSource = decodeHtmlEntities(source.replace(/<[^>]+>/g, "")).trim();
+  if (/^(?:#|npm |npx |pnpm |yarn |curl |git |cd |cp |export |node )/m.test(plainSource)) return "bash";
+  if (/^[{[]/.test(plainSource)) return "json";
+  return hljs.highlightAuto(plainSource, ["typescript", "javascript", "json", "bash"]).language || "typescript";
+}
+
+function ezgraphLineNumbers(source) {
+  const lines = source.endsWith("\n") ? source.slice(0, -1).split("\n") : source.split("\n");
+  return lines.map((_, index) => `<li>${index + 1}</li>`).join("");
+}
+
+function enhanceEzgraphCodeBlocks(content) {
+  return content.replace(
+    /<pre([^>]*)><code([^>]*)>([\s\S]*?)<\/code><\/pre>/g,
+    (match, preAttributes, codeAttributes, source) => {
+      if (/\bezgraph-code-pre\b/.test(preAttributes)) return match;
+
+      const language = ezgraphCodeLanguage(codeAttributes, source);
+      const plainSource = decodeHtmlEntities(source.replace(/<[^>]+>/g, ""));
+      const highlightedSource = /\bhljs\b/.test(codeAttributes)
+        ? source
+        : hljs.highlight(plainSource, { language, ignoreIllegals: true }).value;
+
+      return `<div class="ezgraph-code-body"><ol class="ezgraph-code-gutter" aria-hidden="true">${ezgraphLineNumbers(plainSource)}</ol><pre class="ezgraph-code-pre hljs"><code class="hljs language-${language}">${highlightedSource}</code></pre></div>`;
+    },
+  );
 }
 
 function anchorSlug(value) {
@@ -171,6 +213,11 @@ export default function (eleventyConfig) {
       (_match, source) =>
         `<pre class="hljs"><code class="hljs language-typescript">${highlightTypescriptSource(source)}</code></pre>`,
     );
+  });
+
+  eleventyConfig.addTransform("enhanceEzgraphCodeBlocks", function (content) {
+    if (!this.page?.outputPath?.includes(`${path.sep}ezgraph${path.sep}`)) return content;
+    return enhanceEzgraphCodeBlocks(content);
   });
 
   eleventyConfig.addCollection("docsSearch", (collectionApi) =>

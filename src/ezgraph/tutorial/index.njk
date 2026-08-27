@@ -1,0 +1,649 @@
+---
+layout: layouts/ezgraph.njk
+title: Build your first EZGraph
+description: A hands-on tutorial for building, running, and testing a guided conversational application with EZGraph and LangGraph.
+permalink: /ezgraph/tutorial/
+ezgraph: true
+---
+<section class="tight">
+  <div class="wrap wrap-narrow">
+    <span class="eyebrow">Tutorial</span>
+    <h1 style="font-size:clamp(2rem,4.4vw,3.1rem)">Build a guided chatbot in four files</h1>
+    <p class="lede">
+      A two-stage assistant: it collects a city, then reports the weather. Small enough to
+      read in one sitting, but it exercises the whole machine — persisted state, a validated
+      tool, waiting for the user, advancing a stage, and finishing. By the end you will have
+      run it and tested it <strong>without a model provider key</strong>.
+    </p>
+
+    <div class="callout tip">
+      <span class="label">Source of truth</span>
+      <p>
+        Every snippet on this page is taken from
+        <a href="/ezgraph/docs/developer-guide/"><b>the EZGraph developer's guide</b></a> —
+        §3 <em>Setup</em>, §4 <em>Your first graph, end to end</em>, §5 <em>The turn
+        lifecycle</em>, §15 <em>Testing</em>, and §17 <em>Pitfalls</em>. This page is the
+        guided path through them; the guide is the complete reference, and it is shipped
+        alongside this site so the two can never drift.
+      </p>
+    </div>
+
+    <div class="grid grid-3" style="margin:34px 0 10px">
+      <div class="card" style="padding:20px">
+        <h3 style="font-size:0.98rem;margin-bottom:6px">You'll need</h3>
+        <p style="font-size:0.9rem">Node ≥ 22.5, TypeScript 5.x, and about 15 minutes.</p>
+      </div>
+      <div class="card" style="padding:20px">
+        <h3 style="font-size:0.98rem;margin-bottom:6px">You won't need</h3>
+        <p style="font-size:0.9rem">An EZGraph account, a licence key, or a database — the
+          default store is in-memory.</p>
+      </div>
+      <div class="card" style="padding:20px">
+        <h3 style="font-size:0.98rem;margin-bottom:6px">Model key</h3>
+        <p style="font-size:0.9rem">Needed only for step 6. Steps 1–5 and 7 run without one.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band tight">
+  <div class="wrap wrap-narrow">
+    <ol class="steps">
+
+      <!-- ================= 1 ================= -->
+      <li>
+        <h3>Install and configure TypeScript</h3>
+        <p>
+          The EZGraph package, plus the adapter for whichever provider you use. Providers are
+          optional peer dependencies — you install only what you call.
+        </p>
+
+        <div class="install" style="margin-bottom:12px">
+          <span class="prompt">$</span>
+          <code>npm install @picoflow/ezgraph</code>
+        </div>
+        <div class="install">
+          <span class="prompt">$</span>
+          <code>npm install @langchain/openai   # or @langchain/anthropic, @langchain/google</code>
+        </div>
+
+        <p style="margin-top:20px">
+          Tool handlers use a method decorator, so decorator support and metadata emission
+          are required. The framework is written under
+          <code>exactOptionalPropertyTypes</code> and <code>noUncheckedIndexedAccess</code>;
+          they aren't mandatory, but its types are most precise with them on.
+        </p>
+
+        <div class="code">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="file">tsconfig.json</span>
+            <span class="note bad">required</span>
+          </div>
+<pre><code>{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "strict": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true
+  }
+}</code></pre>
+        </div>
+
+        <div class="callout warn">
+          <span class="label">Gotcha #1 — the one everybody hits</span>
+          <p>
+            Import <code>reflect-metadata</code> <b>once, at the very top of your entry
+            point, before any node module loads.</b> Without it, <code>@Tool</code> metadata is
+            never collected and your nodes will silently appear to have no tools at all.
+          </p>
+        </div>
+      </li>
+
+      <!-- ================= 2 ================= -->
+      <li>
+        <h3>Declare state — once, for the whole graph</h3>
+        <p>
+          This is the file where a LangGraph app would grow seventeen
+          <code>Annotation</code> channels with hand-written reducers. Here you declare
+          <em>which node owns which data</em> and the framework supplies the shape and the
+          reducers.
+        </p>
+
+        <div class="code">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="file">weather-graph.state.ts</span>
+          </div>
+<pre><code>import { createGraphStateAnnotation, type NodeStateValue } from "@picoflow/ezgraph";
+import { CollectNode } from "./nodes/collect.node.js";
+
+export type WeatherGraphNodes = {
+  CollectNode?: NodeStateValue&lt;{ city?: string }&gt;;
+  ReportNode?: NodeStateValue&lt;{ city?: string }&gt;;
+};
+
+export const WeatherGraphState = createGraphStateAnnotation(
+  CollectNode.id(),
+  () =&gt; ({}) as WeatherGraphNodes,
+);
+
+export type WeatherGraphStateType = typeof WeatherGraphState.State;</code></pre>
+        </div>
+
+        <p>
+          The first argument is <b>the node the conversation starts in</b>. The second supplies
+          the initial per-node state object, which is where you attach your types.
+        </p>
+
+        <div class="callout">
+          <span class="label">Why <code>.id()</code> and not <code>.name</code></span>
+          <p>
+            <code>CollectNode.id()</code> is the node's <b>durable identity</b> — the string
+            that gets persisted into the session document to remember where a conversation is
+            sitting. It defaults to the class name, but a node can override
+            <code>static id()</code>. Always call <code>id()</code>, so an overridden identity
+            keeps working.
+          </p>
+        </div>
+      </li>
+
+      <!-- ================= 3 ================= -->
+      <li>
+        <h3>Write the first node — a stage that waits</h3>
+        <p>
+          <code>CollectNode</code> asks for a city and waits until it gets one. This single
+          class is the whole stage: its prompt, its tool schema, its handler, its per-turn
+          context, and its transition decision.
+        </p>
+
+        <div class="code">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="file">nodes/collect.node.ts</span>
+          </div>
+<pre><code>import { z } from "zod";
+import {
+  ConversationNode,
+  Tool,
+  type ConversationNodeRunResult,
+  type ConversationToolResult,
+  type GraphNodeUpdate,
+  type ToolDefinition,
+} from "@picoflow/ezgraph";
+import type { WeatherGraphStateType } from "../weather-graph.state.js";
+import { ReportNode } from "./report.node.js";
+
+type CollectContext = { city?: string };
+
+export class CollectNode extends ConversationNode&lt;
+  WeatherGraphStateType,
+  { city?: string },  // this node's persisted local state
+  CollectContext      // this turn's working context
+&gt; {
+  getPrompt(): string {
+    return "Ask the user which city they want the weather for. When they name one, call capture_city. If they ask to stop, call terminate_session.";
+  }
+
+  defineTool(): readonly ToolDefinition&lt;{ city: string }&gt;[] {
+    return [
+      {
+        name: "capture_city",
+        description: "Record the city the user asked about.",
+        schema: z.object({ city: z.string().min(1) }),
+      },
+    ];
+  }
+
+  @Tool("capture_city")
+  captureCity(
+    { city }: { city: string },
+    _context: CollectContext,
+  ): ConversationToolResult {
+    return this.toolResult({ accepted: true })
+      .withContext({ city })
+      .haltAfterBatch();
+  }
+
+  protected createContext(state: WeatherGraphStateType): CollectContext {
+    const saved = this.state(state).city;
+    return saved === undefined ? {} : { city: saved };
+  }
+
+  protected nextStep(
+    _state: WeatherGraphStateType,
+    context: CollectContext,
+    conversation: ConversationNodeRunResult,
+  ): GraphNodeUpdate&lt;WeatherGraphStateType&gt; {
+    if (conversation.quitRequested) return this.quit(conversation);
+    if (context.city) {
+      return this.advance(ReportNode, conversation)
+        .withState({ city: context.city })
+        .withStateFor(ReportNode, { city: context.city });
+    }
+    return this.stay(conversation);
+  }
+}</code></pre>
+        </div>
+
+        <p>Three things worth pausing on, because they are the design in miniature:</p>
+
+        <ul class="checks">
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b><code>defineTool()</code> publishes; <code>@Tool</code> consumes.</b>
+              Splitting them lets one node own a tool's schema while several nodes handle it.
+              Notice the handler's first parameter is already a typed, parsed, Zod-validated
+              object — there is no <code>try/catch</code>, and there is no
+              <code>if (call.name === …)</code> dispatch, because the framework did both.</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>The handler mutates nothing.</b> <code>withContext({ city })</code> records
+              a typed <em>effect</em> that the framework applies to the turn context after the
+              handler returns. <code>haltAfterBatch()</code> says "once every tool call in this
+              batch has been answered, stop looping" — the batch still completes, because a
+              dangling tool call is a conversation providers will reject.</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b><code>nextStep()</code> checks <code>quitRequested</code> first</b>, before
+              domain success. A model can call several tools in one batch, and an explicit
+              request to stop should always win over "but we also captured a city."</span>
+          </li>
+        </ul>
+
+        <div class="callout warn">
+          <span class="label">Gotcha #2 — <code>advance()</code> does not wait</span>
+          <p>
+            The single most common early misreading. <code>stay()</code> ends the turn and
+            waits for the user. <code>advance()</code> routes into the target node <b>in the
+            same invocation</b>, so the next stage runs immediately. If you want to set where
+            the <em>next</em> user turn enters without routing there now, that's
+            <code>resumeAt()</code>.
+          </p>
+        </div>
+      </li>
+
+      <!-- ================= 4 ================= -->
+      <li>
+        <h3>Write the second node — a stage that finishes</h3>
+        <p>
+          <code>ReportNode</code> has no tools at all. It reads the city out of its own local
+          state, answers, and ends the conversation. Note that its type parameters stop at two:
+          the context type defaults when a node doesn't need one.
+        </p>
+
+        <div class="code">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="file">nodes/report.node.ts</span>
+          </div>
+<pre><code>import {
+  ConversationNode,
+  type ConversationNodeRunResult,
+  type GraphNodeUpdate,
+} from "@picoflow/ezgraph";
+import type { WeatherGraphStateType } from "../weather-graph.state.js";
+
+export class ReportNode extends ConversationNode&lt;
+  WeatherGraphStateType,
+  { city?: string }
+&gt; {
+  getPrompt(state: WeatherGraphStateType): string {
+    const city = this.state(state).city;
+    return `Report today's weather conversationally for ${city ?? "the requested city"}, then stop.`;
+  }
+
+  protected createContext(): Record&lt;string, never&gt; {
+    return {};
+  }
+
+  protected nextStep(
+    _state: WeatherGraphStateType,
+    _context: Record&lt;string, never&gt;,
+    conversation: ConversationNodeRunResult,
+  ): GraphNodeUpdate&lt;WeatherGraphStateType&gt; {
+    if (conversation.quitRequested) return this.quit(conversation);
+    return this.finish(conversation.response ?? "All set.", conversation);
+  }
+}</code></pre>
+        </div>
+
+        <p>
+          You have now seen the entire node contract, and it is the same contract in every
+          EZGraph codebase: <code>getPrompt</code>, <code>defineTool</code>, <code>@Tool</code>
+          handlers, <code>createContext</code>, <code>nextStep</code> — in that order. That
+          uniformity is the point. A developer who learns it once can read a stage written by
+          another team without asking anyone how <em>their</em> graph does routing.
+        </p>
+      </li>
+
+      <!-- ================= 5 ================= -->
+      <li>
+        <h3>Assemble the graph</h3>
+        <p>
+          The definition declares the default model, the terminal node, and the
+          <b>history spaces</b> — separate message channels so the collection stage's
+          transcript never pollutes the reporting stage's context window. Then
+          <code>buildGraph()</code> registers the nodes and lets routing derive itself.
+        </p>
+
+        <div class="code">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="file">weather-graph.ts</span>
+          </div>
+<pre><code>import { END } from "@langchain/langgraph";
+import {
+  BaseGraph,
+  GRAPH_END_NODE,
+  ModelCatalog,
+  TerminateSessionNode,
+  type GraphDefinition,
+  type LlmGateway,
+} from "@picoflow/ezgraph";
+import { WeatherGraphState, type WeatherGraphStateType } from "./weather-graph.state.js";
+import { CollectNode } from "./nodes/collect.node.js";
+import { ReportNode } from "./nodes/report.node.js";
+
+export class WeatherGraph extends BaseGraph&lt;WeatherGraphStateType&gt; {
+  static getGraphDefinition(): GraphDefinition {
+    return {
+      llmConfig: ModelCatalog.model("openai:gpt-4o", { retries: 3 }),
+      endNode: GRAPH_END_NODE,
+      initialHistorySpace: "collect",
+      historySpaces: [
+        [CollectNode, "collect"],
+        [ReportNode, "report"],
+        [TerminateSessionNode, "terminal"],
+      ],
+    };
+  }
+
+  constructor(llmGateway: LlmGateway) {
+    super(llmGateway, WeatherGraph.getGraphDefinition());
+  }
+
+  protected buildGraph() {
+    const graph = this.createStateGraph(WeatherGraphState);
+    graph.registerTurnNodes(CollectNode, ReportNode, TerminateSessionNode);
+    graph.configAutoRoute();
+    graph.addEdge(TerminateSessionNode, END);
+    return graph.compile();
+  }
+}</code></pre>
+        </div>
+
+        <p>
+          There is no edge map, no router function, and no string literal naming a node.
+          <code>configAutoRoute()</code> derives the topology from what the nodes
+          <em>return</em>, and every endpoint you do name is a <b>class</b> — so a typo is a
+          compile error rather than a <code>KeyError</code> on a customer's third message.
+        </p>
+
+        <div class="callout warn">
+          <span class="label">Gotcha #3 — <code>TerminateSessionNode</code> is not decoration</span>
+          <p>
+            Every <code>ConversationNode</code> subclass <em>inherits</em> a
+            <code>terminate_session</code> handler, and that tool's <em>definition</em> comes
+            from <code>TerminateSessionNode.defineTool()</code>. Extend
+            <code>ConversationNode</code> without registering it and <code>compile()</code>
+            fails with <code>Tool 'terminate_session' is not defined in this graph.</code>
+          </p>
+        </div>
+      </li>
+
+      <!-- ================= 6 ================= -->
+      <li>
+        <h3>Run it</h3>
+        <p>
+          <code>GraphEngine.create()</code> reads <code>SESSION_STORE</code> from the
+          environment — it defaults to <code>memory</code>, so this works with no database.
+          Set your provider key and go.
+        </p>
+
+        <div class="code">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="file">main.ts</span>
+          </div>
+<pre><code>import "reflect-metadata";
+import { GraphEngine } from "@picoflow/ezgraph";
+import { WeatherGraph } from "./weather-graph.js";
+
+const engine = await GraphEngine.create({ graphs: [WeatherGraph] });
+
+// Turn 1: CollectNode has no city yet, so it stays and asks.
+const first = await engine.run({
+  graphName: "WeatherGraph",
+  sessionId: "demo-1",
+  userMessage: "hi",
+});
+// { status: 200, body: { success: true, completed: false, message: "Which city …" } }
+// Persisted: currentNode = "CollectNode"
+
+// Turn 2: CollectNode captures the city and advances.
+const second = await engine.run({
+  graphName: "WeatherGraph",
+  sessionId: "demo-1",
+  userMessage: "Portland",
+});
+// { status: 200, body: { success: true, completed: true, message: "It is 72 degrees …" } }
+// Persisted: currentNode = "end", completed = true</code></pre>
+        </div>
+
+        <div class="verdict">
+          <b>Between those two calls your process could restart.</b> Turn 2 reads the session
+          document, sees <code>currentNode: "CollectNode"</code>, and enters that node
+          directly. That resume is the entire reason the active node is persisted — and it is
+          why a wait here costs you a string in a database row rather than a suspended
+          coroutine you have to keep alive.
+        </div>
+
+        <p style="margin-top:22px">
+          Notice what turn 2 does <em>not</em> do: it does not stop after
+          <code>advance(ReportNode, …)</code>. <code>ReportNode</code> runs in the same
+          invocation, produces the report, and finishes. One HTTP request, two stages.
+        </p>
+
+        <p>
+          To serve this over HTTP, hand <code>run()</code> the pieces of the request and hand
+          its result back — it returns <code>{ status, body, session }</code> with no HTTP
+          dependency of its own, so Express, Fastify and NestJS are all thin pass-throughs.
+          The <a href="/ezgraph/quote-graph/">QuoteGraph walkthrough</a> clones the real
+          <a href="https://github.com/picoflowio/ezgraph-demo">ezgraph-demo</a> repo; the
+          <a href="/ezgraph/#demo">demo section</a> shows the HTTP adapter in 12 lines.
+        </p>
+      </li>
+
+      <!-- ================= 7 ================= -->
+      <li>
+        <h3>Test the conversation without a provider</h3>
+        <p>
+          This is the step that decides whether a guided chatbot is maintainable. You need to
+          assert on multi-turn behavior in CI, deterministically, for free.
+          <code>ezgraph/testing</code> is a separate entry point, so nothing in it ships in
+          your runtime path.
+        </p>
+
+        <div class="code">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="file">test/weather-graph.spec.ts</span>
+            <span class="note good">no key, no network</span>
+          </div>
+<pre><code>import { createTurnHarness, scriptedGateway } from "ezgraph/testing";
+
+const harness = createTurnHarness&lt;WeatherGraphStateType&gt;({
+  graph: WeatherGraph,
+  gateway: scriptedGateway()
+    .text("Which city would you like the weather for?")
+    .callsTool("capture_city", { city: "Portland" })
+    .text("It is 72 degrees in Portland."),
+});
+
+const first = await harness.send("hi");
+assert.equal(first.currentNode, "CollectNode");
+assert.equal(first.completed, false);
+
+const second = await harness.send("Portland");
+assert.equal(second.state?.nodes.ReportNode?.city, "Portland");
+assert.equal(second.completed, true);
+assert.deepEqual(second.warnings, []);
+
+await harness.close();</code></pre>
+        </div>
+
+        <p>
+          Queue the model turns in the order the graph will consume them. The three above are:
+          <code>CollectNode</code>'s first answer, its tool call on turn 2, and
+          <code>ReportNode</code>'s report in that same invocation.
+        </p>
+
+        <p>
+          The harness drives <b>real <code>GraphEngine.run()</code> calls</b> against an
+          in-memory store — so the test exercises lease, restore, invoke and persist, rather
+          than calling <code>invoke()</code> directly and skipping persistence. Each turn hands
+          back <code>status</code>, <code>response</code>, <code>completed</code>,
+          <code>code</code>, <code>body</code>, the persisted <code>document</code>, the
+          hydrated <code>state</code>, <code>currentNode</code>, <code>warnings</code> and
+          <code>errors</code>.
+        </p>
+
+        <p>
+          Beyond the happy path, <code>scriptedGateway()</code> can queue the failures you
+          actually get paged for: <code>.empty("content_filter")</code> for a safety block,
+          <code>.empty("length")</code> for a token cap, <code>.fail(err)</code> for a provider
+          outage, <code>.callsTools([…])</code> for a multi-tool batch, and
+          <code>.callsTool("capture_city", { city: "" })</code> to prove your schema rejection
+          turns into a follow-up question instead of a 500. Inspect
+          <code>gateway.calls</code> to assert on what the graph actually asked for — system
+          prompt, history, tool names in publication order, model config.
+        </p>
+      </li>
+
+    </ol>
+  </div>
+</section>
+
+<!-- ============================== PITFALLS ============================== -->
+<section>
+  <div class="wrap wrap-narrow">
+    <div class="section-head">
+      <span class="eyebrow">Before you go further</span>
+      <h2>Nine pitfalls, in the order you'll hit them</h2>
+      <p>
+        Straight from <a href="/ezgraph/docs/developer-guide/">§17 of the guide</a>. Reading
+        this list now is cheaper than debugging any item on it later.
+      </p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Pitfall</th><th>What actually happens</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>Storing turn data on the node</b></td>
+            <td>Node instances are created once, shared by every session, and <b>frozen</b>.
+              <code>this.city = …</code> throws <code>TypeError: object is not extensible</code>
+              — deliberately, because that field would leak one customer's data into another's
+              conversation. Per-turn data goes in the tool context; per-session data goes in
+              local state via <code>withState()</code>.</td>
+          </tr>
+          <tr>
+            <td><b>Forgetting <code>TerminateSessionNode</code></b></td>
+            <td><code>compile()</code> throws <code>Tool 'terminate_session' is not defined in
+              this graph.</code></td>
+          </tr>
+          <tr>
+            <td><b>Checking domain success before <code>quitRequested</code></b></td>
+            <td>A model can call a domain tool <em>and</em> <code>terminate_session</code> in
+              one batch. Check the quit flag first or you'll ignore a user asking to stop.</td>
+          </tr>
+          <tr>
+            <td><b>Assuming <code>advance()</code> waits</b></td>
+            <td>It routes into the target in the same invocation. Use <code>stay()</code> to end
+              the turn, or <code>resumeAt()</code> to set the next entry point without routing
+              there now.</td>
+          </tr>
+          <tr>
+            <td><b>Renaming a node or graph class</b></td>
+            <td>The class name is the durable, persisted id. Renaming orphans live sessions
+              unless you override <code>static id()</code> to return the old string. This is the
+              sharpest edge in the framework.</td>
+          </tr>
+          <tr>
+            <td><b>Missing <code>reflect-metadata</code></b></td>
+            <td><code>@Tool</code> metadata is never collected, so nodes appear to have no
+              tools — with no error to tell you why.</td>
+          </tr>
+          <tr>
+            <td><b>Expecting a framework <code>expireAfter</code></b></td>
+            <td>There isn't one. Implement <code>onRestoreSessionDoc()</code> and use
+              <code>idleMs()</code> — that's how the benchmark app does 30-minute idle
+              expiry.</td>
+          </tr>
+          <tr>
+            <td><b>Reading <code>maxAgentRounds</code> as a turn limit</b></td>
+            <td>It bounds <em>one node invocation's</em> model↔tool loop, not the conversation.
+              Raise it for a stage that legitimately chains several tools.</td>
+          </tr>
+          <tr>
+            <td><b>Narrowing <code>onEmptyModelResponse</code></b></td>
+            <td>The base signature is <code>string | Promise&lt;string&gt;</code>. A
+              <code>string</code>-only override fails to typecheck.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== WHERE NEXT ============================== -->
+<section class="band">
+  <div class="wrap wrap-narrow">
+    <div class="section-head">
+      <span class="eyebrow">Where to go next</span>
+      <h2>From this toy to a production graph</h2>
+      <p>
+        The tutorial covered §3–§5 and §15. Next, walk the shipped
+        <a href="/ezgraph/quote-graph/">QuoteGraph</a> in
+        <a href="https://github.com/picoflowio/ezgraph-demo">ezgraph-demo</a> — same contract,
+        five stages. Then the guide for each real requirement:
+      </p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>When you need to…</th><th>Read</th></tr></thead>
+        <tbody>
+          <tr><td>See the same contract on a real five-stage graph</td><td><a href="/ezgraph/quote-graph/">Walk QuoteGraph</a> · <a href="https://github.com/picoflowio/ezgraph-demo">ezgraph-demo</a></td></tr>
+          <tr><td>Understand exactly what happens inside one turn</td><td><b>§5</b> The turn lifecycle</td></tr>
+          <tr><td>Know why each construct exists before you trust it</td><td><b>§6</b> Core architecture</td></tr>
+          <tr><td>Configure a graph: models, history spaces, round caps</td><td><b>§7</b> The graph definition, field by field</td></tr>
+          <tr><td>Put your own data in state and read it back</td><td><b>§8</b> Graph state · <b>§9.4</b> protected helpers</td></tr>
+          <tr><td>Hook into restore, empty responses, or errors</td><td><b>§9.1–9.3</b> Every hook you can override</td></tr>
+          <tr><td>Handle file attachments or shared tools</td><td><b>§10</b> Tools</td></tr>
+          <tr><td>Route on something other than the linear path</td><td><b>§11</b> Outcomes and routing — three ways</td></tr>
+          <tr><td>Use two models, add a provider, cap cost</td><td><b>§12</b> Models · capabilities · token usage</td></tr>
+          <tr><td>Choose a store, handle 409s, migrate a schema</td><td><b>§13</b> Persistence, concurrency, versioning</td></tr>
+          <tr><td>Know what's automatic so you stop writing it</td><td><b>§14</b> Behaviors that make your life easier</td></tr>
+          <tr><td>Port an existing LangGraph app</td><td><b>§16.6</b> Migration recipe — eight steps</td></tr>
+          <tr><td>Decide honestly whether to adopt at all</td><td><b>§16.7</b> What you give up · <a href="/ezgraph/#limits">the limits</a></td></tr>
+          <tr><td>Look up an export by name</td><td><b>§18</b> Export index</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="btn-row" style="margin-top:32px">
+      <a class="btn btn-primary" href="/ezgraph/quote-graph/">Walk the real QuoteGraph</a>
+      <a class="btn btn-ghost" href="https://github.com/picoflowio/ezgraph-demo">Clone ezgraph-demo</a>
+      <a class="btn btn-ghost" href="/ezgraph/docs/developer-guide/">Open the developer guide</a>
+    </div>
+  </div>
+</section>

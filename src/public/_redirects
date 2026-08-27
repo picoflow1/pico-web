@@ -8,3 +8,10 @@
 /guides/* /docs/guides/:splat 301
 /reference/* /docs/reference/:splat 301
 /resources/* /docs/resources/:splat 301
+/ezgraph/index.html /ezgraph/ 301
+/ezgraph/tutorial.html /ezgraph/tutorial/ 301
+/ezgraph/tutorial-quote.html /ezgraph/quote-graph/ 301
+/ezgraph/compare.html /ezgraph/compare/langgraph/ 301
+/ezgraph/docs/ezgraph-developer-guide.md /ezgraph/docs/developer-guide/ 301
+/ezgraph/docs/langgraph-pain-points-and-ezgraph.md /ezgraph/docs/langgraph-pain-points/ 301
+/ezgraph/LICENSE.md /ezgraph/license/ 301
