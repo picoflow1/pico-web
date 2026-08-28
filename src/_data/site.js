@@ -7,6 +7,7 @@ export default {
   url: "https://www.picoflow.io",
   email: "contact@picoflow.io",
   linkedin: "https://www.linkedin.com/company/picoflow-io",
+  discord: "https://discord.gg/gr5jcCTkA5",
   repository: "https://github.com/picoflowio/pico-demo",
   npm: "https://www.npmjs.com/package/@picoflow/core",
   calendly: "https://calendly.com/picoflow-io/new-meeting",
