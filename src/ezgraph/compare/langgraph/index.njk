@@ -25,7 +25,7 @@ ezgraph: true
         <h3><code>quote-graph</code> — the EZGraph implementation</h3>
         <p>
           Five conversational stages as five node classes, plus a graph definition and a state
-          annotation. <strong>758 normalized lines.</strong>
+          annotation. <strong>617 normalized lines.</strong>
         </p>
       </div>
       <div class="card">
@@ -47,7 +47,7 @@ ezgraph: true
         slot validation, gates that refuse to advance on invalid input, a backward transition
         from quote to coverage, a deterministic rating engine, 30-minute idle expiry, and a
         <code>terminate_session</code> path. Both share the <em>same</em> rating engine,
-        prompts, vehicle catalog and clock helpers — <b>310 normalized lines each</b>, which is
+        prompts, vehicle catalog and clock helpers — <b>287 normalized lines each</b>, which is
         how we know the delta is framework cost rather than a difference in scope.
       </p>
     </div>
@@ -80,14 +80,14 @@ ezgraph: true
         <tbody>
           <tr class="total">
             <td><strong>Framework-facing graph code</strong></td>
-            <td class="num"><strong>758</strong></td>
+            <td class="num"><strong>617</strong></td>
             <td class="num"><strong>1,283</strong></td>
-            <td class="num win"><strong>40.9% less</strong></td>
+            <td class="num win"><strong>51.9% less</strong></td>
           </tr>
-          <tr><td>Shared domain backend</td><td class="num">310</td><td class="num">310</td><td class="num zero">0% — identical</td></tr>
+          <tr><td>Shared domain backend</td><td class="num">287</td><td class="num">287</td><td class="num zero">0% — identical</td></tr>
           <tr><td>NestJS controller</td><td class="num">47</td><td class="num">74</td><td class="num win">36.5% less</td></tr>
-          <tr><td>Graph code + controller</td><td class="num">805</td><td class="num">1,357</td><td class="num win">40.7% less</td></tr>
-          <tr><td>Raw lines, nothing removed</td><td class="num">1,002</td><td class="num">1,482</td><td class="num win">32.4% less</td></tr>
+          <tr><td>Graph code + controller</td><td class="num">664</td><td class="num">1,357</td><td class="num win">51.1% less</td></tr>
+          <tr><td>Raw lines, nothing removed</td><td class="num">924</td><td class="num">1,588</td><td class="num win">41.8% less</td></tr>
         </tbody>
       </table>
     </div>
@@ -102,14 +102,14 @@ ezgraph: true
           </tr>
         </thead>
         <tbody>
-          <tr><td><code>quote-graph.ts</code></td><td class="num">50</td><td><code>quote-langgraph.ts</code></td><td class="num">980</td></tr>
-          <tr><td><code>quote-graph.state.ts</code></td><td class="num">62</td><td><code>quote-langgraph.state.ts</code></td><td class="num">83</td></tr>
-          <tr><td><code>nodes/driver.node.ts</code></td><td class="num">105</td><td><code>quote-session-store.ts</code></td><td class="num">177</td></tr>
-          <tr><td><code>nodes/vehicle.node.ts</code></td><td class="num">141</td><td><code>quote-types.ts</code></td><td class="num">43</td></tr>
-          <tr><td><code>nodes/history.node.ts</code></td><td class="num">101</td><td class="dim">—</td><td class="num dim">—</td></tr>
-          <tr><td><code>nodes/coverage.node.ts</code></td><td class="num">97</td><td class="dim">—</td><td class="num dim">—</td></tr>
-          <tr><td><code>nodes/quote.node.ts</code></td><td class="num">202</td><td class="dim">—</td><td class="num dim">—</td></tr>
-          <tr class="total"><td>Total</td><td class="num">758</td><td>Total</td><td class="num">1,283</td></tr>
+          <tr><td><code>quote-graph.ts</code></td><td class="num">49</td><td><code>quote-langgraph.ts</code></td><td class="num">980</td></tr>
+          <tr><td><code>quote-graph.state.ts</code></td><td class="num">66</td><td><code>quote-langgraph.state.ts</code></td><td class="num">83</td></tr>
+          <tr><td><code>nodes/driver.node.ts</code></td><td class="num">81</td><td><code>quote-session-store.ts</code></td><td class="num">177</td></tr>
+          <tr><td><code>nodes/vehicle.node.ts</code></td><td class="num">110</td><td><code>quote-types.ts</code></td><td class="num">43</td></tr>
+          <tr><td><code>nodes/history.node.ts</code></td><td class="num">79</td><td class="dim">—</td><td class="num dim">—</td></tr>
+          <tr><td><code>nodes/coverage.node.ts</code></td><td class="num">71</td><td class="dim">—</td><td class="num dim">—</td></tr>
+          <tr><td><code>nodes/quote.node.ts</code></td><td class="num">161</td><td class="dim">—</td><td class="num dim">—</td></tr>
+          <tr class="total"><td>Total</td><td class="num">617</td><td>Total</td><td class="num">1,283</td></tr>
         </tbody>
       </table>
     </div>
@@ -129,13 +129,13 @@ ezgraph: true
   <div class="wrap">
     <div class="section-head">
       <span class="eyebrow">4.2</span>
-      <h2>Where the 525 lines went</h2>
+      <h2>Where the 666 lines went</h2>
       <p>
-        <code>quote-langgraph</code> broken into concerns, each paired with its EZGraph
-        counterpart. <code>≈</code> marks a bucket measured by pattern count rather than a
-        contiguous line range. <b>This table, not the percentage, is the argument</b> — because
-        it tells you which work disappears, so you can predict whether it would disappear for
-        you too.
+        The first four rows are the current, additive source artifacts behind the headline.
+        The remaining rows are independently recounted repetition counts: they explain what
+        makes the source artifacts different, but are not added again. The comparison does not
+        count framework source on either side. <b>The main reduction is recurring application
+        plumbing, not insurance-domain logic.</b>
       </p>
     </div>
 
@@ -145,36 +145,33 @@ ezgraph: true
           <tr><th>Concern</th><th class="num">LangGraph</th><th class="num">EZGraph</th><th class="num">Delta</th></tr>
         </thead>
         <tbody>
+          <tr><td><b>Source artifacts — additive normalized lines</b></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+          <tr><td>Main graph and all stage implementations</td><td class="num">980</td><td class="num">551</td><td class="num win">−429</td></tr>
+          <tr><td>State definition and reducers</td><td class="num">83</td><td class="num">66</td><td class="num win">−17</td></tr>
           <tr><td>Session store — 3 backends + serialize/hydrate</td><td class="num">177</td><td class="num">0</td><td class="num win">−177</td></tr>
-          <tr><td>Request boundary — run, validate, load, save, delete, idle</td><td class="num">199</td><td class="num">12</td><td class="num win">−187</td></tr>
-          <tr><td>Tool dispatch + argument parsing and validation</td><td class="num">≈113</td><td class="num">0</td><td class="num win">−113</td></tr>
-          <tr><td>Agent loop + message / tool-message plumbing</td><td class="num">79</td><td class="num">0</td><td class="num win">−79</td></tr>
-          <tr><td>State channels and reducers</td><td class="num">83</td><td class="num">19</td><td class="num win">−64</td></tr>
-          <tr><td>Topology + router functions</td><td class="num">68</td><td class="num">14</td><td class="num win">−54</td></tr>
-          <tr><td>Prompt assembly per stage</td><td class="num">50</td><td class="num">29</td><td class="num win">−21</td></tr>
-          <tr><td>Model configuration</td><td class="num">19</td><td class="num">10</td><td class="num win">−9</td></tr>
-          <tr><td>Tool declaration + per-stage registration</td><td class="num">123</td><td class="num">122</td><td class="num zero">−1</td></tr>
-          <tr><td>Domain type declarations</td><td class="num">43</td><td class="num">43</td><td class="num zero">0</td></tr>
-          <tr>
-            <td>Transition decisions <span class="badge warn">EZGraph costs more</span></td>
-            <td class="num">≈16 <span class="dim">inline <code>route:</code>/<code>phase:</code></span></td>
-            <td class="num">100 <span class="dim">as <code>nextStep()</code></span></td>
-            <td class="num loss">+84</td>
-          </tr>
-          <tr><td>Domain validation + formatting — <em>the actual product</em></td><td class="num">remainder</td><td class="num">remainder</td><td class="num zero">≈0</td></tr>
+          <tr><td>Standalone domain type module</td><td class="num">43</td><td class="num">0 <span class="dim">types live with node state</span></td><td class="num win">−43</td></tr>
+          <tr class="total"><td><strong>Framework-facing graph code</strong></td><td class="num"><strong>1,283</strong></td><td class="num"><strong>617</strong></td><td class="num win"><strong>−666</strong></td></tr>
+          <tr><td><b>Repetition counts — not additive line buckets</b></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+          <tr><td>Manual <code>Schema.parse(call.args)</code> blocks</td><td class="num">8</td><td class="num">0</td><td class="num win">−8</td></tr>
+          <tr><td>Tool-name dispatch comparisons</td><td class="num">14</td><td class="num">0</td><td class="num win">−14</td></tr>
+          <tr><td>Explicit <code>route:</code> state writes</td><td class="num">16</td><td class="num">0</td><td class="num win">−16</td></tr>
+          <tr><td>Termination handling sites in graph code</td><td class="num">7</td><td class="num">0 <span class="dim">built-in node</span></td><td class="num win">−7</td></tr>
+          <tr><td>Reducer helpers / channels</td><td class="num">2 × 17</td><td class="num">0</td><td class="num win">framework-owned</td></tr>
+          <tr><td>Domain tool declarations</td><td class="num">8</td><td class="num">8</td><td class="num zero">same product scope</td></tr>
+          <tr><td>Explicit response sites</td><td class="num">route/branch updates</td><td class="num">5 <code>go</code>, 8 <code>stay</code>, 1 <code>direct</code>, 1 <code>finish</code></td><td class="num zero">visible contract</td></tr>
         </tbody>
       </table>
     </div>
 
     <div class="grid grid-2 mt-32">
       <div class="card">
-        <h3>Five buckets carry the delta</h3>
+        <h3>The expensive work is concentrated</h3>
         <p>
-          Persistence (177), request boundary (187), tool dispatch (113), agent loop (79) and
-          reducers (64) come to 620 lines — and <b>not one of them has anything to do with car
-          insurance.</b> Against that, EZGraph spends 84 lines back on explicit transitions and
-          the smaller buckets partly offset each other, which is how 620 lines of plumbing
-          becomes a 525-line net reduction.
+          The direct graph's 980-line file owns stage prompts, tool declarations and dispatch,
+          model calls, message handling, validation, persistence boundary, and routing. The
+          recounted repetition rows show the maintenance cost hidden inside that one artifact.
+          EZGraph splits its corresponding 551 lines between a small graph definition and five
+          stage files, while the framework owns the repeated turn mechanics.
         </p>
         <p>
           The domain logic itself is unchanged between the two implementations, and that is the
@@ -183,16 +180,16 @@ ezgraph: true
         </p>
       </div>
       <div class="card">
-        <h3>Two rows argue against us</h3>
+        <h3>What this count does not claim</h3>
         <p>
-          <b>Tool declaration is a wash</b> — 122 vs 123 — because declaring a Zod schema costs
-          the same everywhere. The win is in <em>handling</em> tools, not declaring them.
+          It does not claim that a line count measures quality, performance, or every LangGraph
+          application. The quote application's provider, prompts, domain rules, and rating
+          backend remain intentionally equivalent.
         </p>
         <p>
-          <b>Transitions cost 84 lines more.</b> EZGraph makes every transition an explicit
-          <code>nextStep()</code> return instead of a string written into a state field. That
-          buys greppable, type-checked, testable routing — and we count the cost against our own
-          headline number rather than quietly excluding it.
+          The source counts are useful because they are reproducible and scoped: they include
+          application code, exclude the framework itself, and keep matching domain backend code
+          out of the headline.
         </p>
       </div>
     </div>
@@ -250,19 +247,19 @@ ezgraph: true
           <table style="min-width:0">
             <thead><tr><th class="num">#</th><th>Edit</th><th>Location</th></tr></thead>
             <tbody>
-              <tr><td class="num">1</td><td>Write <code>nodes/discounts.node.ts</code> — the whole stage: prompt, tools, handlers, context, transition</td><td class="mono dim" style="font-size:0.78rem">new file</td></tr>
+              <tr><td class="num">1</td><td>Write <code>nodes/discounts.node.ts</code> — the whole stage: prompt, tools, handlers, validation, state saves, and responses</td><td class="mono dim" style="font-size:0.78rem">new file</td></tr>
               <tr><td class="num">2</td><td>Add a <code>DiscountsNode?: NodeStateValue&lt;…&gt;</code> key</td><td class="mono dim" style="font-size:0.78rem">quote-graph.state.ts</td></tr>
               <tr><td class="num">3</td><td>Add <code>[DiscountsNode, "quote-intake"]</code> to <code>historySpaces</code></td><td class="mono dim" style="font-size:0.78rem">quote-graph.ts:37–44</td></tr>
               <tr><td class="num">4</td><td>Add <code>DiscountsNode</code> to <code>registerTurnNodes(...)</code></td><td class="mono dim" style="font-size:0.78rem">quote-graph.ts:64–71</td></tr>
-              <tr><td class="num">5</td><td>Change the upstream <code>advance(QuoteNode, …)</code> to <code>advance(DiscountsNode, …)</code></td><td class="mono dim" style="font-size:0.78rem">coverage.node.ts</td></tr>
+              <tr><td class="num">5</td><td>Change the upstream <code>go(QuoteNode)</code> to <code>go(DiscountsNode)</code></td><td class="mono dim" style="font-size:0.78rem">coverage.node.ts</td></tr>
             </tbody>
           </table>
         </div>
         <p class="table-note">
           One new file plus four one-line edits — and <b>edits 3, 4 and 5 take the class</b>, so
           forgetting one is a <code>compile()</code> error or a type error rather than a
-          production <code>KeyError</code>. Routing needs no edit at all, because
-          <code>configAutoRoute()</code> derives it from the outcome the new node returns.
+          production <code>KeyError</code>. Conversational routing lives in the explicit
+          <code>go(TargetNode)</code> response returned by the upstream node.
         </p>
         <div class="verdict">
           This is what "modular" means concretely: <b>a stage is a file.</b> Its prompt, tool
@@ -394,14 +391,14 @@ ezgraph: true
       </li>
       <li>
         <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" style="color:var(--amber)"><path d="M8 3.5v6m0 2.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        <span><b>EZGraph's 758 lines exclude the framework itself.</b> That is the point of a
+        <span><b>EZGraph's 617 lines exclude the framework itself.</b> That is the point of a
           framework — but it does mean you are trading code you own for code you don't. Read
           <a href="/ezgraph/#limits">the limits</a> before deciding that trade is worth it.</span>
       </li>
       <li>
         <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" style="color:var(--amber)"><path d="M8 3.5v6m0 2.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         <span><b>One data point.</b> One five-stage guided conversation. Generalize from the
-          <a href="#concerns">per-concern table</a>, not from 40.9%: if your app needs
+          <a href="#concerns">per-concern table</a>, not from 51.9%: if your app needs
           persistence, a request boundary, tool dispatch, an agent loop and state reducers,
           expect a similar result. If it needs none of them, don't adopt this.</span>
       </li>

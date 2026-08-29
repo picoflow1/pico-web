@@ -26,7 +26,7 @@
   <text x="96" y="300" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="58" font-weight="800" fill="#E6EDF3" letter-spacing="-1.6">LangGraph's missing layer</text>
   <text x="96" y="372" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="58" font-weight="800" fill="url(#og-accent)" letter-spacing="-1.6">is EZGraph.</text>
   <text x="96" y="438" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="24" fill="#9BA9BC">The application framework LangGraph is not. Guided chatbots in</text>
-  <text x="96" y="472" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="24" fill="#9BA9BC">TypeScript, measured at 40.9% less framework-facing code.</text>
+  <text x="96" y="472" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="24" fill="#9BA9BC">TypeScript, measured at 51.9% less framework-facing code.</text>
   <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="20">
     <rect x="96" y="524" width="252" height="46" rx="10" fill="#151C26" stroke="#28323F"/>
     <text x="118" y="554" fill="#6EB4E0">npm i ezgraph zod</text>

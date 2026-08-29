@@ -21,7 +21,7 @@ ezgraph: true
           LangGraph is a runtime, not an application framework. Every team building a
           reliable guided chatbot still writes the same agent loop, the same tool dispatch,
           the same concurrency bugs. EZGraph is the layer on top: same engine, one node
-          contract, <strong>40.9% less framework-facing code</strong> — measured on one
+          contract, <strong>51.9% less framework-facing code</strong> — measured on one
           chatbot built twice.
         </p>
 
@@ -32,7 +32,7 @@ ezgraph: true
               <path d="M3 8h9M8.5 4.5L12 8l-3.5 3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </a>
-          <a class="btn btn-ghost" href="/ezgraph/compare/langgraph/">See the 525 lines you delete</a>
+          <a class="btn btn-ghost" href="/ezgraph/compare/langgraph/">See the 666 lines you delete</a>
         </div>
 
         <ul class="trust-row">
@@ -223,11 +223,11 @@ ezgraph: true
 
     <div class="metric-hero reveal">
       <div>
-        <div class="big-stat grad-text">40.9%</div>
+        <div class="big-stat grad-text">51.9%</div>
         <p class="big-stat-label">
           less framework-facing code for <strong>identical behavior</strong>
         </p>
-        <p class="big-stat-sub">758 vs 1,283 normalized executable lines</p>
+        <p class="big-stat-sub">617 vs 1,283 normalized executable lines</p>
       </div>
       <div>
         <div class="table-wrap">
@@ -243,14 +243,14 @@ ezgraph: true
             <tbody>
               <tr>
                 <td><strong>Framework-facing graph code</strong></td>
-                <td class="num">758</td>
+                <td class="num">617</td>
                 <td class="num">1,283</td>
-                <td class="num win">−40.9%</td>
+                <td class="num win">−51.9%</td>
               </tr>
               <tr>
                 <td>Shared domain backend</td>
-                <td class="num">310</td>
-                <td class="num">310</td>
+                <td class="num">287</td>
+                <td class="num">287</td>
                 <td class="num zero">identical</td>
               </tr>
               <tr>
@@ -261,16 +261,16 @@ ezgraph: true
               </tr>
               <tr>
                 <td>Raw lines, nothing removed</td>
-                <td class="num">1,002</td>
-                <td class="num">1,482</td>
-                <td class="num win">−32.4%</td>
+                <td class="num">924</td>
+                <td class="num">1,588</td>
+                <td class="num win">−41.8%</td>
               </tr>
             </tbody>
           </table>
         </div>
         <p class="table-note">
           The rating engine, prompts, vehicle catalog, and clock helpers are the same in both
-          and measure <b>310 lines each</b> — which is how we know the delta is framework cost
+          and measure <b>287 lines each</b> — which is how we know the delta is framework cost
           and not a difference in what the two products do.
         </p>
       </div>
@@ -295,11 +295,10 @@ ezgraph: true
       </div>
     </div>
 
-    <h3 class="mt-40" style="font-size:1.3rem">Where the 525 lines went</h3>
+    <h3 class="mt-40" style="font-size:1.3rem">Where the 666 lines went</h3>
     <p class="dim" style="max-width:70ch">
-      This table, not the headline percentage, is the honest argument — because it says
-      <em>which</em> work disappears. Five buckets account for essentially the whole delta,
-      and not one of them has anything to do with car insurance.
+      The additive source rows prove the headline. The repetition rows show <em>which</em>
+      application work disappears without pretending that the same code can be added twice.
     </p>
 
     <div class="table-wrap reveal">
@@ -313,26 +312,29 @@ ezgraph: true
           </tr>
         </thead>
         <tbody>
+          <tr><td><b>Source artifacts — additive normalized lines</b></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+          <tr><td>Main graph and all stage implementations</td><td class="num">980</td><td class="num">551</td><td class="num win">−429</td></tr>
+          <tr><td>State definition and reducers</td><td class="num">83</td><td class="num">66</td><td class="num win">−17</td></tr>
           <tr><td>Session store — 3 backends + serialize/hydrate</td><td class="num">177</td><td class="num">0</td><td class="num win">−177</td></tr>
-          <tr><td>Request boundary — run, validate, load, save, idle</td><td class="num">199</td><td class="num">12</td><td class="num win">−187</td></tr>
-          <tr><td>Tool dispatch + argument validation</td><td class="num">≈113</td><td class="num">0</td><td class="num win">−113</td></tr>
-          <tr><td>Agent loop + message/tool-message plumbing</td><td class="num">79</td><td class="num">0</td><td class="num win">−79</td></tr>
-          <tr><td>State channels and reducers</td><td class="num">83</td><td class="num">19</td><td class="num win">−64</td></tr>
-          <tr><td>Topology + router functions</td><td class="num">68</td><td class="num">14</td><td class="num win">−54</td></tr>
-          <tr><td>Prompt assembly per stage</td><td class="num">50</td><td class="num">29</td><td class="num win">−21</td></tr>
-          <tr><td>Tool declaration + per-stage registration</td><td class="num">123</td><td class="num">122</td><td class="num zero">−1</td></tr>
-          <tr><td>Transition decisions <span class="badge warn">we add code here</span></td><td class="num">≈16</td><td class="num">100</td><td class="num loss">+84</td></tr>
-          <tr><td>Domain validation &amp; formatting — <em>the actual product</em></td><td class="num">same</td><td class="num">same</td><td class="num zero">≈0</td></tr>
+          <tr><td>Standalone domain type module</td><td class="num">43</td><td class="num">0 <span class="dim">types live with node state</span></td><td class="num win">−43</td></tr>
+          <tr class="total"><td><strong>Framework-facing graph code</strong></td><td class="num"><strong>1,283</strong></td><td class="num"><strong>617</strong></td><td class="num win"><strong>−666</strong></td></tr>
+          <tr><td><b>Repetition counts — not additive line buckets</b></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+          <tr><td>Manual <code>Schema.parse(call.args)</code> blocks</td><td class="num">8</td><td class="num">0</td><td class="num win">−8</td></tr>
+          <tr><td>Tool-name dispatch comparisons</td><td class="num">14</td><td class="num">0</td><td class="num win">−14</td></tr>
+          <tr><td>Explicit <code>route:</code> state writes</td><td class="num">16</td><td class="num">0</td><td class="num win">−16</td></tr>
+          <tr><td>Termination handling sites in graph code</td><td class="num">7</td><td class="num">0 <span class="dim">built-in node</span></td><td class="num win">−7</td></tr>
+          <tr><td>Reducer helpers / channels</td><td class="num">2 × 17</td><td class="num">0</td><td class="num win">framework-owned</td></tr>
+          <tr><td>Domain tool declarations</td><td class="num">8</td><td class="num">8</td><td class="num zero">same product scope</td></tr>
+          <tr><td>Explicit response sites</td><td class="num">route/branch updates</td><td class="num">5 <code>go</code>, 8 <code>stay</code>, 1 <code>direct</code>, 1 <code>finish</code></td><td class="num zero">visible contract</td></tr>
         </tbody>
       </table>
     </div>
 
     <div class="verdict reveal">
-      <b>Note the last two rows.</b> Declaring tools is a wash — 122 vs 123 lines — because
-      the win is in <em>handling</em> them, not declaring them. And EZGraph gives 84 lines
-      <em>back</em> in explicit <code>nextStep()</code> transitions. That is a deliberate
-      trade: every transition becomes greppable and type-checked instead of a string written
-      into a state field. We count it against our own headline number.
+      <b>The count is intentionally narrow.</b> It covers the current graph application code,
+      excludes EZGraph itself, and excludes the matching domain backend. The direct graph's
+      single implementation owns the repeated agent loop, dispatch, persistence boundary, and
+      routing; EZGraph keeps the application-specific part in a graph definition and five nodes.
     </div>
 
     <div class="btn-row mt-32">
@@ -490,41 +492,25 @@ export type QuoteGraphStateType = typeof QuoteGraphState.State;</code></pre>
                 <span class="file">nodes/driver.node.ts</span>
                 <span class="note good">handler + decision</span>
               </div>
-<pre class="sm"><code>@Tool("capture_driver")
-async captureDriver(
-  input: DriverInput,          // already parsed and Zod-validated
-  context: DriverContext,
-): Promise&lt;ConversationToolResult&gt; {
+<pre class="sm"><code>export class DriverNode extends ConversationNode&lt;QuoteGraphStateType&gt; {
+  @Tool("capture_driver")
+  async captureDriver(input: DriverInput): Promise&lt;ToolResponse&gt; {
+    // ...the same 25 lines of deterministic driver validation...
+    const driver = validateDriver(input);
+    if (!driver.ok) return stay(JSON.stringify(driver.error));
 
-  // ...the same 25 lines of driver validation, and nothing else...
-
-  context.driver = { /* ... */ };
-  return {
-    output: { accepted: true, driver: context.driver },
-    stopAfterBatch: true,
-  };
-}
-
-protected nextStep(
-  _state: QuoteGraphStateType,
-  context: DriverContext,
-  conversation: ConversationNodeRunResult,
-): GraphNodeUpdate&lt;QuoteGraphStateType&gt; {
-  if (conversation.quitRequested) return this.quit(conversation);
-  if (context.driver) {
-    return this.advance(VehicleNode, conversation)
-      .withState({ driver: context.driver });
+    this.saveState({ driver: driver.value });
+    return go(VehicleNode);
   }
-  return this.stay(conversation);
 }</code></pre>
             </div>
-            <figcaption>One outcome sets response, history, tokens, currentNode and route — together</figcaption>
+            <figcaption>The node saves its own valid fact, then returns one explicit response</figcaption>
           </figure>
         </div>
         <div class="verdict">
-          <code>advance(VehicleNode, conversation).withState({…})</code> sets all five fields
-          the LangGraph version sets by hand — and <b>cannot set only some of them</b>. A
-          half-updated turn is not representable.
+          <code>saveState({ driver })</code> writes the owning node channel and
+          <code>go(VehicleNode)</code> transitions immediately. The handler no longer depends
+          on a context object, a post-tool hook, or an outcome router.
         </div>
       </div>
 
@@ -559,16 +545,17 @@ protected nextStep(
             <div class="code">
               <div class="code-head">
                 <span class="dots"><i></i><i></i><i></i></span>
-                <span class="file">nodes/quote.node.ts → nextStep</span>
+                <span class="file">nodes/quote.node.ts → reviseCoverage</span>
                 <span class="note good">1 call</span>
               </div>
-<pre class="sm"><code>if (context.revise) {
-  return this.advance(CoverageNode, conversation)
-    .forwardInput(state, "Review and update the coverage selections.");
-}</code></pre>
+<pre class="sm"><code>this.graph.appendHistory(this.graph.historySpace(CoverageNode.id()), [
+  new HumanMessage(this.graph.input(this.graph.graphState())),
+]);
+return go(CoverageNode).withToolFeedback(
+  "Review and update the coverage selections.",
+);</code></pre>
             </div>
-            <figcaption><code>forwardInput()</code> marks the input unconsumed and copies the
-              message across history spaces</figcaption>
+            <figcaption>The actual customer message is deliberately appended to the target history</figcaption>
           </figure>
         </div>
       </div>
@@ -614,7 +601,7 @@ protected nextStep(
               <div class="code-head">
                 <span class="dots"><i></i><i></i><i></i></span>
                 <span class="file">quote-graph.ts → buildGraph</span>
-                <span class="note good">14 lines · −79%</span>
+                <span class="note good">explicit registration</span>
               </div>
 <pre class="sm"><code>protected buildGraph() {
   const graph = this.createStateGraph(QuoteGraphState);
@@ -626,7 +613,6 @@ protected nextStep(
     QuoteNode,
     TerminateSessionNode,
   );
-  graph.configAutoRoute();
   graph.addEdge(TerminateSessionNode, END);
   return graph.compile();
 }</code></pre>
@@ -636,8 +622,8 @@ protected nextStep(
           </figure>
         </div>
         <div class="verdict">
-          <code>configAutoRoute()</code> derives the topology from what each node
-          <em>returns</em>. Add a stage and routing needs no edit at all.
+          Tool-returned <code>go(TargetNode)</code> responses select conversational handoffs.
+          The graph declares registered turn nodes and only genuine fixed worker edges.
         </div>
       </div>
 
@@ -685,13 +671,12 @@ protected nextStep(
         </dd>
       </div>
       <div class="concept reveal">
-        <dt>An outcome is the decision</dt>
+        <dt>A tool response is the decision</dt>
         <dd>
-          <code>stay()</code>, <code>advance(Next)</code>, <code>quit()</code>,
-          <code>finish(text)</code>. Each is a <b>complete, consistent state update</b> —
-          response text, history append, token accounting, <code>currentNode</code>, the
-          completion flag and the route, all set correctly together. You cannot produce a
-          half-updated turn.
+          <code>stay()</code>, <code>go(Next)</code>, <code>direct(text)</code>, or
+          <code>finish(text)</code>. Nodes save their durable facts before returning the
+          response. The response then controls collection, transition, direct presentation, or
+          completion without a separate context/hook lifecycle.
         </dd>
       </div>
       <div class="concept reveal">
@@ -708,19 +693,19 @@ protected nextStep(
       <div class="card">
         <h3>The contract every team learns once</h3>
         <p style="margin-bottom:18px">
-          Verified mechanically across all five stages of the benchmark app. Five members,
-          always in the same order. <code>getLlmConfig</code> is the single deliberate
-          addition, on the one stage that pays for a stronger model.
+          Verified mechanically across all five stages of the benchmark app. Each node keeps
+          the same small shape: prompt, tool definitions, and decorated handlers. The quote
+          node adds <code>getLlmConfig</code> because it pays for a stronger presentation model.
         </p>
         <div class="table-wrap">
           <table style="min-width:0">
             <thead><tr><th>Node</th><th>Members</th></tr></thead>
             <tbody>
-              <tr><td><code>DriverNode</code></td><td class="mono" style="font-size:0.8rem">getPrompt · defineTool · @Tool ×1 · createContext · nextStep</td></tr>
-              <tr><td><code>VehicleNode</code></td><td class="mono" style="font-size:0.8rem">getPrompt · defineTool · @Tool ×2 · createContext · nextStep</td></tr>
-              <tr><td><code>HistoryNode</code></td><td class="mono" style="font-size:0.8rem">getPrompt · defineTool · @Tool ×1 · createContext · nextStep</td></tr>
-              <tr><td><code>CoverageNode</code></td><td class="mono" style="font-size:0.8rem">getPrompt · defineTool · @Tool ×1 · createContext · nextStep</td></tr>
-              <tr><td><code>QuoteNode</code></td><td class="mono" style="font-size:0.8rem">getPrompt · <span class="win">getLlmConfig</span> · defineTool · @Tool ×3 · createContext · nextStep</td></tr>
+              <tr><td><code>DriverNode</code></td><td class="mono" style="font-size:0.8rem">getPrompt · defineTool · @Tool ×1</td></tr>
+              <tr><td><code>VehicleNode</code></td><td class="mono" style="font-size:0.8rem">getPrompt · defineTool · @Tool ×2</td></tr>
+              <tr><td><code>HistoryNode</code></td><td class="mono" style="font-size:0.8rem">getPrompt · defineTool · @Tool ×1</td></tr>
+              <tr><td><code>CoverageNode</code></td><td class="mono" style="font-size:0.8rem">getPrompt · defineTool · @Tool ×1</td></tr>
+              <tr><td><code>QuoteNode</code></td><td class="mono" style="font-size:0.8rem">getPrompt · <span class="win">getLlmConfig</span> · defineTool · @Tool ×3</td></tr>
             </tbody>
           </table>
         </div>
@@ -1126,7 +1111,7 @@ async run(
       </li>
       <li>
         <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" style="color:var(--amber)"><path d="M8 3.5v6m0 2.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        <span><b>The 40.9% figure is one data point.</b> One five-stage guided conversation,
+        <span><b>The 51.9% figure is one data point.</b> One five-stage guided conversation,
           written by the same authors on both sides. The
           <a href="/ezgraph/compare/langgraph/">per-concern table</a> is far more portable than the headline
           percentage, because it tells you <em>which</em> work disappears — persistence,
@@ -1258,15 +1243,14 @@ const result = await engine.run({
         <summary>What happens to my existing LangGraph app?</summary>
         <div class="answer">
           <p>
-            There's an eight-step migration recipe in
-            <a href="/ezgraph/docs/developer-guide/">§16.6 of the guide</a>. In short: per-stage
-            state fields become typed <code>nodes</code> slices; each node function becomes a
-            class with <code>getPrompt()</code> and <code>defineTool()</code>; the hand-rolled
-            model↔tool loop gets <em>deleted</em>; stage flags plus conditional edges become
-            <code>stay()</code>/<code>advance()</code>/<code>finish()</code> plus
-            <code>configAutoRoute()</code>; genuinely internal worker edges stay as
-            <code>addEdge(...)</code>; the checkpointer becomes a <code>SESSION_STORE</code>
-            plus an <code>onRestoreSessionDoc()</code> policy.
+            The <a href="/ezgraph/docs/developer-guide/">developer guide</a> has the current
+            migration checklist. Per-stage fields become typed node-state channels; each node
+            function becomes a class with <code>getPrompt()</code>, <code>defineTool()</code>,
+            and decorated handlers; the hand-rolled model↔tool loop gets <em>deleted</em>; and
+            stage flags plus conditional edges become explicit
+            <code>stay()</code>/<code>go()</code>/<code>direct()</code>/<code>finish()</code>
+            returns. Register conversational nodes with <code>registerTurnNodes(...)</code> and
+            retain <code>addEdge(...)</code> only for genuine fixed worker edges.
           </p>
         </div>
       </details>

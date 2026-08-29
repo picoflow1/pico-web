@@ -1,713 +1,87 @@
 ---
 layout: layouts/ezgraph.njk
 title: EZGraph QuoteGraph walkthrough
-description: Walk through a production-sized five-stage insurance quote conversation built with EZGraph.
+description: Read a production-sized guided quote conversation built with explicit node state and direct tool responses.
 permalink: /ezgraph/quote-graph/
 ezgraph: true
 ---
 <section class="tight">
   <div class="wrap wrap-narrow">
-    <span class="eyebrow">Tutorial 2</span>
+    <span class="eyebrow">Real application walkthrough</span>
     <h1 style="font-size:clamp(2rem,4.4vw,3.1rem)">Walk a real graph, not a toy</h1>
     <p class="lede">
-      <code>QuoteGraph</code> is the five-stage Sequoia Auto Insurance chatbot that the rest
-      of this site measures. You do not type it. You clone the repo that ships it, run the
-      tests, and read the same node contract you learned in
-      <a href="/ezgraph/tutorial/">the first tutorial</a> — at production size.
+      QuoteGraph collects driver, vehicle, insurance history, and coverage details, rates them
+      deterministically, then presents and accepts a quote. It is the same application used in
+      the demo repository and it follows the current EZGraph response contract end to end.
     </p>
-
-    <div class="callout tip">
-      <span class="label">Source of truth</span>
-      <p>
-        The tutorial is the repository:
-        <a href="https://github.com/picoflowio/ezgraph-demo"><b>github.com/picoflowio/ezgraph-demo</b></a>.
-        Every snippet on this page is a reading guide into that tree. If a line here and a
-        line there disagree, the repo wins.
-      </p>
-    </div>
-
-    <div class="grid grid-3" style="margin:34px 0 10px">
-      <div class="card" style="padding:20px">
-        <h3 style="font-size:0.98rem;margin-bottom:6px">You'll need</h3>
-        <p style="font-size:0.9rem">Node ≥ 22.5, git, and the first tutorial's contract in your
-          head.</p>
-      </div>
-      <div class="card" style="padding:20px">
-        <h3 style="font-size:0.98rem;margin-bottom:6px">You won't need</h3>
-        <p style="font-size:0.9rem">To write a graph from scratch, or to touch NestJS / Fastify
-          until the last step.</p>
-      </div>
-      <div class="card" style="padding:20px">
-        <h3 style="font-size:0.98rem;margin-bottom:6px">Model key</h3>
-        <p style="font-size:0.9rem">Not for the unit tests. Needed to <a href="#live">run the
-          live transcript</a> and for the e2e file.</p>
-      </div>
-    </div>
+    <div class="callout tip"><span class="label">Source of truth</span><p>Read and run the implementation in <a href="https://github.com/picoflowio/ezgraph-demo"><b>ezgraph-demo</b></a>. The site explains the design; the repository is the executable reference.</p></div>
   </div>
 </section>
 
 <section class="band tight">
-  <div class="wrap wrap-narrow">
-    <ol class="steps">
+  <div class="wrap wrap-narrow"><ol class="steps">
+    <li>
+      <h3>Run the deterministic suite first</h3>
+      <div class="install"><span class="prompt">$</span><code>git clone https://github.com/picoflowio/ezgraph-demo.git</code></div>
+      <div class="install"><span class="prompt">$</span><code>cd ezgraph-demo &amp;&amp; yarn</code></div>
+      <div class="install"><span class="prompt">$</span><code>yarn test:quote-graph</code></div>
+      <p style="margin-top:20px">The normal test target uses scripted models and exercises validation, state replacement, transitions, rating, and acceptance without calling a provider. Run the live scenario only when you opt in:</p>
+      <div class="install"><span class="prompt">$</span><code>USE_ENV=1 yarn test2:quote-graph</code></div>
+    </li>
 
-      <li>
-        <h3>Clone the repo and prove it runs</h3>
-        <p>
-          This is the current <code>ezgraph-demo</code> tree — NestJS + Fastify, three graphs,
-          and both sides of the benchmark. Ignore the HTTP host for now. The graph lives under
-          <code>src/graphs/quote-graph/</code>.
-        </p>
-
-        <div class="install" style="margin-bottom:12px">
-          <span class="prompt">$</span>
-          <code>git clone https://github.com/picoflowio/ezgraph-demo.git</code>
-        </div>
-        <div class="install" style="margin-bottom:12px">
-          <span class="prompt">$</span>
-          <code>cd ezgraph-demo &amp;&amp; npm install</code>
-        </div>
-        <div class="install" style="margin-bottom:12px">
-          <span class="prompt">$</span>
-          <code>cp .env.example .env  # then set one provider API key</code>
-        </div>
-        <div class="install">
-          <span class="prompt">$</span>
-          <code>npm run test:quote-graph</code>
-        </div>
-
-        <p style="margin-top:20px">
-          That script runs the scripted unit tests and the live e2e file. Without a provider
-          key the e2e case <b>skips</b>; the unit suite still drives a full quote — driver,
-          vehicle, history, coverage, adjust, accept — against a fake gateway. No network.
-        </p>
-
-        <div class="callout">
-          <span class="label">What you just proved</span>
-          <p>
-            The graph is not a slide. It compiles, it routes, it persists node-local state,
-            and it rejects a financed car with liability-only coverage. That is the product
-            the <a href="/ezgraph/compare/langgraph/">benchmark</a> measures.
-          </p>
-        </div>
-      </li>
-
-      <li id="live">
-        <h3>Run it live — this exact transcript</h3>
-        <p>
-          This is not the hero APNG. That animation compresses the quote into a few dense
-          turns. Below is a <b>passing live e2e run</b> of the fifteen-turn script in
-          <a href="https://github.com/picoflowio/ezgraph-demo/blob/main/test/quote-graph/quote-graph.scenario.json">quote-graph.scenario.json</a>.
-          Type the user lines verbatim. The bot lines are the actual
-          <code>response</code> from that run — not the judge rubric.
-        </p>
-
-        <p>
-          Pin "today" so the March 2026 ticket and a June 15 start stay inside the rules,
-          copy <a href="https://github.com/picoflowio/ezgraph-demo/blob/main/.env.example"><code>.env.example</code></a>
-          to <code>.env</code>, set <code>OPENAI_API_KEY</code>, then start the app (port
-          <code>8000</code>). The demo defaults to SQLite at <code>./data/sessions.sqlite</code>;
-          MongoDB and Cosmos settings are needed only if you select those stores:
-        </p>
-
-        <div class="install" style="margin-bottom:12px">
-          <span class="prompt">$</span>
-          <code>export QUOTE_GRAPH_CURRENT_DATE=2027-06-01T00:00:00.000Z</code>
-        </div>
-        <div class="install">
-          <span class="prompt">$</span>
-          <code>npm start</code>
-        </div>
-
-        <p style="margin-top:20px">
-          One session, one <code>SESSION_ID</code>, one message per turn. Swagger is at
-          <code>/api</code>.
-        </p>
-
-        <div class="code">
-          <div class="code-head">
-            <span class="dots"><i></i><i></i><i></i></span>
-            <span class="file">each turn</span>
-          </div>
-<pre><code data-lang="shell">curl -s localhost:8000/ai/run \
-  -H 'content-type: application/json' \
-  -H 'SESSION_ID: live-1' \
-  -d '{"graphName":"QuoteGraph","message":"&lt;the You line&gt;"}'</code></pre>
-        </div>
-
-        <div class="transcript">
-          <div class="code-head">
-            <span class="dots"><i></i><i></i><i></i></span>
-            <a class="file" href="https://github.com/picoflowio/ezgraph-demo/blob/main/test/quote-graph/quote-graph.scenario.json" target="_blank" rel="noopener">test/quote-graph/quote-graph.scenario.json</a>
-            <span class="note">15 turns · recorded e2e</span>
-          </div>
-          <ol class="transcript-list">
-            <li>
-              <div class="transcript-meta">1 · Driver</div>
-              <div class="transcript-line you">
-                <span class="who">You</span>
-                <p>Hi, I'd like a quote for my car insurance.</p>
-              </div>
-              <div class="transcript-line bot">
-                <span class="who">Bot</span>
-                <p>I'd be happy to help you with that! Let's start by gathering some details. Could you please provide your full name?</p>
-              </div>
-            </li>
-            <li>
-              <div class="transcript-meta">2 · Driver</div>
-              <div class="transcript-line you">
-                <span class="who">You</span>
-                <p>Jamie Rivera, born April 12, 1993.</p>
-              </div>
-              <div class="transcript-line bot">
-                <span class="who">Bot</span>
-                <p>Thank you, Jamie! I have your name and date of birth. Next, could you please tell me your license state (two-letter U.S. code) and your license status: is it valid or a learner's permit?</p>
-              </div>
-            </li>
-            <li>
-              <div class="transcript-meta">3 · Driver → Vehicle</div>
-              <div class="transcript-line you">
-                <span class="who">You</span>
-                <p>Licensed in Oregon, valid license, for about 10 years.</p>
-              </div>
-              <div class="transcript-line bot">
-                <span class="who">Bot</span>
-                <p>I've successfully captured your driver details, Jamie! Now, let's move on to your vehicle. Could you please provide the model year, make, and model of your car?</p>
-              </div>
-            </li>
-            <li>
-              <div class="transcript-meta">4 · Vehicle</div>
-              <div class="transcript-line you">
-                <span class="who">You</span>
-                <p>It's a 2019 Toyota Camry.</p>
-              </div>
-              <div class="transcript-line bot">
-                <span class="who">Bot</span>
-                <p>I found several trims for the 2019 Toyota Camry. Here are the options: 1. LE 2. SE 3. XSE Which trim do you have?</p>
-              </div>
-            </li>
-            <li>
-              <div class="transcript-meta">5 · Vehicle</div>
-              <div class="transcript-line you">
-                <span class="who">You</span>
-                <p>The SE trim.</p>
-              </div>
-              <div class="transcript-line bot">
-                <span class="who">Bot</span>
-                <p>I've confirmed your vehicle as a 2019 Toyota Camry SE. Now, could you please let me know about the ownership of the vehicle: do you own it, finance it, or lease it? Additionally, what is your annual mileage?</p>
-              </div>
-            </li>
-            <li>
-              <div class="transcript-meta">6 · Vehicle</div>
-              <div class="transcript-line you">
-                <span class="who">You</span>
-                <p>I finance it and drive about 12,000 miles a year.</p>
-              </div>
-              <div class="transcript-line bot">
-                <span class="who">Bot</span>
-                <p>Thank you for the information! Lastly, where do you usually park your car overnight: in a garage, driveway, or on the street?</p>
-              </div>
-            </li>
-            <li>
-              <div class="transcript-meta">7 · Vehicle → History</div>
-              <div class="transcript-line you">
-                <span class="who">You</span>
-                <p>In my driveway.</p>
-              </div>
-              <div class="transcript-line bot">
-                <span class="who">Bot</span>
-                <p>Do you currently have auto insurance? Also, has your coverage lapsed at any point in the past year?</p>
-              </div>
-            </li>
-            <li>
-              <div class="transcript-meta">8 · History</div>
-              <div class="transcript-line you">
-                <span class="who">You</span>
-                <p>I'm insured today and had no lapse in the past year.</p>
-              </div>
-              <div class="transcript-line bot">
-                <span class="who">Bot</span>
-                <p>Thank you for that information! Now, could you please tell me about any incidents in the last five years? Here are the categories: 1. At-fault accidents 2. Not-at-fault accidents 3. Moving violations 4. Comprehensive claims</p>
-              </div>
-            </li>
-            <li>
-              <div class="transcript-meta">9 · History → Coverage</div>
-              <div class="transcript-line you">
-                <span class="who">You</span>
-                <p>Just one speeding ticket in March 2026, nothing else.</p>
-              </div>
-              <div class="transcript-line bot">
-                <span class="who">Bot</span>
-                <p>Now, let's move on to your coverage preferences. 1. What level of liability coverage would you like? Your options are: - State-minimum (25/50/25) - Standard (50/100/50) - Premium (100/300/100)</p>
-              </div>
-            </li>
-            <li>
-              <div class="transcript-meta">10 · Coverage</div>
-              <div class="transcript-line you">
-                <span class="who">You</span>
-                <p>Standard liability, please.</p>
-              </div>
-              <div class="transcript-line bot">
-                <span class="who">Bot</span>
-                <p>Got it! You've chosen standard liability coverage. Now, what deductibles would you like for collision and comprehensive coverage: $250, $500, or $1000?</p>
-              </div>
-            </li>
-            <li>
-              <div class="transcript-meta">11 · Coverage</div>
-              <div class="transcript-line you">
-                <span class="who">You</span>
-                <p>Can I skip collision and comprehensive entirely?</p>
-              </div>
-              <div class="transcript-line bot">
-                <span class="who">Bot</span>
-                <p>Since your vehicle is financed, you are required to have both collision and comprehensive coverage. Please choose a deductible for each: $250, $500, or $1000.</p>
-              </div>
-            </li>
-            <li>
-              <div class="transcript-meta">12 · Coverage</div>
-              <div class="transcript-line you">
-                <span class="who">You</span>
-                <p>Fine, $500 deductibles for both, and add rental reimbursement but no roadside.</p>
-              </div>
-              <div class="transcript-line bot">
-                <span class="who">Bot</span>
-                <p>To confirm, you've selected the following coverage preferences: - Liability: Standard (50/100/50) - Collision Deductible: $500 - Comprehensive Deductible: $500 - Extras: Rental reimbursement (no roadside). What coverage start date would you like? It can be any day from today through 60 days out.</p>
-              </div>
-            </li>
-            <li>
-              <div class="transcript-meta">13 · Coverage → Quote</div>
-              <div class="transcript-line you">
-                <span class="who">You</span>
-                <p>Start it on June 15.</p>
-              </div>
-              <div class="transcript-line bot">
-                <span class="who">Bot</span>
-                <p>Here are your quote options with coverage starting 06/15/2027:
-1) Saver Tier — Liability: State-minimum — Collision deductible: $1,000 — Comprehensive deductible: $1,000 — Extras: none — $99.96/mo
-2) Your selection — Liability: Standard — Collision deductible: $500 — Comprehensive deductible: $500 — Extras: rental reimbursement — $140.43/mo
-3) Shield — Liability: Premium — Collision deductible: $250 — Comprehensive deductible: $250 — Extras: rental + roadside — $182.17/mo</p>
-              </div>
-            </li>
-            <li>
-              <div class="transcript-meta">14 · Quote</div>
-              <div class="transcript-line you">
-                <span class="who">You</span>
-                <p>What would it cost if both deductibles were $1000?</p>
-              </div>
-              <div class="transcript-line bot">
-                <span class="who">Bot</span>
-                <p>Here is the updated quote:
-1. Saver — state-minimum liability, $1000/$1000 deductibles, no extras: $99.96/mo
-2. Your selection — standard liability, $1000/$1000 deductibles, rental: $130.49/mo
-3. Shield — premium liability, $250/$250 deductibles, rental + roadside: $182.17/mo
-Adjust anything else, accept a tier, or rework the coverage.</p>
-              </div>
-            </li>
-            <li>
-              <div class="transcript-meta">15 · Quote · completed</div>
-              <div class="transcript-line you">
-                <span class="who">You</span>
-                <p>Accept my selected option, please.</p>
-              </div>
-              <div class="transcript-line bot">
-                <span class="who">Bot</span>
-                <p>You're all set — your selected coverage (Your selection) is locked in at $130.49/month starting 2027-06-15. Your quote reference is QT-507419.</p>
-              </div>
-            </li>
-          </ol>
-        </div>
-
-        <div class="callout warn">
-          <span class="label">What will differ on your machine</span>
-          <p>
-            The user lines and the premiums are stable. Bot wording will shift — the e2e
-            logger also truncates at 180 characters, so a few longer replies here were
-            completed from that run's visible prefix plus the rating engine. The
-            <code>QT-</code> reference is random; yours will not be <code>QT-507419</code>.
-            Turn 14's three dollar figures are written by the graph, not the model. Do not
-            invent a shorter path to match the APNG.
-          </p>
-        </div>
-      </li>
-
-      <li>
-        <h3>Orient — five stages, one folder</h3>
-        <p>
-          Open <a href="https://github.com/picoflowio/ezgraph-demo/tree/main/src/graphs/quote-graph">src/graphs/quote-graph/</a>.
-          The layout is the first tutorial's four files, grown up:
-        </p>
-
-        <div class="code">
-          <div class="code-head">
-            <span class="dots"><i></i><i></i><i></i></span>
-            <a class="file" href="https://github.com/picoflowio/ezgraph-demo/tree/main/src/graphs/quote-graph" target="_blank" rel="noopener">src/graphs/quote-graph/</a>
-          </div>
-<pre><code>quote-graph.ts              graph definition + idle expiry
-quote-graph.state.ts        domain types + per-node slices
-nodes/driver.node.ts        stage 1 — identity and license
-nodes/vehicle.node.ts       stage 2 — catalog lookup + use
-nodes/history.node.ts       stage 3 — incidents, own history space
-nodes/coverage.node.ts      stage 4 — selections + rating
-nodes/quote.node.ts         stage 5 — present, adjust, accept
-backend/                  catalog, rating engine, clock
-prompt/quote-prompt.ts      copy the model sees</code></pre>
-        </div>
-
-        <p>
-          Driver waits until it has a valid driver, then <code>advance(VehicleNode)</code>.
-          Vehicle, history, and coverage do the same. Quote can stay, go backward, or
-          <code>finish()</code>. Same four outcomes as weather.
-        </p>
-      </li>
-
-      <li>
-        <h3>The contract did not change</h3>
-        <p>
-          Compare this to <code>CollectNode.nextStep</code> from
-          <a href="/ezgraph/tutorial/">tutorial 1</a>. Quit first, then domain success, else stay.
-        </p>
-
-        <div class="code">
-          <div class="code-head">
-            <span class="dots"><i></i><i></i><i></i></span>
-            <a class="file" href="https://github.com/picoflowio/ezgraph-demo/blob/main/src/graphs/quote-graph/nodes/driver.node.ts" target="_blank" rel="noopener">nodes/driver.node.ts</a>
-            <span class="note">lines 118–130</span>
-          </div>
-<pre><code>protected nextStep(
-  _state: QuoteGraphStateType,
-  context: DriverContext,
-  conversation: ConversationNodeRunResult,
-): GraphNodeUpdate&lt;QuoteGraphStateType&gt; {
-  if (conversation.quitRequested) return this.quit(conversation);
-  if (context.driver) {
-    return this.advance(VehicleNode, conversation).withState({
-      driver: context.driver,
-    });
-  }
-  return this.stay(conversation);
-}</code></pre>
-        </div>
-
-        <p>
-          What grew is the <em>handler</em>, not the contract. <code>capture_driver</code>
-          rejects a bad state code, a suspended license, an age under 16, and licensed-years
-          that cannot be true — then writes <code>context.driver</code>. Weather had nothing
-          to validate; insurance does. The framework still never sees that domain.
-        </p>
-
-        <div class="callout warn">
-          <span class="label">Two style differences vs tutorial 1</span>
-          <p>
-            This graph still uses <code>DriverNode.name</code> when it builds state, and the
-            handlers mutate <code>context</code> then return <code>{ output, stopAfterBatch }</code>.
-            The first tutorial teaches <code>.id()</code> and
-            <code>toolResult().withContext().haltAfterBatch()</code>. Both work. Prefer the
-            tutorial-1 style in new graphs; do not "fix" this one while you are learning it.
-          </p>
-        </div>
-      </li>
-
-      <li>
-        <h3>State is still one annotation</h3>
-        <p>
-          Each stage owns a slice. Two nodes cannot write the same key — a collision is a
-          type error, which is the point of the homepage state comparison.
-        </p>
-
-        <div class="code">
-          <div class="code-head">
-            <span class="dots"><i></i><i></i><i></i></span>
-            <a class="file" href="https://github.com/picoflowio/ezgraph-demo/blob/main/src/graphs/quote-graph/quote-graph.state.ts" target="_blank" rel="noopener">quote-graph.state.ts</a>
-            <span class="note">lines 63–81</span>
-          </div>
-<pre><code>export type QuoteGraphNodes = {
+    <li>
+      <h3>Start with state ownership</h3>
+      <p>Each durable fact belongs to the node that validates it. The registry is converted into the annotated LangGraph state once, in the graph-state module.</p>
+      <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">quote-graph.state.ts</span></div><pre><code>export type QuoteGraphNodes = {
   DriverNode?: NodeStateValue&lt;{ driver?: DriverProfile }&gt;;
-  VehicleNode?: NodeStateValue&lt;{
-    resolvedVehicleId?: string;
-    vehicle?: VehicleUse;
-  }&gt;;
+  VehicleNode?: NodeStateValue&lt;{ resolvedVehicleId?: string; vehicle?: VehicleUse }&gt;;
   HistoryNode?: NodeStateValue&lt;{ history?: InsuranceHistory }&gt;;
   CoverageNode?: NodeStateValue&lt;{ coverage?: CoverageSelection }&gt;;
-  QuoteNode?: NodeStateValue&lt;{
-    tiers?: QuoteTier[];
-    acceptedTier?: QuoteTierName;
-    referenceNumber?: string;
-  }&gt;;
+  QuoteNode?: NodeStateValue&lt;{ tiers?: QuoteTier[]; acceptedTier?: QuoteTierName }&gt;;
 };
 
 export const QuoteGraphState = createGraphStateAnnotation(
   DriverNode.name,
   () =&gt; ({} as QuoteGraphNodes),
-);</code></pre>
-        </div>
-      </li>
+);</code></pre></div>
+    </li>
 
-      <li>
-        <h3>History spaces — three channels, not one transcript</h3>
-        <p>
-          Collection chatter must not sit in the quote-presentation window. Incidents get
-          their own channel. The definition declares that; nodes seed the next channel when
-          they advance.
-        </p>
+    <li>
+      <h3>A collection node validates, saves, and moves on</h3>
+      <p>The driver node validates model input in code. A rejection remains in the same node; an accepted driver is immediately persisted and transitions to vehicle collection.</p>
+      <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">nodes/driver.node.ts</span></div><pre><code>export class DriverNode extends ConversationNode&lt;QuoteGraphStateType&gt; {
+  @Tool("capture_driver")
+  async captureDriver(input: DriverInput): Promise&lt;ToolResponse&gt; {
+    const driver = validateDriver(input); // deterministic domain validation
+    if (!driver.ok) return stay(JSON.stringify(driver.error));
 
-        <div class="code">
-          <div class="code-head">
-            <span class="dots"><i></i><i></i><i></i></span>
-            <a class="file" href="https://github.com/picoflowio/ezgraph-demo/blob/main/src/graphs/quote-graph/quote-graph.ts" target="_blank" rel="noopener">quote-graph.ts</a>
-            <span class="note">lines 36–44</span>
-          </div>
-<pre><code>initialHistorySpace: "quote-intake",
-historySpaces: [
-  [DriverNode, "quote-intake"],
-  [VehicleNode, "quote-intake"],
-  [HistoryNode, "quote-incidents"],
-  [CoverageNode, "quote-intake"],
-  [QuoteNode, "quote-present"],
-  [TerminateSessionNode, "quote-terminal"],
-],</code></pre>
-        </div>
-
-        <div class="code">
-          <div class="code-head">
-            <span class="dots"><i></i><i></i><i></i></span>
-            <a class="file" href="https://github.com/picoflowio/ezgraph-demo/blob/main/src/graphs/quote-graph/nodes/vehicle.node.ts" target="_blank" rel="noopener">nodes/vehicle.node.ts</a>
-            <span class="note">lines 151–160</span>
-          </div>
-<pre><code>return this.advance(HistoryNode, conversation)
-  .withState({
-    resolvedVehicleId: context.use.vehicleId,
-    vehicle: context.use,
-  })
-  .withHistory(
-    "quote-incidents",
-    new HumanMessage("Collect the driving and insurance history."),
-  );</code></pre>
-        </div>
-
-        <p>
-          Coverage does the same into <code>quote-present</code> and also
-          <code>withStateFor(QuoteNode, { tiers })</code> — the next stage's local state is
-          written by the stage that computed it.
-        </p>
-      </li>
-
-      <li>
-        <h3>Domain stays out of the graph</h3>
-        <p>
-          <code>VehicleCatalog</code> and <code>RatingEngine</code> are ordinary TypeScript
-          modules. Nodes call them from handlers. The LangGraph twin imports the same
-          backends — that is why the <a href="/ezgraph/compare/langgraph/">benchmark</a> can subtract them
-          and measure only the framework layer.
-        </p>
-
-        <ul class="checks">
-          <li>
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span><b><code>resolve_vehicle</code></b> asks the catalog; multiple trims come
-              back as <code>needsTrim</code>, not as a guess.</span>
-          </li>
-          <li>
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span><b><code>select_coverage</code></b> runs
-              <code>validateCoverageSelection</code> — a financed car cannot be liability-only
-              — then <code>RatingEngine.quoteTiers</code>.</span>
-          </li>
-          <li>
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span><b><code>quote-clock.ts</code></b> is how tests freeze "today" at
-              <code>2027-06-01</code> so incident windows and premiums stay deterministic.</span>
-          </li>
-        </ul>
-      </li>
-
-      <li>
-        <h3>Going backward — and paying for a stronger model once</h3>
-        <p>
-          "Actually, raise my deductible" is the transition hand-rolled graphs get wrong.
-          QuoteNode either stays with a recomputed tier list, finishes, or sends the customer
-          <em>and their current message</em> back to coverage.
-        </p>
-
-        <div class="code">
-          <div class="code-head">
-            <span class="dots"><i></i><i></i><i></i></span>
-            <a class="file" href="https://github.com/picoflowio/ezgraph-demo/blob/main/src/graphs/quote-graph/nodes/quote.node.ts" target="_blank" rel="noopener">nodes/quote.node.ts</a>
-            <span class="note">lines 93–98 · 223–227</span>
-          </div>
-<pre><code>getLlmConfig(): GraphLlmConfigOverride {
-  return ModelCatalog.model("openai:gpt-5.1", {
-    retries: 3,
-    reasoningEffort: "low",
-  });
-}
-
-if (context.revise) {
-  return this.advance(CoverageNode, conversation).forwardInput(
-    state,
-    "Review and update the coverage selections.",
-  );
-}</code></pre>
-        </div>
-
-        <p>
-          Intake runs on <code>gpt-4o-mini</code> (the graph default). Only presentation
-          overrides. <code>forwardInput()</code> marks the customer's message unconsumed and
-          copies it into coverage's history space — the field the LangGraph twin has to set
-          by hand on every return path.
-        </p>
-      </li>
-
-      <li>
-        <h3>Idle expiry is a restore hook, not a framework flag</h3>
-        <p>
-          Rates are not held forever. After 30 minutes of silence the next turn starts over.
-          There is no <code>expireAfter</code> in EZGraph — you implement
-          <code>onRestoreSessionDoc</code> and use <code>idleMs()</code>. That is pitfall #7
-          from the first tutorial, in the file.
-        </p>
-
-        <div class="code">
-          <div class="code-head">
-            <span class="dots"><i></i><i></i><i></i></span>
-            <a class="file" href="https://github.com/picoflowio/ezgraph-demo/blob/main/src/graphs/quote-graph/quote-graph.ts" target="_blank" rel="noopener">quote-graph.ts</a>
-            <span class="note">lines 52–75</span>
-          </div>
-<pre><code>protected override async onRestoreSessionDoc(
-  sessionDoc: SessionDocument&lt;QuoteGraphStateType&gt;,
-): Promise&lt;SessionDocument&lt;QuoteGraphStateType&gt; | null&gt; {
-  if (this.idleMs(sessionDoc) &gt;= readMs("QUOTE_GRAPH_IDLE_MS", DEFAULT_IDLE_MS)) {
-    return null;
+    this.saveState({ driver: driver.value });
+    return go(VehicleNode);
   }
-  return sessionDoc;
-}
+}</code></pre></div>
+      <p>This is intentionally direct: there is no separately maintained turn context, no synthetic handoff payload, and no automatic router to configure.</p>
+    </li>
 
-protected buildGraph() {
-  const graph = this.createStateGraph(QuoteGraphState);
-  graph.registerTurnNodes(
-    DriverNode,
-    VehicleNode,
-    HistoryNode,
-    CoverageNode,
-    QuoteNode,
-    TerminateSessionNode,
-  );
-  graph.configAutoRoute();
-  graph.addEdge(TerminateSessionNode, END);
-  return graph.compile();
-}</code></pre>
-        </div>
-      </li>
+    <li>
+      <h3>Keep policy and presentation code-owned</h3>
+      <p>When coverage becomes valid, the graph can save the rate into a target channel and steer the model into quote presentation. Once a quote needs exact amounts and explicit approval, the response is built in code.</p>
+      <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">nodes/coverage.node.ts</span></div><pre><code>this.saveState({ coverage });
+const tiers = rateQuote(driver, vehicle, history, coverage);
+return go(QuoteNode).withState({ tiers });</code></pre></div>
+      <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">nodes/quote.node.ts</span></div><pre><code>this.saveState({ acceptedTier: tier, referenceNumber });
+return direct(renderQuoteConfirmation(tier, referenceNumber));</code></pre></div>
+    </li>
 
-      <li>
-        <h3>Read the test you already ran</h3>
-        <p>
-          <a href="https://github.com/picoflowio/ezgraph-demo/blob/main/test/quote-graph/quote-graph.spec.ts">test/quote-graph/quote-graph.spec.ts</a>
-          scripts the model and asserts on <code>currentNode</code>, node-local state, and
-          the rating engine's numbers. The first turns look like this:
-        </p>
-
-        <div class="code">
-          <div class="code-head">
-            <span class="dots"><i></i><i></i><i></i></span>
-            <a class="file" href="https://github.com/picoflowio/ezgraph-demo/blob/main/test/quote-graph/quote-graph.spec.ts" target="_blank" rel="noopener">test/quote-graph/quote-graph.spec.ts</a>
-            <span class="note good">no key, no network</span>
-          </div>
-<pre><code>state = await invoke(graph, undefined,
-  "I need a quote for my car. I'm Jamie Rivera…");
-assert.equal(state.currentNode, "VehicleNode");
-assert.equal(state.nodes.DriverNode?.driver?.fullName, "Jamie Rivera");
-
-state = await invoke(graph, state, "I drive a 2019 Toyota Camry.");
-assert.equal(state.currentNode, "VehicleNode");   // still here — needs a trim
-assert.match(state.response, /LE, SE, and XSE/);
-
-state = await invoke(graph, state,
-  "It's the SE. I finance it…");
-assert.equal(state.currentNode, "HistoryNode");</code></pre>
-        </div>
-
-        <p>
-          Later turns reject liability-only on a financed car, accept $500 deductibles, adjust
-          to $1000, and finish with a <code>QT-######</code> reference. A second test stays
-          in <code>DriverNode</code> when the license is suspended. That is the "schema
-          rejection becomes a follow-up, not a 500" lesson from tutorial 1, with a real rule.
-        </p>
-
-        <div class="callout">
-          <span class="label">These tests call <code>graph.invoke</code> directly</span>
-          <p>
-            They predate <code>createTurnHarness</code> from
-            <a href="/ezgraph/docs/developer-guide/">§15</a>. They still prove routing and
-            domain rules; they do not exercise lease / restore / persist the way the weather
-            harness does. When you add a stage, prefer the harness for new tests.
-          </p>
-        </div>
-      </li>
-
-      <li>
-        <h3>Your turn — add a <code>DiscountsNode</code></h3>
-        <p>
-          The benchmark already counted this change. Five edit sites on EZGraph, fourteen on
-          the LangGraph twin. Do it in the clone:
-        </p>
-
-        <ol>
-          <li>Write <code>nodes/discounts.node.ts</code> — prompt, tool, handler, <code>nextStep</code>.</li>
-          <li>Add <code>DiscountsNode?: NodeStateValue&lt;…&gt;</code> in <code>quote-graph.state.ts</code>.</li>
-          <li>Add <code>[DiscountsNode, "quote-intake"]</code> to <code>historySpaces</code>.</li>
-          <li>Add <code>DiscountsNode</code> to <code>registerTurnNodes(…)</code>.</li>
-          <li>Change coverage's <code>advance(QuoteNode, …)</code> to <code>advance(DiscountsNode, …)</code>.</li>
-        </ol>
-
-        <p>
-          Edits 3–5 take the <b>class</b>, so a typo is a compile error. Routing needs no
-          extra map — <code>configAutoRoute()</code> reads the new outcome. Full table:
-          <a href="/ezgraph/compare/langgraph/#modularity">benchmark → modularity</a>.
-        </p>
-      </li>
-
-    </ol>
-  </div>
+    <li>
+      <h3>Topology is declared in one place</h3>
+      <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">quote-graph.ts</span></div><pre><code>graph.registerTurnNodes(
+  DriverNode, VehicleNode, HistoryNode, CoverageNode, QuoteNode,
+  TerminateSessionNode,
+);
+graph.addEdge(TerminateSessionNode, END);</code></pre></div>
+      <p>Every conversational node, including the built-in termination node, is registered. Node-returned <code>go()</code> responses decide ordinary transitions.</p>
+    </li>
+  </ol></div>
 </section>
 
-<section>
-  <div class="wrap wrap-narrow">
-    <div class="section-head">
-      <span class="eyebrow">Where to go next</span>
-      <h2>You can now read any EZGraph codebase</h2>
-      <p>
-        Weather taught the contract. This repo is the contract under load. The LangGraph
-        twin sits next to it if you want to see the 525 lines you no longer write.
-      </p>
-    </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>When you need to…</th><th>Open</th></tr></thead>
-        <tbody>
-          <tr>
-            <td>Read the control group</td>
-            <td><a href="https://github.com/picoflowio/ezgraph-demo/tree/main/src/graphs/quote-langgraph">src/graphs/quote-langgraph/</a></td>
-          </tr>
-          <tr>
-            <td>See the HTTP adapter in 12 lines</td>
-            <td><a href="/ezgraph/#demo">The demo section</a> · <code>src/controllers/ai-controller.ts</code></td>
-          </tr>
-          <tr>
-            <td>Check every benchmark number</td>
-            <td><a href="/ezgraph/compare/langgraph/">compare.html</a></td>
-          </tr>
-          <tr>
-            <td>Look up a construct by name</td>
-            <td><a href="/ezgraph/docs/developer-guide/">Developer guide</a> §7–§15, §18</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="btn-row" style="margin-top:32px">
-      <a class="btn btn-primary" href="https://github.com/picoflowio/ezgraph-demo" target="_blank" rel="noopener">Open ezgraph-demo on GitHub</a>
-      <a class="btn btn-ghost" href="/ezgraph/compare/langgraph/">See the LangGraph benchmark</a>
-      <a class="btn btn-ghost" href="/ezgraph/tutorial/">Back to the four-file tutorial</a>
-    </div>
-  </div>
-</section>
+<section><div class="wrap wrap-narrow"><div class="section-head"><span class="eyebrow">Read deeper</span><h2>The response contract scales to corrections and side effects</h2><p>Hotel, support, and invoice examples use the same primitives for corrections, approval gates, attachments, cleanup, and terminal actions.</p></div><div class="btn-row"><a class="btn btn-primary" href="/ezgraph/docs/developer-guide/">Developer guide</a><a class="btn btn-ghost" href="/ezgraph/tutorial/">Start with the small tutorial</a><a class="btn btn-ghost" href="/ezgraph/compare/langgraph/">Why the layer exists</a></div></div></section>

@@ -57,19 +57,37 @@ function highlightTypescript(source, language) {
 }
 
 function ezgraphCodeLanguage(codeAttributes, source) {
-  const explicitLanguage =
-    codeAttributes.match(/\blanguage-([\w-]+)/i)?.[1] ||
-    codeAttributes.match(/\bdata-lang=["']([^"']+)["']/i)?.[1];
-  const normalized = explicitLanguage?.toLowerCase();
-  if (normalized === "ts") return "typescript";
-  if (normalized === "js") return "javascript";
-  if (normalized === "shell" || normalized === "sh") return "bash";
-  if (["typescript", "javascript", "json", "bash"].includes(normalized)) return normalized;
-
   const plainSource = decodeHtmlEntities(source.replace(/<[^>]+>/g, "")).trim();
+  const dataLanguage = codeAttributes.match(/\bdata-lang=["']([^"']+)["']/i)?.[1]?.toLowerCase();
+  const classLanguage = codeAttributes.match(/\blanguage-([\w-]+)/i)?.[1]?.toLowerCase();
+  const normalizeLanguage = (language) => {
+    if (language === "ts") return "typescript";
+    if (language === "js") return "javascript";
+    if (language === "shell" || language === "sh") return "bash";
+    return ["typescript", "javascript", "json", "bash"].includes(language) ? language : undefined;
+  };
+
+  // data-lang is authored by the page and is always authoritative.
+  const explicitLanguage = normalizeLanguage(dataLanguage);
+  if (explicitLanguage) return explicitLanguage;
+
+  // A previous HTML pass may have guessed Bash for a raw Nunjucks TypeScript
+  // snippet. Do not preserve that inference when its source is plainly TS.
+  const isStrongTypescript = /^(?:import\s|export\s+(?:type|class|interface|const|function)\s|(?:public |private |protected )?(?:async )?(?:class|interface|type|function|const|let)\s|@\w+\b)/m.test(plainSource);
+  if (isStrongTypescript) return "typescript";
+
+  const classHint = normalizeLanguage(classLanguage);
+  if (classHint) return classHint;
+
+  if (/^export\s/m.test(plainSource)) return "typescript";
+
   if (/^(?:#|npm |npx |pnpm |yarn |curl |git |cd |cp |export |node )/m.test(plainSource)) return "bash";
   if (/^[{[]/.test(plainSource)) return "json";
-  return hljs.highlightAuto(plainSource, ["typescript", "javascript", "json", "bash"]).language || "typescript";
+  // EZGraph's unlabelled Nunjucks examples are source snippets. highlightAuto
+  // frequently mistakes TypeScript imports and decorators for Bash, so use the
+  // site convention as the stable fallback. Shell and JSON examples are
+  // recognized above or carry an explicit language/data-lang attribute.
+  return "typescript";
 }
 
 function ezgraphLineNumbers(source) {
