@@ -432,7 +432,7 @@ export default {
 		},
 		{
 			key: "resources",
-			label: "Compare",
+			label: "vs. LangGraph",
 			url: "/docs/resources/",
 			groups: [
 				{

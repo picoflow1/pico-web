@@ -46,7 +46,7 @@ different, fixed session-document model out of the box.
 | Question | Finding from these implementations |
 | --- | --- |
 | Can direct LangGraph reproduce the conversation? | Yes. The deterministic test completes search, repeated comparison, resume, booking, termination, and deletion. |
-| Which has less application orchestration? | PicoFlow: 472 flow/step lines versus 1,397 graph/state/types/store lines. |
+| Which has less application orchestration? | PicoFlow: 486 flow/step lines versus 1,434 graph/state/types/store lines. |
 | Which implementation validates domain inputs more defensively? | Direct LangGraph. It validates dates, allowed values, selected hotels, comparison features, and booking membership in code. |
 | Which has a reusable whole-response acceptance gate? | PicoFlow. Each step can veto a successful nonempty raw, structured, or tool-call result through `checkResponse()` and use the shared model retry loop before dispatch. HotelFlow has not yet used this hook. |
 | Which has stronger session-write safety? | PicoFlow. It combines a per-session lock with revision compare-and-swap; the direct stores overwrite unconditionally. |
@@ -145,29 +145,67 @@ judging the code as written.
 
 ## Code-size evidence
 
+For the identical 14-turn hotel workflow, PicoFlow uses **486** application-owned
+flow/step lines while the direct LangGraph implementation uses **1,434** graph, state,
+type, and session-store lines: **948 fewer lines, or 66.1% less** on the PicoFlow side.
+This is a reproducible code-ownership case study, not a universal productivity or
+runtime-performance claim.
+
+<section class="line-reduction" aria-labelledby="line-reduction-title">
+<div class="line-reduction__heading">
+<div>
+<p class="line-reduction__eyebrow">Same 14-turn hotel workflow</p>
+<h3 id="line-reduction-title">One conversation, built twice.</h3>
+<p class="line-reduction__label">Application-owned workflow/runtime code</p>
+</div>
+<div class="line-reduction__headline">
+<strong>66.1%</strong>
+<span>less code</span>
+<small>486 vs. 1,434 lines</small>
+</div>
+</div>
+<div class="line-reduction__stats">
+<div class="line-reduction__stat line-reduction__stat--picoflow">
+<span>PicoFlow</span>
+<strong>486</strong>
+<small>flow and step lines</small>
+</div>
+<div class="line-reduction__stat line-reduction__stat--langgraph">
+<span>Direct LangGraph</span>
+<strong>1,434</strong>
+<small>graph, state, type, and store lines</small>
+</div>
+</div>
+<div class="line-reduction__bars" aria-hidden="true">
+<div class="line-reduction__bar line-reduction__bar--picoflow"><span></span></div>
+<div class="line-reduction__bar line-reduction__bar--langgraph"><span></span></div>
+</div>
+<p class="line-reduction__note">Application-owned workflow/runtime scope; framework source excluded on both sides.</p>
+</section>
+
 <figure class="line-compare" aria-labelledby="line-compare-caption">
 <div class="line-compare__grid">
 <article class="line-compare__card line-compare__card--picoflow">
 <h3>HotelFlow on PicoFlow</h3>
 <ul class="line-compare__files">
 <li><code>hotel-flow.ts</code><span>51</span></li>
-<li><code>explore-step.ts</code><span>135</span></li>
+<li><code>explore-step.ts</code><span>149</span></li>
 <li><code>present-step.ts</code><span>129</span></li>
 <li><code>compare-step.ts</code><span>157</span></li>
 </ul>
-<p class="line-compare__total"><span>TOTAL</span><strong>472</strong></p>
+<p class="line-compare__total"><span>TOTAL</span><strong>486</strong></p>
 <p class="line-compare__note">Four domain modules. The session document, step cursor, tool dispatch, storage adapters, and concurrency checks come from the runtime.</p>
 </article>
 <article class="line-compare__card line-compare__card--langgraph">
 <h3>The same flow, direct on LangGraph</h3>
 <ul class="line-compare__files">
-<li><code>hotel-langgraph.ts</code><span>1,063</span></li>
+<li><code>hotel-langgraph.ts</code><span>1,100</span></li>
 <li><code>hotel-session-store.ts</code><span>218</span></li>
 <li><code>hotel-langgraph.state.ts</code><span>90</span></li>
 <li><code>hotel-types.ts</code><span>26</span></li>
 </ul>
-<p class="line-compare__total"><span>TOTAL</span><strong>1,397</strong></p>
-<p class="line-compare__note">One 1,063-line graph module, plus a hand-written session store with its own memory, SQLite, and MongoDB adapters.</p>
+<p class="line-compare__total"><span>TOTAL</span><strong>1,434</strong></p>
+<p class="line-compare__note">One 1,100-line graph module, plus a hand-written session store with its own memory, SQLite, and MongoDB adapters.</p>
 </article>
 </div>
 <figcaption class="line-compare__caption" id="line-compare-caption">The workflow boundary for the same 14-turn hotel-reservation conversation. Counts use <code>wc -l</code>; framework source is excluded on both sides.</figcaption>
@@ -175,15 +213,15 @@ judging the code as written.
 
 | Scope | PicoFlow | Direct LangGraph | Difference |
 | --- | ---: | ---: | ---: |
-| Flow/step versus graph/state/types/store | **472** | **1,397** | **+925 direct** |
+| Flow/step versus graph/state/types/store | **486** | **1,434** | **+948 direct** |
 | Domain backend and chart helpers | 470 | 290 | −180 direct |
-| All TypeScript in each hotel directory | **953** | **1,717** | **+764 direct** |
-| Prompt and catalog assets | 1,127 | 1,130 | +3 direct |
-| Complete hotel directory inventory | **2,080** | **2,847** | **+767 direct** |
+| All TypeScript in each hotel directory | **967** | **1,754** | **+787 direct** |
+| Prompt and catalog assets | 893 | 894 | +1 direct |
+| Complete hotel directory inventory | **1,860** | **2,648** | **+788 direct** |
 
 The first row is the clearest framework comparison: the code an application author writes to
 express the conversation, against the code needed to build the direct graph's state and
-session runtime. That is 66.2% less code on the PicoFlow side. Its 472 lines still contain
+session runtime. That is 66.1% less code on the PicoFlow side. Its 486 lines still contain
 real domain logic — prompt construction, criteria extraction, search, booking, comparisons,
 and chart assembly. PicoFlow removes repetitive conversation infrastructure, not the hotel
 rules.
@@ -191,12 +229,31 @@ rules.
 The remaining rows are inventory context. The direct implementation rewrites the pricing and
 chart helpers more compactly, so its domain-helper total is 180 lines smaller. The prompt and
 catalog asset difference is only three missing trailing newlines in the PicoFlow copies. The
-normalised workflow row is therefore the useful orchestration comparison; it avoids pretending
+workflow/runtime row is therefore the useful orchestration comparison; it avoids pretending
 that every line in a catalog, prompt, or renderer is a framework win.
 
 PicoFlow's own source is excluded, just as LangGraph and LangChain internals are. A consumer
 pays to learn, configure, test, upgrade, and operate a framework; it does not rewrite that
 framework for every chatbot.
+
+### Where the 948 workflow/runtime lines went
+
+These are additive source artifacts behind the headline. A zero means there is no separate,
+graph-specific file because PicoFlow supplies that contract in its shared runtime; it does not
+mean the concern disappears.
+
+| Application-owned artifact | PicoFlow | Direct LangGraph |
+| --- | ---: | ---: |
+| Conversation flow/graph implementation | `hotel-flow.ts` + three steps: **486** | `hotel-langgraph.ts`: **1,100** |
+| Session lifecycle and storage adapters | Shared runtime | `hotel-session-store.ts`: **218** |
+| State channels and reducers | Shared Step/session contract | `hotel-langgraph.state.ts`: **90** |
+| Graph-specific supporting types | Colocated with stages | `hotel-types.ts`: **26** |
+| **Workflow/runtime total** | **486** | **1,434** |
+
+The direct graph's additional code makes routing, tool dispatch, state updates, persistence,
+and the HTTP response envelope explicit in this application. PicoFlow moves those recurring
+mechanics into a reusable flow, step, and session contract while keeping hotel policy and
+validation in application code.
 
 ## Modularity
 
@@ -218,7 +275,7 @@ must understand `go`, `stay`, memory namespaces, and the inherited model loop.
 
 The direct implementation has two good seams — a model factory that makes stage models
 replaceable in tests, and a session store that separates memory, SQLite, and MongoDB
-persistence. The conversational implementation is otherwise concentrated in a 1,063-line
+persistence. The conversational implementation is otherwise concentrated in a 1,100-line
 class that constructs tools and models, builds topology, invokes agents, dispatches tools,
 validates arguments, normalises criteria, performs hotel operations, creates responses, and
 manages session lifecycle.
@@ -417,7 +474,7 @@ balanced by the fact that the same infrastructure is debugged once for many flow
 
 For an AI coding agent reading one local function, direct LangGraph is more explicit: tool
 calls and state updates are ordinary code. For an agent reasoning about a complete application,
-three named steps are more cohesive than one 1,063-line multipurpose class.
+three named steps are more cohesive than one 1,100-line multipurpose class.
 
 For machines consuming persisted data, PicoFlow has the stronger contract. A tool can reliably
 look for `runStatus`, `flow.currentStep`, `flow.steps`, `flow.memory`, `tokens`, and `error`
@@ -458,7 +515,7 @@ becomes responsible for a growing amount of workflow infrastructure, and that re
 compounds as the number of graphs and developers increases.
 
 - **More code means more design work before domain work begins.** Here the direct
-  workflow/runtime boundary is 1,397 lines against 472. The extra 925 lines are largely agent
+  workflow/runtime boundary is 1,434 lines against 486. The extra 948 lines are largely agent
   loops, tool routing, state transitions, message forwarding, session serialisation, and
   persistence — all of which must be understood and maintained before adding a hotel feature.
 - **A small feature crosses too many mechanisms.** Adding a stage or tool can require a schema,
@@ -507,7 +564,7 @@ budget from the framework maintainer to every application team.
 
 **Yes, for the second and subsequent multi-turn workflows that fit its Flow / Step model
 model.** The domain modules are smaller and more cohesive, and important session, memory, and
-provider behaviour comes from one runtime. The 472-versus-1,397 normalised comparison makes
+provider behaviour comes from one runtime. The 486-versus-1,434 workflow/runtime comparison makes
 that visible.
 
 **There is still a bounded abstraction and dependency cost.** A developer must learn the

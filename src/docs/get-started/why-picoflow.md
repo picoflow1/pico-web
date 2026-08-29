@@ -42,9 +42,9 @@ definition, types, and session store. Both pass the same 14-turn semantic scenar
 
 | Scope | HotelFlow with PicoFlow | Direct LangGraph | Difference |
 | --- | ---: | ---: | ---: |
-| Workflow boundary: flow/steps versus graph/state/types/store | 472 | 1,397 | +925 for LangGraph |
-| All hotel application code, including backend and charting | 942 | 1,687 | +745 for LangGraph |
-| Complete hotel directory inventory | 2,083 | 2,847 | +764 for LangGraph |
+| Workflow boundary: flow/steps versus graph/state/types/store | 486 | 1,434 | +948 for LangGraph |
+| All hotel application code, including backend and charting | 967 | 1,754 | +787 for LangGraph |
+| Complete hotel directory inventory | 1,860 | 2,648 | +788 for LangGraph |
 
 The first row is the one that isolates the framework. It compares the code an application
 author writes to express the conversation against the code needed to build the direct
