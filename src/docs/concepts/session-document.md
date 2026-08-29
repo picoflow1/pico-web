@@ -10,6 +10,8 @@ JSON object, loaded whole at the start of a turn and written whole at the end. T
 is what makes the persistence model easy to reason about, and it is also why concurrent
 writes need an explicit guard.
 
+<div class="callout callout--note"><span class="callout__title">An operational record, not just saved state</span><p>The same document carries the customer/model history, durable business state, active step, transition sequence, effective model details, token totals, run status, and structured diagnostics. Keep it in your approved database, inspect it during an incident, query it for operations, or copy and redact it into an isolated development environment for safe reproduction. PicoFlow does not require a separate PicoFlow observability service for this baseline.</p></div>
+
 ## The document tree
 
 ```text
@@ -255,6 +257,10 @@ when the document's schema changes.
 	<a class="card" href="/docs/guides/migration/">
 		<span class="card__title">Session document migration</span>
 		<span class="card__body">Changing the shape of a document that running conversations depend on.</span>
+	</a>
+	<a class="card" href="/docs/guides/session-operations/">
+		<span class="card__title">Operate and debug session documents</span>
+		<span class="card__body">Inspect an incident, build internal metrics, and reproduce a production failure safely.</span>
 	</a>
 	<a class="card" href="/docs/concepts/basic-flow-session/">
 		<span class="card__title">Annotated BasicFlow session</span>

@@ -9,6 +9,8 @@ Every PicoFlow conversation is one JSON document. Choosing where that document l
 deployment decision you should make before the first real user, because the default is
 process-local memory and loses everything on restart.
 
+<div class="callout callout--note"><span class="callout__title">Persistence is also your operational baseline</span><p>A durable store retains the active cursor, state, memories, tokens, status, and structured diagnostics together. The store does not create dashboards or alerts for you, but its common document shape makes internal inspection and document-database aggregation straightforward. See <a href="/docs/guides/session-operations/">Operate and debug session documents</a> for the safe incident workflow.</p></div>
+
 ## Choosing a store
 
 | Store | `SESSION_STORE` | Durable | Safe across processes | Use for |

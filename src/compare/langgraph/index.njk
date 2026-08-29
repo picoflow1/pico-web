@@ -8,13 +8,61 @@ permalink: /compare/langgraph/
 <section class="section comparison-hero">
   <div class="shell comparison-hero__inner">
     <p class="eyebrow">Decision guide</p>
+    <h1 class="comparison-hero__title">PicoFlow <span>vs.</span> LangGraph</h1>
     <div class="comparison-hero__grid">
       <div>
-        <h1 class="comparison-hero__title">PicoFlow vs. LangGraph</h1>
         <p class="comparison-hero__lede">Agent frameworks orchestrate model and tool calls. PicoFlow operates one layer up: a runtime for customer-facing conversational applications, with the durable session, business-stage, and storage machinery included. This page compares the two honestly for teams evaluating both.</p>
       </div>
       <p class="comparison-hero__summary">Choose PicoFlow when you are building customer-facing conversational applications and want the application layer supplied. Choose LangGraph when your team specifically prefers to own a graph/state runtime directly.</p>
     </div>
+  </div>
+</section>
+
+<section class="section comparison-session" aria-labelledby="session-advantage-title">
+  <div class="shell comparison-content">
+    <div class="section-heading">
+      <p class="eyebrow">The operational advantage</p>
+      <h2 id="session-advantage-title">Your operational record stays with your application.</h2>
+      <p>Every PicoFlow conversation persists one human-readable session document: the active business stage, durable state, model history, transition sequence, effective model details, token totals, status, and structured diagnostics together.</p>
+    </div>
+    <div class="comparison-session__flow" aria-label="A customer conversation creates one session document that supports production inspection, internal operations metrics, and safe development replay.">
+      <div class="comparison-session__source">
+        <span>Customer conversation</span>
+        <strong>One durable case</strong>
+      </div>
+      <span class="comparison-session__arrow" aria-hidden="true">→</span>
+      <div class="comparison-session__document">
+        <span>Application-owned session document</span>
+        <strong>state · history · cursor · diagnostics</strong>
+        <small>model metadata · tokens · logs · errors</small>
+      </div>
+      <span class="comparison-session__arrow" aria-hidden="true">→</span>
+      <div class="comparison-session__outcomes">
+        <span>Inspect an incident</span>
+        <span>Query internal metrics</span>
+        <span>Redact and replay safely</span>
+      </div>
+    </div>
+    <div class="comparison-session__benefits">
+      <article>
+        <h3>No mandatory observability cloud</h3>
+        <p>Keep PicoFlow, its session documents, and its bundled stores inside your approved application and database boundary. Your model endpoint remains your choice.</p>
+      </article>
+      <article>
+        <h3>Debug from one record</h3>
+        <p>See what the customer and model said, which stage ran, which facts were saved, what failed, and what the run cost without first correlating several systems.</p>
+      </article>
+      <article>
+        <h3>Reproduce the hard failures</h3>
+        <p>Copy and redact a production document into isolated test storage, sandbox side effects, select the resumption stage, and replay the triggering request.</p>
+      </article>
+      <article>
+        <h3>Build operations from data you own</h3>
+        <p>Because every flow has the same outer schema, ordinary document-database aggregation can surface failures, stuck stages, tokens, session duration, and recurring warnings.</p>
+      </article>
+    </div>
+    <p class="comparison-session__caveat">PicoFlow's session document is an embedded operational baseline, not a replacement for every distributed trace, alert, or retention policy. Direct LangGraph can be self-hosted and instrumented too; its team chooses and standardizes the corresponding state, observability, and replay conventions.</p>
+    <p class="comparison-session__link"><a href="/docs/guides/session-operations/">See how to operate and debug session documents →</a></p>
   </div>
 </section>
 
@@ -116,26 +164,32 @@ permalink: /compare/langgraph/
   <div class="shell comparison-content">
     <div class="section-heading">
       <p class="eyebrow">Evidence, scoped</p>
-      <h2 id="evidence-title">One hotel flow showed a smaller application boundary with PicoFlow.</h2>
+      <h2 id="evidence-title">One hotel flow showed 66.1% less workflow/runtime code with PicoFlow.</h2>
       <p>It is useful implementation evidence—not a universal benchmark, a performance test, or a claim that every LangGraph application will have the same line count.</p>
+    </div>
+    <div class="comparison-reduction-hero" aria-label="PicoFlow uses 486 application-owned workflow and runtime lines compared with 1,434 direct LangGraph lines, a 66.1 percent reduction of 948 lines.">
+      <p>Same 14-turn hotel workflow</p>
+      <strong>66.1%</strong>
+      <span>less workflow/runtime code</span>
+      <small>486 PicoFlow lines vs. 1,434 direct LangGraph lines · 948 fewer lines</small>
     </div>
     <div class="comparison-evidence__grid">
       <div class="comparison-metric">
-        <span class="comparison-metric__value">472</span>
+        <span class="comparison-metric__value">486</span>
         <span class="comparison-metric__label">PicoFlow HotelFlow application-boundary lines</span>
       </div>
       <div class="comparison-metric comparison-metric--contrast">
-        <span class="comparison-metric__value">1,397</span>
+        <span class="comparison-metric__value">1,434</span>
         <span class="comparison-metric__label">Direct LangGraph hotel application-boundary lines</span>
       </div>
       <div class="comparison-metric comparison-metric--delta">
-        <span class="comparison-metric__value">+925</span>
-        <span class="comparison-metric__label">lines in this specific direct implementation</span>
+        <span class="comparison-metric__value">−948</span>
+        <span class="comparison-metric__label">workflow/runtime lines in this specific direct implementation</span>
       </div>
     </div>
     <div class="comparison-evidence__body">
-      <p>The two implementations cover the same 14-turn hotel-reservation conversation: collecting dates and search criteria, searching a local catalog, presenting priced results, comparing hotels, returning to booking, and confirming a reservation. The 472 versus 1,397 count isolates the application boundary, and both sides are nameable files you can open in the demo repository.</p>
-      <p>PicoFlow: <code>hotel-flow.ts</code> (51), <code>explore-step.ts</code> (135), <code>present-step.ts</code> (129), <code>compare-step.ts</code> (157). Direct LangGraph: <code>hotel-langgraph.ts</code> (1,063), <code>hotel-session-store.ts</code> (218), <code>hotel-langgraph.state.ts</code> (90), <code>hotel-types.ts</code> (26). The 218-line session store is the most informative row — it is a hand-written memory, SQLite, and MongoDB adapter set that PicoFlow ships as part of the runtime.</p>
+      <p>The two implementations cover the same 14-turn hotel-reservation conversation: collecting dates and search criteria, searching a local catalog, presenting priced results, comparing hotels, returning to booking, and confirming a reservation. The 486 versus 1,434 count isolates the application boundary, and both sides are nameable files you can open in the demo repository.</p>
+      <p>PicoFlow: <code>hotel-flow.ts</code> (51), <code>explore-step.ts</code> (149), <code>present-step.ts</code> (129), <code>compare-step.ts</code> (157). Direct LangGraph: <code>hotel-langgraph.ts</code> (1,100), <code>hotel-session-store.ts</code> (218), <code>hotel-langgraph.state.ts</code> (90), <code>hotel-types.ts</code> (26). The 218-line session store is the most informative row — it is a hand-written memory, SQLite, and MongoDB adapter set that PicoFlow ships as part of the runtime.</p>
       <p>These are <code>wc -l</code> counts, so imports, comments, and blank lines are included; framework source is excluded on both sides. The full project totals are context rather than a scorecard—the direct implementation includes a more compact chart helper, for example. Read the <a href="/docs/get-started/why-picoflow/">full comparison and its trade-offs</a> before treating the count as decision evidence.</p>
     </div>
   </div>

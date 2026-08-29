@@ -4,8 +4,10 @@
 }
 
 .ezgraph-product-nav {
-  position: relative;
-  z-index: 10;
+  /* Stay below PicoFlow's sticky company header while EZGraph content scrolls. */
+  position: sticky;
+  top: 76px;
+  z-index: 19;
   color: #e6edf3;
   background: rgba(11, 14, 19, 0.94);
   border-bottom: 1px solid #26313f;
@@ -1321,6 +1323,7 @@ footer {
 }
 
 @media (max-width: 900px) {
+  .ezgraph-product-nav { top: 122px; }
   .ezgraph-product-nav__inner { align-items: flex-start; flex-direction: column; padding-block: 13px; }
   .ezgraph-product-nav__links { width: 100%; padding-bottom: 4px; }
   .ezgraph-code-gutter { padding-left: 11px; padding-right: 9px; }

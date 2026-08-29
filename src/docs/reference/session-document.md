@@ -9,6 +9,8 @@ One session document contains exactly one flow envelope. The shape below is the 
 `pf/src/picoflow/types/flow-types.ts`, which is the authority — not the abbreviated tree in the
 developer guide.
 
+<div class="callout callout--note"><span class="callout__title">Operations use</span><p>This schema is deliberately application-readable: an operator can correlate <code>runStatus</code>, <code>flow.currentStep</code>, <code>sequence</code>, token totals, timestamps, and structured diagnostic arrays in one record. For safe production-to-development reproduction and dashboard design, see <a href="/docs/guides/session-operations/">Operate and debug session documents</a>.</p></div>
+
 ```jsonc
 {
   "id": "b3f0…",

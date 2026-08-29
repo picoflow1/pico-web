@@ -41,7 +41,10 @@ export default {
 					label: "Core model",
 					items: [
 						{ title: "Flows and steps", url: "/docs/concepts/" },
-						{ title: "The session document", url: "/docs/concepts/session-document/" },
+						{
+							title: "Session document: state, diagnosis, and replay",
+							url: "/docs/concepts/session-document/",
+						},
 						{
 							title: "Annotated BasicFlow session",
 							url: "/docs/concepts/basic-flow-session/",
@@ -369,6 +372,10 @@ export default {
 						{
 							title: "Persistence and session stores",
 							url: "/docs/guides/persistence/",
+						},
+						{
+							title: "Operate and debug session documents",
+							url: "/docs/guides/session-operations/",
 						},
 						{ title: "Session document migration", url: "/docs/guides/migration/" },
 						{
