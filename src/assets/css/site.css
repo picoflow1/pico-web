@@ -155,6 +155,78 @@ div.section-heading { font-size: inherit; letter-spacing: normal; line-height: i
 .code-card { overflow: hidden; color: #ddd8ce; background: #151515; border: 1px solid rgba(255,255,255,.1); border-radius: 16px; box-shadow: var(--shadow); }.code-card__bar { display: flex; justify-content: space-between; padding: 13px 17px; color: #aaa59d; font-family: var(--mono); font-size: 11px; background: #292929; }.code-card pre { margin: 0; padding: 24px; overflow: auto; font-family: var(--mono); font-size: 13px; line-height: 1.65; }.code-card .token-key { color: var(--gold-bright); }.code-card .token-type { color: #d6c08d; }.code-card .token-muted { color: #96918a; }
 .code-card pre.hljs, .product-code pre.hljs { color: #ddd8ce; }.code-card .hljs-comment, .product-code .hljs-comment { color: #96918a; font-style: italic; }.code-card .hljs-keyword, .code-card .hljs-selector-tag, .code-card .hljs-meta .hljs-keyword, .product-code .hljs-keyword, .product-code .hljs-selector-tag, .product-code .hljs-meta .hljs-keyword { color: var(--gold-bright); }.code-card .hljs-title.function_, .code-card .hljs-title.function, .code-card .hljs-built_in, .code-card .hljs-variable.language_, .product-code .hljs-title.function_, .product-code .hljs-title.function, .product-code .hljs-built_in, .product-code .hljs-variable.language_ { color: #d6c08d; }.code-card .hljs-title.class_, .code-card .hljs-type, .code-card .hljs-params, .code-card .hljs-property, .code-card .hljs-attr, .product-code .hljs-title.class_, .product-code .hljs-type, .product-code .hljs-params, .product-code .hljs-property, .product-code .hljs-attr { color: #d0c093; }.code-card .hljs-string, .code-card .hljs-regexp, .code-card .hljs-template-variable, .product-code .hljs-string, .product-code .hljs-regexp, .product-code .hljs-template-variable { color: #d6c08d; }.code-card .hljs-number, .code-card .hljs-literal, .code-card .hljs-symbol, .code-card .hljs-bullet, .product-code .hljs-number, .product-code .hljs-literal, .product-code .hljs-symbol, .product-code .hljs-bullet { color: var(--gold); }.code-card .hljs-punctuation, .code-card .hljs-operator, .product-code .hljs-punctuation, .product-code .hljs-operator { color: #b8b2a8; }
 
+/* PicoFlow code examples share EZGraph's build-time highlighting and editor-like
+   presentation. The wrapper is emitted by Eleventy, so no client-side highlighter
+   or line-number script is needed. */
+.picoflow-code-body {
+  display: flex;
+  align-items: stretch;
+  max-width: 100%;
+  overflow: hidden;
+  color: #cdd9e5;
+  background: #0d131a;
+}
+.picoflow-code-gutter {
+  flex: 0 0 auto;
+  min-width: 3ch;
+  padding: 18px 12px 18px 16px;
+  margin: 0;
+  overflow: hidden;
+  color: #5d6b7d;
+  background: #0a1016;
+  border-right: 1px solid #1e2833;
+  font: 0.84rem/1.75 var(--mono);
+  font-variant-numeric: tabular-nums;
+  list-style: none;
+  text-align: right;
+  user-select: none;
+}
+.picoflow-code-gutter li { margin: 0; }
+.picoflow-code-pre {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 18px 20px;
+  margin: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  color: #cdd9e5;
+  background: transparent;
+  font: 0.84rem/1.75 var(--mono);
+  tab-size: 2;
+  white-space: pre;
+}
+.picoflow-code-pre .hljs-comment,
+.picoflow-code-pre .hljs-quote { color: #7286a0; font-style: italic; }
+.picoflow-code-pre .hljs-keyword,
+.picoflow-code-pre .hljs-selector-tag,
+.picoflow-code-pre .hljs-meta .hljs-keyword { color: #ff9ec4; }
+.picoflow-code-pre .hljs-title.function_,
+.picoflow-code-pre .hljs-title.function,
+.picoflow-code-pre .hljs-built_in,
+.picoflow-code-pre .hljs-variable.language_ { color: #d3b0ff; }
+.picoflow-code-pre .hljs-title.class_,
+.picoflow-code-pre .hljs-type,
+.picoflow-code-pre .hljs-params,
+.picoflow-code-pre .hljs-property,
+.picoflow-code-pre .hljs-attr { color: #7dd3fc; }
+.picoflow-code-pre .hljs-string,
+.picoflow-code-pre .hljs-regexp,
+.picoflow-code-pre .hljs-template-variable { color: #9ee6b8; }
+.picoflow-code-pre .hljs-number,
+.picoflow-code-pre .hljs-literal,
+.picoflow-code-pre .hljs-symbol,
+.picoflow-code-pre .hljs-bullet { color: #f5c988; }
+.picoflow-code-pre .hljs-punctuation,
+.picoflow-code-pre .hljs-operator { color: #a9b8c7; }
+.code-card .picoflow-code-pre,
+.product-code .picoflow-code-pre {
+  padding: 18px 20px;
+  color: #cdd9e5;
+  font: 0.84rem/1.75 var(--mono);
+}
+.code-card .picoflow-code-pre.hljs,
+.product-code .picoflow-code-pre.hljs { color: #cdd9e5; }
+
 .use-cases { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; margin-top: 45px; }.use-case { display: flex; min-height: 305px; flex-direction: column; padding: 27px; color: #eee9df; background: var(--ink-soft); border: 1px solid rgba(255,255,255,.11); border-radius: 14px; }.use-case:nth-child(2) { background: #333; }.use-case__tag { margin: 0; color: #cdbb8c; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; }.use-case h3 { margin: auto 0 15px; font-size: 27px; line-height: 1.04; letter-spacing: -.045em; }.use-case p { margin: 0; color: #c5c0b8; }.use-case a { display: inline-flex; gap: 7px; margin-top: 25px; font-weight: 700; text-decoration: none; }.use-case a::after { content: "→"; }
 
 .fit-check { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 38px 0 24px; }.fit-check__choice { padding: 28px; color: var(--ink); background: var(--white); border: 1px solid var(--line); border-radius: 15px; }.fit-check__choice--picoflow { color: #eee9df; background: var(--ink); border-color: var(--ink); }.fit-check__choice h3 { margin: 0 0 15px; font-size: 26px; letter-spacing: -.05em; }.fit-check__choice ul { padding-left: 19px; margin: 0; }.fit-check__choice li { margin: 10px 0; }.fit-check__choice--picoflow li { color: #c8c2b8; }

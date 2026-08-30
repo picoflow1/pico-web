@@ -13,7 +13,17 @@ hljs.registerLanguage("json", json);
 hljs.registerLanguage("bash", bash);
 hljs.registerLanguage("javascript", javascript);
 
-const highlightedFences = new Set(["ts", "typescript", "json"]);
+const highlightedFences = new Set([
+  "ts",
+  "typescript",
+  "js",
+  "javascript",
+  "json",
+  "jsonc",
+  "bash",
+  "shell",
+  "sh",
+]);
 const transcriptMarkdown = markdownIt({ typographer: true, linkify: true });
 const docsRoots = new Set([
   "get-started",
@@ -29,6 +39,9 @@ function decodeHtmlEntities(source) {
   return String(source ?? "")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
+    .replace(/&#x27;/gi, "'")
+    .replace(/&#x([0-9a-f]+);/gi, (_match, value) => String.fromCodePoint(parseInt(value, 16)))
+    .replace(/&#([0-9]+);/g, (_match, value) => String.fromCodePoint(Number(value)))
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&amp;/g, "&");
@@ -41,34 +54,49 @@ function highlightTypescriptSource(source) {
   }).value;
 }
 
+function normalizeCodeLanguage(language) {
+  const normalizedLanguage = language?.toLowerCase();
+  if (normalizedLanguage === "ts") return "typescript";
+  if (normalizedLanguage === "js") return "javascript";
+  if (["jsonc"].includes(normalizedLanguage)) return "json";
+  if (["shell", "sh"].includes(normalizedLanguage)) return "bash";
+  if (["typescript", "javascript", "json", "bash", "text"].includes(normalizedLanguage)) {
+    return normalizedLanguage;
+  }
+  return undefined;
+}
+
+function highlightCodeSource(source, language) {
+  const normalizedLanguage = normalizeCodeLanguage(language);
+  if (!normalizedLanguage || normalizedLanguage === "text") return null;
+
+  try {
+    return hljs.highlight(decodeHtmlEntities(source), {
+      language: normalizedLanguage,
+      ignoreIllegals: true,
+    }).value;
+  } catch {
+    return null;
+  }
+}
+
 function highlightTypescript(source, language) {
   const normalizedLanguage = language?.toLowerCase();
   if (!highlightedFences.has(normalizedLanguage)) return "";
 
-  try {
-    const html = hljs.highlight(decodeHtmlEntities(source), {
-      language: normalizedLanguage === "ts" ? "typescript" : normalizedLanguage,
-      ignoreIllegals: true,
-    }).value;
-    return `<pre class="hljs"><code class="hljs language-${normalizedLanguage}">${html}</code></pre>`;
-  } catch {
-    return "";
-  }
+  const languageName = normalizeCodeLanguage(normalizedLanguage);
+  const html = highlightCodeSource(source, languageName);
+  if (html === null) return "";
+  return `<pre class="hljs"><code class="hljs language-${languageName}">${html}</code></pre>`;
 }
 
 function ezgraphCodeLanguage(codeAttributes, source) {
   const plainSource = decodeHtmlEntities(source.replace(/<[^>]+>/g, "")).trim();
   const dataLanguage = codeAttributes.match(/\bdata-lang=["']([^"']+)["']/i)?.[1]?.toLowerCase();
   const classLanguage = codeAttributes.match(/\blanguage-([\w-]+)/i)?.[1]?.toLowerCase();
-  const normalizeLanguage = (language) => {
-    if (language === "ts") return "typescript";
-    if (language === "js") return "javascript";
-    if (language === "shell" || language === "sh") return "bash";
-    return ["typescript", "javascript", "json", "bash"].includes(language) ? language : undefined;
-  };
 
   // data-lang is authored by the page and is always authoritative.
-  const explicitLanguage = normalizeLanguage(dataLanguage);
+  const explicitLanguage = normalizeCodeLanguage(dataLanguage);
   if (explicitLanguage) return explicitLanguage;
 
   // A previous HTML pass may have guessed Bash for a raw Nunjucks TypeScript
@@ -76,7 +104,7 @@ function ezgraphCodeLanguage(codeAttributes, source) {
   const isStrongTypescript = /^(?:import\s|export\s+(?:type|class|interface|const|function)\s|(?:public |private |protected )?(?:async )?(?:class|interface|type|function|const|let)\s|@\w+\b)/m.test(plainSource);
   if (isStrongTypescript) return "typescript";
 
-  const classHint = normalizeLanguage(classLanguage);
+  const classHint = normalizeCodeLanguage(classLanguage);
   if (classHint) return classHint;
 
   if (/^export\s/m.test(plainSource)) return "typescript";
@@ -95,21 +123,28 @@ function ezgraphLineNumbers(source) {
   return lines.map((_, index) => `<li>${index + 1}</li>`).join("");
 }
 
-function enhanceEzgraphCodeBlocks(content) {
+function enhanceCodeBlocks(content, variant) {
+  const bodyClass = variant === "ezgraph" ? "ezgraph-code-body" : "picoflow-code-body";
+  const gutterClass = variant === "ezgraph" ? "ezgraph-code-gutter" : "picoflow-code-gutter";
+  const preClass = variant === "ezgraph" ? "ezgraph-code-pre" : "picoflow-code-pre";
+
   return content.replace(
     /<pre([^>]*)><code([^>]*)>([\s\S]*?)<\/code><\/pre>/g,
     (match, preAttributes, codeAttributes, source) => {
-      if (/\bezgraph-code-pre\b/.test(preAttributes)) return match;
+      if (/\b(?:ezgraph|picoflow)-code-pre\b/.test(preAttributes)) return match;
 
       const language = ezgraphCodeLanguage(codeAttributes, source);
       const plainSource = decodeHtmlEntities(source.replace(/<[^>]+>/g, ""));
-      const highlightedSource = /\bhljs\b/.test(codeAttributes)
-        ? source
-        : hljs.highlight(plainSource, { language, ignoreIllegals: true }).value;
+      const highlightedSource =
+        highlightCodeSource(plainSource, language) ?? source;
 
-      return `<div class="ezgraph-code-body"><ol class="ezgraph-code-gutter" aria-hidden="true">${ezgraphLineNumbers(plainSource)}</ol><pre class="ezgraph-code-pre hljs"><code class="hljs language-${language}">${highlightedSource}</code></pre></div>`;
+      return `<div class="${bodyClass}"><ol class="${gutterClass}" aria-hidden="true">${ezgraphLineNumbers(plainSource)}</ol><pre class="${preClass} hljs"><code class="hljs language-${language}">${highlightedSource}</code></pre></div>`;
     },
   );
+}
+
+function enhanceEzgraphCodeBlocks(content) {
+  return enhanceCodeBlocks(content, "ezgraph");
 }
 
 function anchorSlug(value) {
@@ -236,6 +271,11 @@ export default function (eleventyConfig) {
   eleventyConfig.addTransform("enhanceEzgraphCodeBlocks", function (content) {
     if (!this.page?.outputPath?.includes(`${path.sep}ezgraph${path.sep}`)) return content;
     return enhanceEzgraphCodeBlocks(content);
+  });
+
+  eleventyConfig.addTransform("enhancePicoflowCodeBlocks", function (content) {
+    if (this.page?.outputPath?.includes(`${path.sep}ezgraph${path.sep}`)) return content;
+    return enhanceCodeBlocks(content, "picoflow");
   });
 
   eleventyConfig.addCollection("docsSearch", (collectionApi) =>

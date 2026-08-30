@@ -549,8 +549,8 @@ a:hover {
 	margin: 0 0 var(--space-5);
 	padding: var(--space-4);
 	overflow-x: auto;
-	background: var(--color-neutral-bg-subtle);
-	border: 1px solid var(--color-neutral-line);
+	background: #0d131a;
+	border: 1px solid #26313f;
 	border-radius: var(--rounded-lg);
 	font-size: var(--font-size-sm);
 	line-height: 1.6;
@@ -562,7 +562,7 @@ a:hover {
 	background: none;
 	border: 0;
 	padding: 0;
-	color: var(--color-neutral-text-contrast);
+	color: #cdd9e5;
 	white-space: pre;
 }
 
@@ -616,6 +616,73 @@ a:hover {
 .prose .hljs-operator {
 	color: var(--color-code-punctuation);
 }
+
+/* Match the EZGraph code surface, gutter, and token palette on every PicoFlow
+   documentation example. Eleventy emits this wrapper and its line numbers. */
+.prose .picoflow-code-body {
+	display: flex;
+	align-items: stretch;
+	max-width: 100%;
+	overflow: hidden;
+	margin: 0 0 var(--space-5);
+	background: #0d131a;
+	border: 1px solid #26313f;
+	border-radius: var(--rounded-lg);
+}
+.prose .picoflow-code-gutter {
+	flex: 0 0 auto;
+	min-width: 3ch;
+	padding: 18px 12px 18px 16px;
+	margin: 0;
+	overflow: hidden;
+	color: #5d6b7d;
+	background: #0a1016;
+	border-right: 1px solid #1e2833;
+	font: 0.84rem/1.75 var(--font-family-mono);
+	font-variant-numeric: tabular-nums;
+	list-style: none;
+	text-align: right;
+	user-select: none;
+}
+.prose .picoflow-code-gutter li { margin: 0; }
+.prose .picoflow-code-pre {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 18px 20px;
+	margin: 0;
+	overflow-x: auto;
+	overflow-y: hidden;
+	color: #cdd9e5;
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	font: 0.84rem/1.75 var(--font-family-mono);
+	tab-size: 2;
+	white-space: pre;
+}
+.prose .picoflow-code-pre .hljs-comment,
+.prose .picoflow-code-pre .hljs-quote { color: #7286a0; font-style: italic; }
+.prose .picoflow-code-pre .hljs-keyword,
+.prose .picoflow-code-pre .hljs-selector-tag,
+.prose .picoflow-code-pre .hljs-meta .hljs-keyword { color: #ff9ec4; }
+.prose .picoflow-code-pre .hljs-title.function_,
+.prose .picoflow-code-pre .hljs-title.function,
+.prose .picoflow-code-pre .hljs-built_in,
+.prose .picoflow-code-pre .hljs-variable.language_ { color: #d3b0ff; }
+.prose .picoflow-code-pre .hljs-title.class_,
+.prose .picoflow-code-pre .hljs-type,
+.prose .picoflow-code-pre .hljs-params,
+.prose .picoflow-code-pre .hljs-property,
+.prose .picoflow-code-pre .hljs-attr { color: #7dd3fc; }
+.prose .picoflow-code-pre .hljs-string,
+.prose .picoflow-code-pre .hljs-regexp,
+.prose .picoflow-code-pre .hljs-template-variable { color: #9ee6b8; }
+.prose .picoflow-code-pre .hljs-number,
+.prose .picoflow-code-pre .hljs-literal,
+.prose .picoflow-code-pre .hljs-symbol,
+.prose .picoflow-code-pre .hljs-bullet { color: #f5c988; }
+.prose .picoflow-code-pre .hljs-punctuation,
+.prose .picoflow-code-pre .hljs-operator { color: #a9b8c7; }
 
 /* ---- tables ---------------------------------------------------------- */
 

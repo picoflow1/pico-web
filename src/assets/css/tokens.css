@@ -65,13 +65,13 @@
 	--color-neutral-placeholder: var(--light, #8b8d98) var(--dark, #696e77);
 
 	/* ------------------------------------------------------------ code theme */
-	--color-code-keyword: var(--light, #6b46c1) var(--dark, #c4b5fd);
-	--color-code-function: var(--light, #8a6212) var(--dark, #ffd86c);
-	--color-code-type: var(--light, #9a3412) var(--dark, #fdba74);
-	--color-code-string: var(--light, #72510f) var(--dark, #d6c08d);
-	--color-code-number: var(--light, #a33a00) var(--dark, #fbbf24);
-	--color-code-comment: var(--light, #667085) var(--dark, #8b94a3);
-	--color-code-punctuation: var(--light, #44505e) var(--dark, #c3c9d2);
+	--color-code-keyword: #ff9ec4;
+	--color-code-function: #d3b0ff;
+	--color-code-type: #7dd3fc;
+	--color-code-string: #9ee6b8;
+	--color-code-number: #f5c988;
+	--color-code-comment: #7286a0;
+	--color-code-punctuation: #a9b8c7;
 
 	/* ------------------------------------------------- callouts / admonitions */
 	--callout-blue-text: var(--light, #5f5f5f) var(--dark, #d0cbc2);
