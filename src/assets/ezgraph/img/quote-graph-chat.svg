@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="560" viewBox="0 0 440 560" role="img" aria-labelledby="title desc">
+  <title id="title">QuoteGraph guided chatbot session</title>
+  <desc id="desc">An animated QuoteGraph chatbot session that collects driver, vehicle, history, and coverage details before returning a selected insurance quote.</desc>
+  <style>
+    :root { color-scheme: dark; }
+    text { font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .title { fill: #f1f6fb; font-size: 17px; font-weight: 750; }
+    .eyebrow { fill: #8b9aac; font-size: 9px; font-weight: 600; letter-spacing: .08em; }
+    .muted { fill: #93a2b4; font-size: 10px; }
+    .label { fill: #aebdcd; font-size: 10px; font-weight: 650; }
+    .body { fill: #dce8f3; font-size: 11px; }
+    .small { fill: #a7b7c7; font-size: 9px; }
+    .stage { fill: #182331; stroke: #27384a; stroke-width: 1; }
+    .stage-text { fill: #899caf; font-size: 9px; font-weight: 650; }
+    .bubble { fill: #121b26; stroke: #2a3d50; stroke-width: 1; }
+    .user-bubble { fill: #17435e; stroke: #3f91bc; }
+    .user-text { fill: #e5f5fc; font-size: 11px; font-weight: 600; }
+    .accent { fill: #79c5ea; }
+    .green { fill: #91d8b0; }
+    .amber { fill: #f0c477; }
+    .quote-option { fill: #17222e; stroke: #2d4052; stroke-width: 1; }
+    .quote-option--selected { fill: #193c3b; stroke: #70d0ad; }
+    .card-title { fill: #edf5fa; font-size: 10px; font-weight: 700; }
+    .price { fill: #f4d18b; font-size: 12px; font-weight: 750; }
+    .check { fill: none; stroke: #91d8b0; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .message { opacity: 0; transform: translateY(7px); animation: message-in 24s linear infinite; }
+    .message--1 { animation-delay: 0s; }
+    .message--2 { animation-delay: -3s; }
+    .message--3 { animation-delay: -6s; }
+    .message--4 { animation-delay: -9s; }
+    .message--5 { animation-delay: -12s; }
+    .message--6 { animation-delay: -15s; }
+    .message--7 { animation-delay: -18s; }
+    @keyframes message-in {
+      0%, 9% { opacity: 0; transform: translateY(7px); }
+      14%, 100% { opacity: 1; transform: translateY(0); }
+    }
+    .stage--driver { animation: stage-driver 24s linear infinite; }
+    .stage--vehicle { animation: stage-vehicle 24s linear infinite; }
+    .stage--history { animation: stage-history 24s linear infinite; }
+    .stage--coverage { animation: stage-coverage 24s linear infinite; }
+    .stage--quote { animation: stage-quote 24s linear infinite; }
+    @keyframes stage-driver {
+      0%, 17% { fill: #173c57; stroke: #65b4df; }
+      18%, 100% { fill: #182331; stroke: #27384a; }
+    }
+    @keyframes stage-vehicle {
+      0%, 17% { fill: #182331; stroke: #27384a; }
+      18%, 35% { fill: #173c57; stroke: #65b4df; }
+      36%, 100% { fill: #182331; stroke: #27384a; }
+    }
+    @keyframes stage-history {
+      0%, 35% { fill: #182331; stroke: #27384a; }
+      36%, 53% { fill: #173c57; stroke: #65b4df; }
+      54%, 100% { fill: #182331; stroke: #27384a; }
+    }
+    @keyframes stage-coverage {
+      0%, 53% { fill: #182331; stroke: #27384a; }
+      54%, 71% { fill: #173c57; stroke: #65b4df; }
+      72%, 100% { fill: #182331; stroke: #27384a; }
+    }
+    @keyframes stage-quote {
+      0%, 71% { fill: #182331; stroke: #27384a; }
+      72%, 100% { fill: #173c57; stroke: #65b4df; }
+    }
+  </style>
+
+  <rect width="440" height="560" rx="18" fill="#0b121a"/>
+  <rect x="1" y="1" width="438" height="558" rx="17" fill="none" stroke="#22303e" stroke-width="2"/>
+
+  <circle cx="27" cy="27" r="14" fill="#17435e" stroke="#65b4df"/>
+  <path d="M20 27h14m-11-4 2-3h4l2 3m-9 6h1m6 0h1" stroke="#b7e4f7" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="49" y="25" class="title">QuoteGraph</text>
+  <text x="49" y="40" class="eyebrow">GUIDED AUTO QUOTE · LIVE SESSION</text>
+  <circle cx="407" cy="27" r="4" fill="#91d8b0"/>
+  <text x="397" y="44" text-anchor="end" class="small green">online</text>
+
+  <g>
+    <rect x="18" y="58" width="70" height="24" rx="12" class="stage stage--driver"/>
+    <rect x="94" y="58" width="70" height="24" rx="12" class="stage stage--vehicle"/>
+    <rect x="170" y="58" width="70" height="24" rx="12" class="stage stage--history"/>
+    <rect x="246" y="58" width="80" height="24" rx="12" class="stage stage--coverage"/>
+    <rect x="332" y="58" width="70" height="24" rx="12" class="stage stage--quote"/>
+    <text x="53" y="73" text-anchor="middle" class="stage-text">Driver</text>
+    <text x="129" y="73" text-anchor="middle" class="stage-text">Vehicle</text>
+    <text x="205" y="73" text-anchor="middle" class="stage-text">History</text>
+    <text x="286" y="73" text-anchor="middle" class="stage-text">Coverage</text>
+    <text x="367" y="73" text-anchor="middle" class="stage-text">Quote</text>
+  </g>
+
+  <line x1="20" y1="96" x2="420" y2="96" stroke="#1f2d3b"/>
+  <text x="20" y="113" class="muted">Conversation · QuoteGraph keeps the state</text>
+
+  <g class="message message--1">
+    <rect x="169" y="123" width="251" height="31" rx="14" class="bubble user-bubble"/>
+    <text x="185" y="143" class="user-text">I need car insurance.</text>
+  </g>
+
+  <g class="message message--2">
+    <circle cx="29" cy="177" r="10" fill="#1c4057" stroke="#65b4df"/>
+    <path d="M24 177h10m-8-4 2-3h4l2 3m-9 6h1m6 0h1" stroke="#b7e4f7" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="47" y="157" width="324" height="41" rx="14" class="bubble"/>
+    <text x="63" y="174" class="label">QuoteGraph</text>
+    <text x="63" y="190" class="body">Sure — I’ll collect a few details to build your quote.</text>
+  </g>
+
+  <g class="message message--3">
+    <rect x="111" y="211" width="309" height="32" rx="14" class="bubble user-bubble"/>
+    <text x="127" y="232" class="user-text">2019 Toyota Camry SE, financed.</text>
+  </g>
+
+  <g class="message message--4">
+    <circle cx="29" cy="275" r="10" fill="#1c4057" stroke="#65b4df"/>
+    <path d="M24 275h10m-8-4 2-3h4l2 3m-9 6h1m6 0h1" stroke="#b7e4f7" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="47" y="252" width="373" height="47" rx="14" class="bubble"/>
+    <text x="63" y="269" class="label">Vehicle · History</text>
+    <text x="63" y="285" class="body">2019 Camry captured. 3 years insured · no lapse.</text>
+    <text x="390" y="269" text-anchor="end" class="small accent">saved</text>
+  </g>
+
+  <g class="message message--5">
+    <rect x="160" y="313" width="260" height="32" rx="14" class="bubble user-bubble"/>
+    <text x="176" y="334" class="user-text">Can I get the cheapest option?</text>
+  </g>
+
+  <g class="message message--6">
+    <circle cx="29" cy="380" r="10" fill="#493b22" stroke="#f0c477"/>
+    <path d="M29 375v6m0 4h.1" stroke="#f0c477" stroke-width="1.8" stroke-linecap="round"/>
+    <rect x="47" y="355" width="373" height="52" rx="14" class="bubble"/>
+    <text x="63" y="373" class="label amber">Coverage check</text>
+    <text x="63" y="390" class="body">Liability-only isn’t available — your lender</text>
+    <text x="63" y="403" class="body">requires collision coverage.</text>
+  </g>
+
+  <g class="message message--7">
+    <circle cx="29" cy="449" r="10" fill="#1c4057" stroke="#65b4df"/>
+    <path d="M24 449h10m-8-4 2-3h4l2 3m-9 6h1m6 0h1" stroke="#b7e4f7" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="47" y="425" width="373" height="108" rx="14" class="bubble"/>
+    <text x="63" y="443" class="label">QuoteGraph · 3 options</text>
+    <rect x="63" y="452" width="105" height="43" rx="9" class="quote-option"/>
+    <text x="74" y="467" class="card-title">Essential</text>
+    <text x="74" y="483" class="price">$118/mo</text>
+    <rect x="177" y="452" width="105" height="43" rx="9" class="quote-option quote-option--selected"/>
+    <text x="188" y="467" class="card-title">Enhanced</text>
+    <text x="188" y="483" class="price">$146/mo</text>
+    <path d="m263 458 3 3 6-7" class="check"/>
+    <rect x="291" y="452" width="113" height="43" rx="9" class="quote-option"/>
+    <text x="302" y="467" class="card-title">Premium</text>
+    <text x="302" y="483" class="price">$179/mo</text>
+    <rect x="63" y="502" width="341" height="22" rx="11" fill="#153d39" stroke="#70d0ad"/>
+    <path d="m74 513 3 3 6-7" class="check"/>
+    <text x="91" y="516" class="small green">Selected · Enhanced · QT-482910</text>
+  </g>
+</svg>
