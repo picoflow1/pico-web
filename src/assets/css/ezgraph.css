@@ -56,8 +56,10 @@
 .ezgraph-product-nav__links a:hover { color: #8ec4e4; }
 
 .ezgraph-license-ticker {
-  position: relative;
-  z-index: 9;
+  /* The site header is 76px and the EZGraph nav is 64px tall at desktop. */
+  position: sticky;
+  top: 140px;
+  z-index: 18;
   overflow: hidden;
   color: #cfe6f7;
   background: #10283d;
@@ -1324,6 +1326,8 @@ footer {
 
 @media (max-width: 900px) {
   .ezgraph-product-nav { top: 122px; }
+  /* The stacked mobile EZGraph nav is 104px tall below the site header. */
+  .ezgraph-license-ticker { top: 226px; }
   .ezgraph-product-nav__inner { align-items: flex-start; flex-direction: column; padding-block: 13px; }
   .ezgraph-product-nav__links { width: 100%; padding-bottom: 4px; }
   .ezgraph-code-gutter { padding-left: 11px; padding-right: 9px; }
