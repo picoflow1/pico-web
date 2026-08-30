@@ -1270,6 +1270,50 @@ footer {
   .cta { padding: 40px 24px; }
   .foot-grid { grid-template-columns: 1fr; }
   .steps > li { padding-left: 52px; }
+  .metric-hero { padding: 24px 18px; }
+  .metric-hero .big-stat { font-size: clamp(3.6rem, 18vw, 5rem); }
+  .metric-hero .big-stat-sub { font-size: 0.76rem; line-height: 1.5; overflow-wrap: anywhere; }
+  .metric-hero .table-wrap { overflow: hidden; }
+  .metric-hero table,
+  .metric-hero tbody,
+  .metric-hero tr,
+  .metric-hero td { display: block; min-width: 0; }
+  .metric-hero table { width: 100%; }
+  .metric-hero thead { display: none; }
+  .metric-hero tbody tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 11px;
+    padding: 15px 16px;
+  }
+  .metric-hero tbody td {
+    padding: 0;
+    border: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .metric-hero tbody td:first-child {
+    grid-column: 1 / -1;
+    font-size: 0.96rem;
+    line-height: 1.35;
+  }
+  .metric-hero tbody td:nth-child(n+2) {
+    text-align: left;
+    font-size: 0.78rem;
+    line-height: 1.3;
+    white-space: normal;
+  }
+  .metric-hero tbody td:nth-child(n+2)::before {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--text-muted);
+    font: 650 0.66rem/1 var(--font);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .metric-hero tbody td:nth-child(2)::before { content: "EZGraph"; }
+  .metric-hero tbody td:nth-child(3)::before { content: "LangGraph"; }
+  .metric-hero tbody td:nth-child(4)::before { content: "Delta"; }
   & { font-size: 16px; }
 }
 
