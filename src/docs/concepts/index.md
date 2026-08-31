@@ -82,6 +82,8 @@ long-lived service. The engine constructs it, binds the registered name, adds th
 throws the instance away when the turn ends. Anything you want to survive must be in the
 session document.
 
+<div class="callout callout--note"><span class="callout__title">Why the session document matters</span><p>PicoFlow makes each conversation an application-readable case record, rather than persistence that only the runtime can interpret. One document brings together the active stage, business state, model context, token use, execution trail, and diagnostics. Teams can inspect and query it in their ordinary database, or copy and redact it into isolated test storage for safe incident reproduction. See <a href="/docs/concepts/session-document/">Session document: state, diagnosis, and replay</a> for the model, and <a href="/docs/guides/session-operations/">Operate and debug session documents</a> for the operational workflow.</p></div>
+
 <div class="callout callout--warning"><span class="callout__title">Warning</span><p>Do not do request-specific work in the <code>Flow</code> constructor or in <code>init()</code>. Both run on every single request, including restored sessions. They are for deterministic setup such as memory configuration, not for calling external systems.</p></div>
 
 ### defineSteps() is a registry, not a graph
