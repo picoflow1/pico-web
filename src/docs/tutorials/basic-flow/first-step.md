@@ -173,7 +173,7 @@ Returning a value from `onResponse()` rather than mutating a context object mean
 routing decision and the validation that produced it sit in the same function, and the
 type system can check the result.
 
-<div class="callout callout--info"><span class="callout__title">Where these two steps actually run</span><p>ConcurStep3 and ConcurStep4 are registered in BasicFlow but are never a <code>go()</code> target. They are only ever executed as nested children — ConcurStep3 from <code>ConcurStep1.onResponse()</code>, ConcurStep4 from <code>ConcurStep2.onEnter()</code>. They are used here as the clearest example of a minimal step; lesson 13 covers how they are invoked.</p></div>
+<div class="callout callout--info"><span class="callout__title">Where these two steps actually run</span><p>ConcurStep3 and ConcurStep4 are registered in BasicFlow but are never a <code>go()</code> target. They run as nested children from <code>ConcurStep1.onEnter()</code> and <code>ConcurStep2.onEnter()</code>, respectively. ConcurStep1 then makes its completion tool call and returns <code>directResult(...)</code>. Lesson 13 covers the ordering.</p></div>
 
 ## Common mistakes
 

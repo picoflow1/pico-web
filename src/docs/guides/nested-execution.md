@@ -7,8 +7,9 @@ source: pico-demo/docs/step-authoring-contract.md
 
 Use nested execution when one turn needs sub-work whose result belongs to the calling step: a
 classification, an enrichment, a second model with a different prompt or a different model
-override. The child runs in-process, shares the session document, and returns its content to
-its owner.
+override. The child runs in-process, belongs to the same session, and returns control to its
+owner. A sequential `runStep()` uses the registered child directly; `runSteps()` gives each
+parallel worker an isolated snapshot and publishes validated state at its join.
 
 If the sub-work deserves its own session document, its own history and its own retry budget,
 you want [Concurrent batch mode](/docs/guides/concurrent-steps/) instead.
@@ -87,109 +88,147 @@ The division is deliberate:
 - children **compute** — they may call models, read state and `saveState()`;
 - owners **decide** — only the owner returns `go(...)` and moves the cursor.
 
-## runSteps(): independent children in parallel
+## runSteps(): isolated children in parallel
+
+`runSteps()` creates a fresh worker internally for every request. The caller keeps the same
+class-based syntax used by sequential nesting—there is no decorator, factory hook, or
+parallel-only registration:
 
 ```ts
-protected async onEnter() {
-  await super.onEnter();
-  const [concurStep1, concurStep2] = await this.runSteps([
-    { step: ConcurStep1, userMessage: "Run the 1st concurrent follow-up task." },
-    { step: ConcurStep2, userMessage: "Run the 2nd concurrent follow-up task." },
-  ]);
-  this.saveState({
-    concurStep1: JSON.parse(JSON.stringify(concurStep1)) as JsonValue,
-    concurStep2: JSON.parse(JSON.stringify(concurStep2)) as JsonValue,
-  });
+export class ConcurStep1 extends Step {
+  public override async run() {
+    const { params } = this.getParallelInvocation<{ topic: string }>();
+    this.saveState({ result: await this.lookup(params.topic) });
+    return this.getState("result");
+  }
 }
 ```
 
-Each request creates its own execution frame; the results are joined with `Promise.all` and
-returned in the order given.
-
-### Independence requirements
-
-`runSteps()` gives you no ordering, no isolation and no rollback. Every child must be safe to
-run at the same time as every other child in the array:
-
-- no child may read state that another child in the same call writes;
-- no two children may write the same step's state, or the same key;
-- no two children should share a memory namespace;
-- side effects must be independent — one child failing rejects the whole `Promise.all` while
-  the others keep running to completion;
-- children must not depend on each other's output. If they do, chain `runStep()` calls
-  instead.
-
-### Duplicate classes are rejected
+The caller sends immutable per-invocation parameters and receives a structured batch:
 
 ```ts
-throw new Error("runSteps() cannot execute the same step class twice.");
+const batch = await this.runSteps([
+  { step: ConcurStep1, key: "plot", params: { topic: "plot" } },
+  { step: ConcurStep2, key: "cast", params: { topic: "cast" } },
+]);
+
+if (batch.rejected.length > 0) {
+  this.saveState({ warnings: batch.rejected });
+}
+
+const plot = this.flow.getStepState(ConcurStep1, "result");
 ```
 
-The check is on the class ID, before anything runs. There is no way to run one step class
-twice in parallel — a step is a singleton within a flow instance, with one state object and
-one memory namespace, so two concurrent instances would corrupt each other. If you need
-fan-out over N items, that is batch mode.
+`branches`, `fulfilled`, and `rejected` remain in request order. State from fulfilled
+branches is reduced and published before the promise resolves, so the caller can immediately
+read it from the authoritative session document.
 
-## Memory namespace hazards
+### Snapshot and mutation boundary
 
-This is the failure that is hardest to see in a transcript.
+At the fork, each worker receives:
 
-A step's memory namespace is a shared array in the flow's memory container. On every model
-call the runner **overwrites index 0** with the freshly built system message and then pushes
-request and response messages onto the end.
+- an immutable logical snapshot of the session document, context, and all other Step states;
+- a mutable private copy of its own Step state;
+- a private memory history cloned from the namespace visible to the caller; and
+- frozen `params`, a stable branch key, request index, scope path, and cancellation signal.
 
-Two children sharing a namespace, running under `Promise.all`, will:
+The worker may use `saveState()` and `removeState()` only on itself. Attempts to modify a
+session/context snapshot, another Step, the cursor, completion status, Flow memory, or storage
+raise `ParallelMutationError`. This makes an accidental shared write a visible framework
+failure instead of a timing-dependent race.
 
-- overwrite each other's system prompt, so one child may run against the other's prompt;
-- interleave their human, AI and tool messages in one transcript;
-- produce a persisted history that neither child would produce alone.
+Child memory is intentionally disposable. Two workers may inherit the same namespace without
+sharing an array: each changes its own clone, and neither raw transcript is appended to the
+parent. Return an output or publish Step state when the parent needs information from a child.
+
+### Repeating one Step class
+
+One Step class may run more than once in a batch. Every repeated invocation needs a unique
+key:
 
 ```ts
-// Safe: distinct namespaces
-new ConcurStep1(this),                      // default namespace: "ConcurStep1"
-new ConcurStep2(this),                      // default namespace: "ConcurStep2"
-
-// Dangerous: one shared transcript, written concurrently
-new ConcurStep1(this).useMemory("shared"),
-new ConcurStep2(this).useMemory("shared"),
+await this.runSteps([
+  { step: QuoteStep, key: "basic", params: { plan: "basic" } },
+  { step: QuoteStep, key: "premium", params: { plan: "premium" } },
+]);
 ```
 
-The default namespace is the step's class name, so parallel children are safe unless you
-opt into sharing. Do not opt in for `runSteps()` children.
+Each request gets a fresh `QuoteStep`. If both copies replace the same field with
+`saveState()`, the barrier raises `ParallelStateConflictError`. Declare how that field merges
+and contribute values explicitly:
+
+```ts
+protected override parallelStateChannels() {
+  return {
+    quoteByPlan: StepChannels.keyedByBranch(),
+    total: StepChannels.sum(),
+  };
+}
+
+public override async run() {
+  const quote = await this.quote(this.getParallelInvocation().params);
+  this.contributeState("quoteByPlan", quote);
+  this.contributeState("total", quote.total);
+  return quote;
+}
+```
+
+Reducers receive updates in request order. Completion timing never decides persisted state.
+
+### Failures and persistence
+
+The default `retain-successes` policy returns every branch result and publishes successful
+state even if a sibling throws. Use `{ failurePolicy: "atomic" }` when any rejected branch
+should prevent all application-state publication.
+
+Configuration, mutation, validation, conflict, reducer, and requested-checkpoint errors are
+framework failures. They throw and publish none of that barrier's state. External side effects
+cannot be rolled back, so make them idempotent using the branch key.
+
+By default the join changes only in-memory authoritative state; the normal outer turn saves
+it. `{ checkpoint: "root-join" }` requests one immediate session save after a root join.
+Nested barriers publish into their parent scope and never checkpoint storage directly.
+
+Cancellation is cooperative. The runtime stops queued work, forwards the signal to running
+workers and model calls, waits the configured grace period, then closes an unresponsive
+scope. Late state and memory cannot reach the parent.
 
 ## Passing data in and out
 
-| Direction | Mechanism |
-| --- | --- |
-| Owner to child, this request only | `flow.saveTransientStepState(ChildClass, json)`, read with `getTransientState()` |
-| Owner to child, durable | `flow.saveStepState(ChildClass, json)`, read with `getState()` |
-| Owner to child, as a message | The `userMessage` argument |
-| Child to owner | The returned `MessageContent`, or state the owner reads with `flow.getStepState(ChildClass, key)` |
+| Direction | Sequential `runStep()` | Parallel `runSteps()` |
+| --- | --- | --- |
+| Owner to child | state/transient state or `userMessage` | immutable `params` or `userMessage` |
+| Child to owner | returned content or child state | branch output and published child state |
+| Raw memory | normal namespace behavior | private clone, discarded at branch end |
 
-Transient state is the right default for handing a child its inputs: it is visible for the
-rest of the invocation and is stripped before the session document is written.
+Avoid preparing parallel inputs by mutating the canonical child immediately before the fork.
+Put request-specific data in `params`; use the child's existing canonical state only as the
+shared base snapshot.
 
 <div class="callout callout--note"><span class="callout__title">Children do not get a crossing message</span><p>Nested execution calls the child directly, so it is not treated as a top-level cross-step transition. Pass an explicit <code>userMessage</code>, or prepare the child in its <code>onEnter()</code>. Do not rely on <code>onCrossing()</code> to synthesise a starting message.</p></div>
 
-## Nesting depth
+## Nested barriers
 
-Children may themselves nest — `ConcurStep1.onResponse()` calls `runSteps([{ step: ConcurStep3 }])`.
-Each level increments the recorded sequence level and pushes another frame. There is no depth
-limit in the framework, so the limits are yours: latency, token spend, and the fact that every
-level runs inside one HTTP request.
+If B changes its private state and then calls `B.runSteps([D, E])`, D and E fork from B's
+materialized view and both see B's pre-fork change. They do not see each other's in-flight
+changes. Successful D/E state becomes visible to B at the inner join. It reaches canonical
+session state only if B itself fulfills at the outer join.
+
+`runStep()` inside a parallel worker uses the same mechanism as an atomic one-child barrier.
+The defaults cap nesting depth at 8
+and total invocations at 256; a Flow can override `configParallelExecution()`.
 
 ## Failure modes
 
 | Symptom | Cause |
 | --- | --- |
-| `Cannot goto 'X' from a child execution frame.` | The child used a tool handler, `stay()`, `direct()`, or returned a Step class from `onResponse()` |
-| `Step 'X' is not defined in flow 'Y'.` | The child class is missing from `defineSteps()` |
-| `runSteps() cannot execute the same step class twice.` | Duplicate class in the request array |
-| Child state missing after the request | The child saved state but the parent's turn threw before persistence |
-| Garbled or duplicated transcript | Parallel children sharing a memory namespace |
-| One child's failure loses all results | `Promise.all` rejects on the first failure; catch inside the child's own logic if partial results matter |
-| Request latency is a multiple of expectation | Deeply nested `runStep()` chains are sequential model calls |
+| `ParallelDuplicateKeyError` | Two immediate requests used the same branch key |
+| `ParallelStateConflictError` | More than one branch replaced the same Step field |
+| `ParallelMutationError` | A worker attempted to modify shared/canonical state or lifecycle |
+| A rejected branch has no state | Failed invocation updates are deliberately discarded |
+| A late branch is rejected | It did not honor cancellation before the grace deadline |
+| Request latency is a multiple of expectation | Nested `runStep()` chains are sequential model calls |
 
 Related: [Nested execution: runStep()](/docs/tutorials/basic-flow/nested-runstep/),
-[Parallel children: runSteps()](/docs/tutorials/basic-flow/parallel-runsteps/), and
+[Parallel children and tools: runSteps()](/docs/tutorials/basic-flow/parallel-runsteps/), and
 [Concurrent batch mode](/docs/guides/concurrent-steps/).

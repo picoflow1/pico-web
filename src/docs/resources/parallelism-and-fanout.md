@@ -28,12 +28,16 @@ the same deployment.
 `Step.runSteps()` fans out nested child steps within an active flow and aggregates their
 responses. It is appropriate for bounded child work whose parent owns the result. Nested child
 steps are intentionally restricted: they must not use tool-driven transitions such as `go`,
-`stay`, or `direct`, because they execute inside the parent execution frame.
+`stay`, or `direct`, because they execute inside the parent execution frame. A tool in such a
+child may instead return `directResult(json)`: it stops that child after the tool call and
+delivers the JSON value as the branch's `output`, with no second model call or cursor change.
 
-`runSteps()` uses `Promise.all`, rejects duplicate step classes in the same call, and fails the
-whole aggregation when one child rejects. It does not provide per-child retries, cancellation,
-or a persisted work queue. Child steps share the flow session and can mutate step state, so
-parallel writers still need disjoint ownership or an intentional merge.
+`runSteps()` creates a fresh Step instance and private memory/state view per invocation, then
+publishes validated state at an explicit join. The default `retain-successes` policy keeps
+fulfilled state when a sibling fails; `atomic` makes application-state publication all-or-
+nothing. Repeated Step classes use stable branch keys and Step-owned reducers. Bounded
+concurrency and cooperative cancellation are built in, but this remains an in-process join,
+not a persisted work queue.
 
 ## LangGraph: scheduler-level branches
 
@@ -61,10 +65,10 @@ capability, not a benefit demonstrated by this particular implementation.
 | Question | PicoFlow `concurrentSteps()` | PicoFlow `runSteps()` | LangGraph branch/`Send` |
 | --- | --- | --- | --- |
 | Unit of work | Independent flow HTTP request | Child step inside one flow | Graph node invocation |
-| State ownership | Separate child session | Shared flow, separate step state | Shared or per-`Send` graph input |
-| Join owner | Parent callbacks/application code | Parent receives `Promise.all` results | Scheduler plus state reducers |
-| Durable progress | Whatever each child flow saves | Final parent session save | Checkpoints when configured |
-| Partial failure policy | Parent callback/HTTP policy | `Promise.all` rejects | Graph retry/checkpoint/application policy |
+| State ownership | Separate child session | Private invocation drafts; canonical session state at join | Shared or per-`Send` graph input |
+| Join owner | Parent callbacks/application code | Explicit calling Step plus Step-owned reducers | Scheduler plus state reducers |
+| Durable progress | Whatever each child flow saves | Outer turn save or optional root-join checkpoint | Checkpoints when configured |
+| Partial failure policy | Parent callback/HTTP policy | `retain-successes` (default) or `atomic` | Graph retry/checkpoint/application policy |
 | Dynamic fan-out | Input array | Explicit step request array | `Send` from routing logic |
 
 ## Backpressure and resource limits

@@ -26,14 +26,8 @@ From `pico-demo`:
 npm run test:support-flow
 ```
 
-The deterministic checks always run. The live scenario runs only when
-`OPENAI_API_KEY` and `PICOFLOW_KEY` are set and
-`RUN_LIVE_SUPPORT_FLOW_TEST` is not `0`; otherwise Node reports that scenario
-as skipped. To run only the deterministic portion explicitly:
-
-```bash
-RUN_LIVE_SUPPORT_FLOW_TEST=0 npm run test:support-flow
-```
+The deterministic checks always run. The live scenario runs when `OPENAI_API_KEY` and
+`PICOFLOW_KEY` are present in `.env`; otherwise Node reports that scenario as skipped.
 
 The test fixes the policy clock when it is absent:
 

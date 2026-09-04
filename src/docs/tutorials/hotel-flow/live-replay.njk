@@ -10,7 +10,7 @@ source: pico-demo/test/hotel-flow/hotel-flow.e2e-spec.ts, pico-demo/test/hotel-f
 <h2 id="run-it-yourself">Run it yourself</h2>
 <pre><code class="language-bash">cd pico-demo
 npm run test:hotel-flow</code></pre>
-<p>With <code>OPENAI_API_KEY</code> and <code>PICOFLOW_KEY</code>, this starts the demo application, sends every scenario request through one session, semantically judges the replies, and inspects the final durable state. Set <code>RUN_LIVE_HOTEL_FLOW_TEST=0</code> when credentials are unavailable.</p>
+<p>With <code>OPENAI_API_KEY</code> and <code>PICOFLOW_KEY</code> in <code>.env</code>, this starts the demo application, sends every scenario request through one session, semantically judges the replies, and inspects the final durable state. Without credentials, Node reports the live scenario as skipped.</p>
 
 <h2 id="captured-live-transcript">Captured live transcript</h2>
 <div class="quote-replay">

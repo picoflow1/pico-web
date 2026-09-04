@@ -109,9 +109,7 @@ Enhanced selection, explicit contact consent, and completed status.
 Without live credentials, or with the live path explicitly disabled, the same
 command still runs the deterministic rating, referral, and re-rating tests:
 
-```bash
-RUN_LIVE_HOME_INSURANCE_FLOW_TEST=0 npm run test:home-insurance-flow
-```
+The test loads provider credentials from `.env`; when they are absent, its live scenario is skipped.
 
 The quote configuration is deliberately fictional. Replace it with filed products,
 approved rules, authorization, auditing, and real service integrations before using

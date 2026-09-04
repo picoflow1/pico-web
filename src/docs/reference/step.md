@@ -105,7 +105,9 @@ model call, which is why the placeholder slot exists. Message IDs carry step att
 custom raw LangChain messages should always use `genMessageId()`. `HumanMessageEx`,
 `AiMessageEx`, `ToolMessageEx`, and `DirectMessage` do this for you.
 
-Erasing history does not erase step state.
+Erasing history does not erase step state. During `runSteps()`, `getMemory()` is an
+invocation-private clone of the history visible at the fork. Nested children inherit the
+calling branch's current clone; raw child history is discarded after the branch completes.
 
 ## Model and output helpers
 
@@ -137,22 +139,89 @@ transition over assigning it directly — see [go() / stay() / direct()](/docs/r
 | API | Signature | Purpose |
 | --- | --- | --- |
 | `runStep` | `runStep(stepClass: StepClassType, userMessage?: string): Promise<MessageContent \| null>` | Run one registered child in an in-memory frame |
-| `runSteps` | `runSteps(stepRequests: RunStepRequest[]): Promise<(MessageContent \| null)[]>` | Run independent children with `Promise.all`, preserving order |
+| `runSteps` | `runSteps(requests: readonly RunStepRequest[], options?: RunStepsOptions): Promise<ParallelBatchResult>` | Run isolated child instances through a bounded fork/join barrier |
 | `sessionCompleted` | `sessionCompleted(): void` | Set `runStatus` to `completed` |
 | `isEnd` | `isEnd(): boolean` | Report completion for the response envelope |
 
 ```ts
 type RunStepRequest = {
   step: StepClassType;
+  key?: string;
+  params?: JsonObject;
   userMessage?: string;
-  params?: Record<string, any>;
+};
+
+type RunStepsOptions = {
+  failurePolicy?: "retain-successes" | "atomic";
+  checkpoint?: "none" | "root-join";
+  maxConcurrency?: number;
+  signal?: AbortSignal;
 };
 ```
 
-`runSteps()` throws `runSteps() cannot execute the same step class twice.` when two requests
-name the same class. A child frame calls the child's `onEnter()`, runs it, and calls `onExit()`
-in a `finally`. Children may save state, but calling `goto()` from a child frame throws.
-Nested execution also increments the sequence level recorded in the session document.
+`runSteps()` creates a fresh worker for every request internally. There is no decorator,
+factory hook, or other caller-side registration syntax: pass the same Step classes that are
+already registered with the Flow. `parallelParamsSchema()` may return a Zod-compatible
+validator for `params`; `getParallelInvocation()` exposes the frozen params, branch key,
+request index, scope path and cancellation signal inside the worker.
+
+One class may appear repeatedly. Every repeated request then needs a non-empty, batch-unique
+`key`. Each invocation has private Step state and memory. A successful worker's `saveState()`
+becomes a proposed replacement of its own top-level field. Multiple branches replacing the
+same field conflict; declare a reduced channel and call `contributeState()` when combining
+copies is intentional:
+
+```ts
+protected override parallelStateChannels() {
+  return {
+    total: StepChannels.sum(),
+    resultByKey: StepChannels.keyedByBranch(),
+  };
+}
+
+public override async run() {
+  const { params } = this.getParallelInvocation<{ amount: number }>();
+  this.contributeState("total", params.amount);
+  this.contributeState("resultByKey", params.amount);
+  return params.amount;
+}
+```
+
+Built-in channel helpers are `singleWriter()`, `reduced(...)`, `sum()`, `append()`,
+`appendUniqueBy(...)`, `keyedByBranch()`, and `mergeRecord()`. Reducers run in stable request
+order, never completion order.
+
+`ParallelBatchResult.branches`, `.fulfilled`, and `.rejected` remain in request order.
+The default `retain-successes` policy publishes fulfilled state even when another child
+fails. `atomic` publishes none when any child rejects. Framework failures—such as a shared
+mutation, invalid JSON, factory error, conflict, or reducer failure—throw and publish none of
+that barrier's application state.
+
+Publication happens before `runSteps()` returns, so the caller immediately sees child state
+through `getStepState()` and `getSessionDoc()`. The default `checkpoint: "none"` waits for the
+normal outer save; `root-join` performs one immediate session save and rolls the in-memory
+application state back if that requested checkpoint fails.
+
+Workers receive read-only snapshots of the session document, context, and other Steps.
+Attempts to mutate those surfaces, move the cursor, complete the session, replace Flow
+memory, or call `saveSession()` raise `ParallelMutationError`. The worker may change only its
+own private state and private memory. Raw child histories are discarded; published Step state
+and returned output are the communication mechanism.
+
+Nested `runStep()` and `runSteps()` fork from the calling branch's materialized view. Thus a
+parent worker's pre-fork state is visible to its children, inner successful state is visible
+to that parent at the inner join, and descendants reach canonical state only if the containing
+outer branch succeeds.
+
+Cancellation is cooperative. Running model calls and workers receive the signal, queued work
+does not start, and a worker that ignores cancellation loses publication rights after the
+Flow's `cancellationGraceMs` deadline. Arbitrary external side effects are not rolled back;
+make them idempotent by branch key.
+
+A sequential `runStep()` keeps its existing behavior. When called inside a parallel worker it
+uses a one-child atomic barrier and receives the same isolation guarantees.
+Nested execution increments the sequence level recorded in the session document but never
+moves the durable cursor.
 
 For normal user-facing completion, transition to `TerminateSessionStep`. Use
 `sessionCompleted()` for workers and coordinators that finish without a closing conversation.

@@ -134,19 +134,23 @@ this.saveState({ inContext: JSON.parse(JSON.stringify(answer)) as JsonValue });
 return go(DOBStep);
 ```
 
-For independent children, `runSteps()` runs them with `Promise.all` and preserves result
-order:
+For independent children, `runSteps()` uses isolated workers and returns a request-ordered
+batch:
 
 ```ts
-const [first, second] = await this.runSteps([
+const batch = await this.runSteps([
   { step: ConcurStep1, userMessage: "Run the 1st concurrent follow-up task." },
   { step: ConcurStep2, userMessage: "Run the 2nd concurrent follow-up task." },
 ]);
+if (batch.rejected.length > 0) throw new Error(batch.rejected[0].error.message);
+const [first, second] = batch.fulfilled.map((branch) => branch.output);
 ```
 
-Children run inside the same session document and the same HTTP request. They may call
-`saveState()`, but they cannot move the durable cursor and cannot persist independently. The
-owner decides where the flow goes next. Details in
+Children run inside the same logical session and HTTP request, but each parallel invocation
+receives private state and memory plus immutable shared snapshots. They may call
+`saveState()` only on themselves; validated state publishes before the join returns. They
+cannot move the durable cursor or persist independently. The owner decides where the flow
+goes next. Details in
 [Nested execution](/docs/guides/nested-execution/).
 
 ## Nested execution versus batch mode
@@ -155,12 +159,12 @@ They are frequently confused. They share nothing.
 
 | | `runStep()` / `runSteps()` | `concurrentSteps()` |
 | --- | --- | --- |
-| Session documents | One, shared with the parent | One new document per item |
+| Session documents | One logical session; parallel workers use snapshots | One new document per item |
 | Transport | In-process function call | HTTP POST to `SELF_URL` |
 | Registered steps | Child must be in `defineSteps()` | Worker runs the whole flow from its initial step |
 | Can call `goto()` | No — throws | Yes, it is a normal top-level run |
 | Result | `MessageContent` returned to the parent | Whatever `onBotResponse` extracts from the HTTP response |
-| Failure | Propagates to the parent turn | Caught and logged per item by `concurrentSteps()` |
+| Failure | `runStep()` propagates; `runSteps()` returns branch results unless the barrier itself is invalid | Caught and logged per item by `concurrentSteps()` |
 | Token accounting | Charged to the parent session | Charged to each worker session |
 
 ## Common wrong turns

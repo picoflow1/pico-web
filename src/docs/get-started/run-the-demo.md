@@ -205,30 +205,42 @@ npm run test:employee-benefits-flow
 `npm test` runs the standard flow suite in sequence via `test:flows`.
 
 Each spec boots the real NestJS application with a Fastify adapter and drives a scripted
-multi-turn scenario through the HTTP contract, then asserts on the persisted SQLite session
-document.
+multi-turn scenario through the HTTP contract. Every flow test loads PicoDemo's `.env`.
+By default it replaces session persistence with a flow-specific SQLite database under
+`test/.tmp`, keeping normal test runs isolated.
 
 ### Test environment
 
-The specs override session storage so they never touch your configured store:
+The default local store is isolated per flow:
 
 - `SESSION_STORE` is forced to `SQLITE`;
 - `SQLITE_PATH` points at `test/.tmp/<flow>-session.sqlite`.
 
-Pass `BASIC_FLOW_TEST_USE_ENV=1` (exposed as `npm run test2:basic-flow`) or
-`INVOICE_FLOW_TEST_USE_ENV=1` to use your `.env` settings instead.
+Set `USE_ENV=1` to retain the session-store settings already loaded from `.env` instead. This
+is useful when intentionally exercising MongoDB, Cosmos DB, or a configured SQLite path:
+
+```bash
+USE_ENV=1 npm run test:basic-flow
+```
+
+`USE_ENV=1` is a test-harness switch. It does not supply provider credentials or by itself
+turn a skipped live scenario into a runnable one.
 
 ### Skipping and required keys
 
 A live scenario is skipped, not failed, when its provider keys are absent:
 
-| Spec | Required to run live | Force skip with |
-| --- | --- | --- |
-| `test:basic-flow` | `OPENAI_API_KEY`, `PICOFLOW_KEY` | — |
-| `test:hotel-flow` | `OPENAI_API_KEY`, `PICOFLOW_KEY` | `RUN_LIVE_HOTEL_FLOW_TEST=0` |
-| `test:invoice-flow` | `GEMINI_API_KEY`, `PICOFLOW_KEY` | `RUN_LIVE_INVOICE_FLOW_TEST=0` |
-| `test:home-insurance-flow` | `OPENAI_API_KEY`, `PICOFLOW_KEY` | `RUN_LIVE_HOME_INSURANCE_FLOW_TEST=0` |
-| `test:employee-benefits-flow` | `OPENAI_API_KEY`, `PICOFLOW_KEY` | `RUN_LIVE_EMPLOYEE_BENEFITS_FLOW_TEST=0` |
+| Spec | Required to run live |
+| --- | --- |
+| `test:basic-flow` | `OPENAI_API_KEY`, `PICOFLOW_KEY` |
+| `test:hotel-flow` | `OPENAI_API_KEY`, `PICOFLOW_KEY` |
+| `test:invoice-flow` | `GEMINI_API_KEY`, `PICOFLOW_KEY` |
+| `test:home-insurance-flow` | `OPENAI_API_KEY`, `PICOFLOW_KEY` |
+| `test:employee-benefits-flow` | `OPENAI_API_KEY`, `PICOFLOW_KEY` |
+
+Semantic judges use the API-key `openai` provider. Their model is configured by the scenario
+or the flow-specific `*_JUDGE_MODEL` environment variable; the checked-in scenarios use
+`gpt-4o`. Flow models remain independently selected and still need their listed credentials.
 
 `BasicFlow` additionally supports a deterministic mode that replaces the provider with a
 scripted model, so it exercises the same transitions and SQLite assertions without spending
@@ -242,9 +254,9 @@ In that mode only `PICOFLOW_KEY` is required.
 
 <div class="callout callout--warning"><span class="callout__title">Warning</span><p>The demo <code>README.md</code> refers to a <code>test:basic-flow:contract</code> script for the deterministic run. No such script exists in <code>package.json</code>. Set <code>BASIC_FLOW_USE_SCRIPTED_MODEL=1</code> on the normal script instead.</p></div>
 
-`HotelFlow`'s scenario is graded by an LLM judge (`gpt-4o` by default, overridable with
-`HOTEL_FLOW_JUDGE_MODEL`). Pair live scenarios with deterministic contract assertions so a
-fluent answer cannot disguise missing state or a wrong transition.
+`HotelFlow`'s scenario is graded by its API-key semantic judge. Pair live scenarios with
+deterministic contract assertions so a fluent answer cannot disguise missing state or a wrong
+transition.
 
 `HomeInsuranceQuoteFlow` applies the same principle over twenty live turns. Its spec also
 tests rating and referral decisions without a model, and the final session assertions prove

@@ -30,17 +30,15 @@ npm run test:basic-flow
 npm run test:hotel-flow
 npm run test:invoice-flow
 npm run test:home-insurance-flow # deterministic rating + 20-turn live scenario
-npm run test2:basic-flow # BASIC_FLOW_TEST_USE_ENV=1 — use your own .env store config
 npm run typecheck        # tsc --project tsconfig.contract.json
 ```
 
 Each spec is a plain `node --test` file executed through `tsx`, with no test framework beyond
 `node:assert/strict`.
 
-By default the suites override the store to SQLite under `test/.tmp/`, so they never touch
-your configured database. Set `BASIC_FLOW_TEST_USE_ENV=1`, `HOTEL_FLOW_TEST_USE_ENV=1` or
-`INVOICE_FLOW_TEST_USE_ENV=1` or `HOME_INSURANCE_FLOW_TEST_USE_ENV=1` to run against
-whatever your environment configures instead.
+Every flow suite loads `.env`. It honors `SESSION_STORE` and `DOCUMENT_DB` when configured;
+otherwise it falls back to SQLite under `test/.tmp/`. For example, `SESSION_STORE=MONGO`
+writes the test session to MongoDB.
 
 There are also two unit specs, `test/tool-decorator.spec.ts` and
 `test/tool-response-helper.spec.ts`, which no npm script currently runs. Invoke them directly:
@@ -181,8 +179,8 @@ On failure the spec writes the whole transcript, including judge reasons, to
 `test/.tmp/hotel-flow-semantic-failure.json`. Keep that artifact — reading the transcript is
 usually faster than re-running the conversation.
 
-Judge knobs: `HOTEL_FLOW_JUDGE_MODEL`, per-turn `minScore`, scenario `judgeMinScore`, and
-`RUN_LIVE_HOTEL_FLOW_TEST=0` to skip the live run entirely.
+Judge knobs: per-turn `minScore` and scenario `judgeMinScore`.
+The live scenario runs when its provider credentials are present in `.env`.
 
 ## Pinning time and other nondeterminism
 

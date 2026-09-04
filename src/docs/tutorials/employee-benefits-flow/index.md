@@ -80,9 +80,7 @@ auditing, approved plan documents, privacy controls, and jurisdiction-specific r
 
 From `pico-demo`, run the deterministic policy checks without provider calls:
 
-```bash
-RUN_LIVE_EMPLOYEE_BENEFITS_FLOW_TEST=0 npm run test:employee-benefits-flow
-```
+The test loads provider credentials from `.env`; when they are absent, its live scenario is skipped.
 
 With `OPENAI_API_KEY` and `PICOFLOW_KEY`, the same script runs all twenty-two turns,
 semantically grades every response, then asserts the persisted medical plan, corrected HSA,

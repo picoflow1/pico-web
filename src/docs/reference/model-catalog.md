@@ -21,6 +21,11 @@ import { PicoModelCatalog } from "@picoflow/core";
 | `openai:gpt-4o-mini` | OpenAI chat |
 | `openai:gpt-5` | OpenAI reasoning |
 | `openai:gpt-5.1` | OpenAI reasoning |
+| `openai-auth:gpt-4o` | OpenAI chat via experimental local Codex OAuth |
+| `openai-auth:gpt-5.4` | OpenAI reasoning via experimental local Codex OAuth |
+| `openai-auth:gpt-5.6-sol` | OpenAI reasoning via experimental local Codex OAuth |
+| `openai-auth:gpt-5.6-terra` | OpenAI reasoning via experimental local Codex OAuth |
+| `openai-auth:gpt-5.6-luna` | OpenAI reasoning via experimental local Codex OAuth |
 | `google:gemini-2.0-flash` | Google chat |
 | `google:gemini-2.5-flash` | Google chat |
 | `google:gemini-2.5-pro` | Google chat |
@@ -46,8 +51,12 @@ Likewise, `retryAttempts` is PicoFlow's only default retry policy. Built-in adap
 force their LangChain runtime retries to zero; an application-owned model-backed adapter
 can opt in explicitly with `runtimeMaxRetries`.
 
-The catalog's built-in providers are exactly `openai`, `google`, `anthropic`, and `deepseek` —
+The catalog's built-in providers are exactly `openai`, `openai-auth`, `google`, `anthropic`, and `deepseek` —
 the prefixes appearing in the table above.
+
+`openai-auth` is an experimental local Codex OAuth transport, not the public OpenAI API. Its
+available model IDs are deliberately checked in and remain separate from `openai` API-key
+models.
 
 <div class="callout callout--note"><span class="callout__title">Cataloged is more specific than bundled</span><p>PicoFlow also ships adapters for Azure OpenAI, Moonshot, Z.AI, Ollama, and OpenRouter. Those integrations are bundled, but their model names and parameter contracts are not part of this checked-in catalog. See <a href="/docs/reference/providers/">Providers</a> for the complete adapter list.</p></div>
 

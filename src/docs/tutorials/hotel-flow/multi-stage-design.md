@@ -47,13 +47,21 @@ export class HotelFlow extends Flow {
     //configure memory compaction, if no configuration is provided, the default is
     // to summarize after 16 messages, keeping the most recent 8 messages in memory
     this.getMemory()
-      .setSummaryModel({ provider: 'openai', name: 'gpt-4o', retryAttempts: 3 })
+      .setSummaryModel({
+        provider: 'openai',
+        name: 'gpt-4o',
+        retryAttempts: 3,
+      })
       .setSummaryConfig({ minMessages: 8, recentMessages: 4 })
       .enableSummary('hotel-explore');
   }
 
   protected configModel() {
-    return { provider: 'openai', name: 'gpt-4o', retryAttempts: 3 } as const;
+    return {
+      provider: 'openai',
+      name: 'gpt-4o',
+      retryAttempts: 3,
+    } as const;
   }
 
   protected defineSteps(): Step[] {

@@ -148,10 +148,14 @@ synthesise its first message. Either pass `userMessage` explicitly, as
 `InContextStep` does for its own children:
 
 ```ts
-const [concurStep1, concurStep2] = await this.runSteps([
+const batch = await this.runSteps([
   { step: ConcurStep1, userMessage: "Run the 1st concurrent follow-up task." },
   { step: ConcurStep2, userMessage: "Run the 2nd concurrent follow-up task." },
 ]);
+
+if (batch.rejected.length > 0) {
+  throw new Error(batch.rejected.map(({ error }) => error.message).join("; "));
+}
 ```
 
 or do the setup in `onEnter()`. `NameStep` calls `runStep(InContextStep)` with no
@@ -168,10 +172,14 @@ Allowed:
 - run further nested children, which BasicFlow does two levels deep;
 - return a value to its owner.
 
+A tool in a `runSteps()` child may also return `directResult(json)`. That ends the branch and
+puts `json` in its `ParallelBranchFulfilled.output` without another model call.
+
 Not allowed:
 
 - `flow.goto()` / `gotoByName()` — throws;
 - returning a `Step` from `onResponse()` — reaches `goto`, throws;
+- returning `go()`, `stay()`, or `direct()` from a parallel-child tool — throws;
 - persisting the session independently — only the owner's request boundary saves.
 
 State written by a child *is* persisted, because it lands in that step's slot and the
@@ -212,5 +220,5 @@ waits on a user, which is why those must be `go()` targets.
 ## Next
 
 `InContextStep` runs two children at once.
-[13. Parallel children: runSteps()](/docs/tutorials/basic-flow/parallel-runsteps/) covers the
-fan-out and its hazards.
+[13. Parallel children and tools: runSteps()](/docs/tutorials/basic-flow/parallel-runsteps/)
+covers fan-out, tool calls, and their hazards.

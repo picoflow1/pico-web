@@ -159,8 +159,9 @@ parent calls runStep(ChildStep, "message")
   -> parent frame restored, child's content returned to the parent
 ```
 
-`runSteps([...])` creates one independent frame per child and joins them with `Promise.all`.
-It rejects duplicate step classes.
+`runSteps([...])` creates one fresh, isolated Step instance per request and joins them through
+a bounded state barrier. Repeated classes are allowed with unique branch keys; fields written
+by several copies require a Step-owned reducer.
 
 <div class="callout callout--warning"><span class="callout__title">Nested execution is not a cross-step transition</span><p>The child is called directly, so <code>onCrossing()</code> is not invoked for it. Pass an explicit <code>userMessage</code>, or do the child's setup in <code>onEnter()</code>. Do not assume its <code>onCrossing()</code> will synthesise a starting message.</p></div>
 
@@ -172,9 +173,9 @@ Cannot goto 'SomeStep' from a child execution frame.
 Return a result to the owning step instead.
 ```
 
-Transition authority belongs to the owner. Parallel children sharing one memory namespace
-will interleave their history writes, so isolate namespaces unless interleaving is what you
-want.
+Transition authority belongs to the owner. Parallel children receive private clones of the
+history visible at their fork, even when their canonical Steps use the same namespace. Raw
+child history is discarded rather than interleaved into the parent's transcript.
 
 ## Summary table
 

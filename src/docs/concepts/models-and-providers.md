@@ -47,6 +47,7 @@ FlowEngine.create({
 | Option key | Provider name | Connection options |
 | --- | --- | --- |
 | `openai` | `openai` | `apiKey` |
+| `openaiAuth` | `openai-auth` | `authFile?`, `baseUrl?`; defaults to the local Codex session |
 | `azureOpenai` | `azure-openai` | `apiKey`, `endpoint`, `deploymentName`, `apiVersion` |
 | `google` | `google` | `apiKey` |
 | `anthropic` | `anthropic` | `apiKey` |
@@ -56,9 +57,11 @@ FlowEngine.create({
 | `ollama` | `ollama` | `baseUrl` |
 | `openrouter` | `openrouter` | `apiKey` |
 
-The factory returns all nine adapters every time, whether or not you supplied options for
+The factory returns all ten adapters every time, whether or not you supplied options for
 them. That is harmless: an adapter is only asked to build a model when a flow or step
 actually selects its provider, so an unused adapter with an undefined API key costs nothing.
+
+<div class="callout callout--warning"><span class="callout__title">Experimental local Codex OAuth</span><p><code>openai-auth</code> reads <code>~/.codex/auth.json</code> when invoked, or <code>PICOFLOW_OPENAI_AUTH_FILE</code> when set. It uses an undocumented ChatGPT/Codex backend, not the public OpenAI API, and is intentionally separate from <code>openai</code>. Credentials are read per request and never enter a Flow selection or persisted session.</p></div>
 
 ### Custom adapters
 
@@ -185,6 +188,11 @@ pair TypeScript selects that entry's exact parameter type.
 | `openai:gpt-4o-mini` | Chat |
 | `openai:gpt-5` | Reasoning: `reasoning.effort`, `maxTokens` |
 | `openai:gpt-5.1` | Reasoning |
+| `openai-auth:gpt-4o` | OpenAI chat via experimental local Codex OAuth |
+| `openai-auth:gpt-5.4` | OpenAI reasoning via experimental local Codex OAuth |
+| `openai-auth:gpt-5.6-sol` | OpenAI reasoning via experimental local Codex OAuth |
+| `openai-auth:gpt-5.6-terra` | OpenAI reasoning via experimental local Codex OAuth |
+| `openai-auth:gpt-5.6-luna` | OpenAI reasoning via experimental local Codex OAuth |
 | `google:gemini-2.0-flash` | Google chat: `temperature`, `maxOutputTokens` |
 | `google:gemini-2.5-flash` | Google chat |
 | `google:gemini-2.5-pro` | Google chat |

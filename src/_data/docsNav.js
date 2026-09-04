@@ -141,7 +141,7 @@ export default {
 							url: "/docs/tutorials/basic-flow/nested-runstep/",
 						},
 						{
-							title: "13. Parallel children: runSteps()",
+							title: "13. Parallel children and tools: runSteps()",
 							url: "/docs/tutorials/basic-flow/parallel-runsteps/",
 						},
 						{

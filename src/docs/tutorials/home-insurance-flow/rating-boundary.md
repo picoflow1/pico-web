@@ -93,10 +93,7 @@ the same application yields the expected option IDs and premiums, that an
 unsupported state produces no options, that an old roof produces a referral, and
 that a deductible change produces a lower premium and new quote ID.
 
-```bash
-cd pico-demo
-RUN_LIVE_HOME_INSURANCE_FLOW_TEST=0 npm run test:home-insurance-flow
-```
+The live scenario uses credentials from `.env` and is skipped when they are unavailable.
 
 This is the fast check for code-owned policy. The live replay in lesson 7 adds
 the separate question of whether the model follows the conversation contract.

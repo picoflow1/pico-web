@@ -171,8 +171,9 @@ no "active" flag on a step document. `Flow.goto(...)` — reached through `go(..
 handler — is the only API that moves it.
 
 Nested execution is different. `runStep(ChildStep)` and `runSteps([...])` push in-memory
-execution frames. Children can save their own state, but they cannot move the cursor; they
-return results to their owner, which alone decides the next durable position.
+execution frames. Parallel children receive isolated snapshots and may publish only their own
+successful state at the join; neither kind can move the cursor. The owner alone decides the
+next durable position.
 
 ## Step class names are persisted identifiers
 

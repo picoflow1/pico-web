@@ -180,8 +180,9 @@ So a batch of ten items produces eleven session documents: one coordinator and t
 Every one of them satisfies the invariant.
 
 Nested execution is the genuinely different case: `runStep(...)` and `runSteps(...)` run
-inside the current turn, share the outer session document, and return control to their
-parent. They are frames, not sessions.
+inside the current turn and return control to their parent. A parallel child receives an
+isolated snapshot and publishes permitted state at the join rather than sharing live mutable
+session data. They are frames, not sessions.
 
 ## Related
 

@@ -65,7 +65,7 @@ only the default cursor; `initialStep()` overrides it here.
 | `FooLogicStep` | `foo-logic.ts` | `default` | n/a | `LogicStep.runLogic()` with zero model calls |
 | `GooLogicStep` | `goo-logic.ts` | `default` | n/a | A second logic hop, showing `withState` landing on the destination |
 | `InContextStep` | `incontext-step.ts` | `separate` | flow default | `structOutputSchema()` and `runSteps()` fan-out from `onEnter()` |
-| `ConcurStep1` | `concur-step1.ts` | class default | flow default | Nesting from `onResponse()` |
+| `ConcurStep1` | `concur-step1.ts` | class default | flow default | A tool that returns JSON to its `runSteps()` caller with `directResult()` |
 | `ConcurStep2` | `concur-step2.ts` | class default | flow default | Nesting from `onEnter()` |
 | `ConcurStep3` | `concur-step3.ts` | class default | flow default | The minimum viable step: prompt plus `onResponse` |
 | `ConcurStep4` | `concur-step4.ts` | class default | flow default | The same, reached from a different parent hook |
@@ -92,7 +92,7 @@ Read them in order. Lessons 1 to 8 are the fundamentals; 9 to 14 are composition
 3. [Your first step](/docs/tutorials/basic-flow/first-step/) — the smallest step that
    works: `getPrompt()` plus `onResponse()`.
 4. [Tools and Zod](/docs/tutorials/basic-flow/tools/) — `defineTool()`, the `@Tool`
-   decorator, and why the handler owns the decision.
+   decorator, normal routing results, and `directResult()` for a parallel child.
 5. [Routing with go() and stay()](/docs/tutorials/basic-flow/routing/) — the corrective
    loop and the response builders.
 6. [Validation belongs in code](/docs/tutorials/basic-flow/validation/) — moving rules out
@@ -109,8 +109,9 @@ Read them in order. Lessons 1 to 8 are the fundamentals; 9 to 14 are composition
     model with a Zod schema.
 12. [Nested execution: runStep()](/docs/tutorials/basic-flow/nested-runstep/) — calling a
     child step inline and using its return value.
-13. [Parallel children: runSteps()](/docs/tutorials/basic-flow/parallel-runsteps/) —
-    fan-out, and the independence rules that make it safe.
+13. [Parallel children and tools: runSteps()](/docs/tutorials/basic-flow/parallel-runsteps/) —
+    fan-out, child-owned state, tool calls, `directResult()`, and the independence rules that
+    make it safe.
 14. [Transient state and context](/docs/tutorials/basic-flow/transient-state/) — the four
     kinds of data and what survives persistence.
 15. [Memory namespaces and model overrides](/docs/tutorials/basic-flow/memory-and-models/)

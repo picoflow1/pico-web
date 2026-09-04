@@ -134,6 +134,32 @@ protected async terminate_session(): Promise<ToolResponseType> {
 Handlers are looked up on the prototype chain, so decorated handlers are inherited and
 a subclass can override one.
 
+## Tools inside a parallelized Step
+
+`@Tool` works inside a `runSteps()` child exactly as it does in a normal conversational Step.
+The child model can select the tool, and the handler can validate arguments, call a backend, and
+write only that child's state. `ConcurStep1` uses this pattern in the parallel lesson:
+
+```ts
+@Tool
+protected async complete_concurrent_step1(): Promise<ToolResponseType> {
+  const result = { completed: true };
+  this.saveState({ concurStep1: result });
+  return directResult(result);
+}
+```
+
+`directResult(result)` is specifically the return channel for a parallel child. It ends that
+child after the tool call and makes `result` available as the matching
+`batch.fulfilled[*].output` value. It neither routes the Flow nor asks the model for a second
+response.
+
+The ordinary builders have different jobs: `go()`, `stay()`, and `direct()` are valid in normal
+tool handlers, but throw from a parallel child because they would alter the parent's execution
+frame. Use `directResult()` only from a tool handler in `runSteps()` and give it JSON-compatible
+data. See [Parallel children and tools: runSteps()](/docs/tutorials/basic-flow/parallel-runsteps/)
+for the complete `ConcurStep1` lifecycle.
+
 ## The handler owns the decision
 
 Look at what `DOBStep` does after the schema has already passed:

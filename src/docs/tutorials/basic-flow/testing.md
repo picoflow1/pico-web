@@ -151,9 +151,10 @@ so it verifies that the transition was **written**, not merely computed.
 Two of these assertions encode things earlier lessons claimed:
 
 `"John Wick"` expects `DOBStep`. That turn runs `NameStep.user_name`, which runs
-`InContextStep`, which runs `ConcurStep1` and `ConcurStep2`, which run `ConcurStep3` and
-`ConcurStep4`. Five nested model calls, and the cursor lands on `DOBStep` — never on any
-of the children. That is the `runStep()` contract from
+`InContextStep`, which runs `ConcurStep1` and `ConcurStep2`; `ConcurStep1` first runs
+`ConcurStep3` and then completes through its `complete_concurrent_step1` tool, while
+`ConcurStep2` runs `ConcurStep4`. Five nested model calls occur, and the cursor lands on
+`DOBStep` — never on any of the children. That is the `runStep()` contract from
 [lesson 12](/docs/tutorials/basic-flow/nested-runstep/), asserted.
 
 `"LA,NYC"` expects `FavoritesStep`, not `FooLogicStep`. The two logic steps are traversed
@@ -201,7 +202,7 @@ npm run test:basic-flow                                       # live provider
 BASIC_FLOW_USE_SCRIPTED_MODEL=1 npm run test:basic-flow       # scripted, no provider calls
 ```
 
-<div class="callout callout--note"><span class="callout__title">Note</span><p>The demo's internal guide refers to an <code>npm run test:basic-flow:contract</code> script. No such script exists in <code>pico-demo/package.json</code>; set <code>BASIC_FLOW_USE_SCRIPTED_MODEL=1</code> on the normal test script instead. The related <code>test2:basic-flow</code> script sets <code>BASIC_FLOW_TEST_USE_ENV=1</code> to use the environment's configured session store.</p></div>
+<div class="callout callout--note"><span class="callout__title">Note</span><p>The demo's internal guide refers to an <code>npm run test:basic-flow:contract</code> script. No such script exists in <code>pico-demo/package.json</code>; set <code>BASIC_FLOW_USE_SCRIPTED_MODEL=1</code> on the normal test script instead.</p></div>
 
 The scripted variant is selected by `BASIC_FLOW_USE_SCRIPTED_MODEL=1`, and the test swaps
 the model factory on the prototype:
@@ -269,10 +270,17 @@ The test **skips** rather than fails when configuration is missing, with the rea
 the skip message. `PICOFLOW_KEY` is required for both, because the runner verifies the
 licence on every model call.
 
-The session store defaults to SQLite at `test/.tmp/basic-flow-session.sqlite`, created if
-absent, and `BASIC_FLOW_TEST_USE_ENV=1` switches to whatever the environment configures.
-Running against a real store matters: the persisted-state assertions are only meaningful
-if serialisation and deserialisation are in the loop.
+The test loads `.env`, but its normal mode deliberately replaces session persistence with
+SQLite at `test/.tmp/basic-flow-session.sqlite`. Set `USE_ENV=1` when you want the test to
+retain the session-store configuration from `.env`:
+
+```bash
+USE_ENV=1 npm run test:basic-flow
+```
+
+This switch affects persistence only; provider credentials still determine whether the live
+scenario runs. Running against a real store matters: the persisted-state assertions are only
+meaningful if serialisation and deserialisation are in the loop.
 
 ## Why it is written this way
 

@@ -1,250 +1,216 @@
 ---
-title: "13. Parallel children: runSteps()"
+title: "13. Parallel children and tools: runSteps()"
 eyebrow: BasicFlow tutorial
-lede: runSteps() executes independent registered children concurrently and returns their results in order. Independence is your responsibility, and memory namespaces are where it usually breaks.
+lede: runSteps() fans out independent registered Steps through an isolated fork/join barrier. A parallel child may call tools and return typed JSON to its parent with directResult().
 source: pico-demo/src/myflow/basic-flow/incontext-step.ts, pico-demo/src/myflow/basic-flow/concur-step1.ts, pico-demo/src/myflow/basic-flow/concur-step2.ts
 ---
 
-`runStep()` calls one child. `runSteps()` calls several at once with `Promise.all`.
-The API difference is trivial; the correctness requirements are not. BasicFlow builds a
-two-level nested tree specifically so you can see both the mechanism and the hazards.
+`runStep()` calls one nested child. `runSteps()` calls independent children concurrently. The
+caller's class-based syntax is unchanged: use the registered Step classes directly. The runtime
+creates a fresh worker for every branch; there is no decorator, factory hook, or other parallel
+registration to add to the child class.
 
-## The goal
+## Fan-out from `onEnter()`
 
-- Fan out to independent children and collect ordered results.
-- Nest from `onEnter()` versus from `onResponse()`, and why the choice matters.
-- Understand the duplicate-class restriction.
-- Recognise the memory-namespace hazard before it bites.
-
-## Fan-out from onEnter()
-
-From `pico-demo/src/myflow/basic-flow/incontext-step.ts`:
+`InContextStep` starts two follow-up Steps at the same time:
 
 ```ts
-protected async onEnter() {
+protected override async onEnter() {
   await super.onEnter();
-  const msg = this.getTransientState<string>("msg");
-  console.log("InContextStep.transient msg=", msg);
-  const [concurStep1, concurStep2] = await this.runSteps([
-    {
-      step: ConcurStep1,
-      userMessage: "Run the 1st concurrent follow-up task.",
-    },
-    {
-      step: ConcurStep2,
-      userMessage: "Run the 2nd concurrent follow-up task.",
-    },
+
+  const batch = await this.runSteps([
+    { step: ConcurStep1, userMessage: "Run the 1st concurrent follow-up task." },
+    { step: ConcurStep2, userMessage: "Run the 2nd concurrent follow-up task." },
   ]);
+
+  if (batch.rejected.length > 0) {
+    throw new Error(batch.rejected.map(({ error }) => error.message).join("; "));
+  }
+
   this.saveState({
-    concurStep1: JSON.parse(JSON.stringify(concurStep1)) as JsonValue,
-    concurStep2: JSON.parse(JSON.stringify(concurStep2)) as JsonValue,
+    concurStep1: batch.fulfilled[0]?.output ?? null,
+    concurStep2: batch.fulfilled[1]?.output ?? null,
   });
 }
 ```
 
-`runSteps` takes an array of `{ step, userMessage }` requests and returns
-`Promise<(MessageContent | null)[]>` in the same order, which is why array
-destructuring works. Each request gets its own execution frame:
+The result is a `ParallelBatchResult`, not an array of message content. Its `branches`,
+`fulfilled`, and `rejected` collections are in request order. The default policy,
+`retain-successes`, preserves successful branches even if a sibling rejects. Pass
+`{ failurePolicy: "atomic" }` when any rejected branch should prevent all state publication.
+
+## What each branch can do
+
+At the fork, each worker gets an immutable snapshot of the session document, context, and other
+Step states, plus a mutable private copy of its own state and memory. A worker may call
+`saveState()` or `removeState()` only for itself. It cannot update another Step, move the
+cursor, complete the session, write the session document, alter shared Flow memory, or save the
+session; those attempts raise `ParallelMutationError`.
+
+Successful child state is merged into the caller's authoritative session document before
+`runSteps()` resolves. The caller can therefore immediately inspect it with `getStepState()` or
+`getSessionDoc()`. The normal outer turn persists it. Use `{ checkpoint: "root-join" }` only
+when a root-level join must request an immediate durable save.
+
+Raw child memory is deliberately not merged. It is private while the branch runs and discarded
+at branch end. A child communicates through its returned output and its published Step state,
+not by leaking an in-progress transcript into its siblings.
+
+## Tools are allowed in parallel children
+
+Parallel execution does **not** make a Step tool-free. A child may expose a normal Zod-backed
+tool with `defineTool()` and handle it with `@Tool`, just as `NameStep` or `DOBStep` does. The
+tool call is made by that child's model and the handler may validate input, call a service, and
+save state owned by that child.
+
+The difference is the tool's result: a parallel child cannot change the shared cursor. Use
+`directResult(json)` to return a JSON value to the `runSteps()` caller. Do not return `go()`,
+`stay()`, or `direct()` from that handler; those are routing or user-response builders and throw
+inside a parallel child.
+
+## A `directResult()` tool call from `ConcurStep1`
+
+`ConcurStep1` first starts `ConcurStep3` as a nested child from `onEnter()`. Once that inner
+barrier completes, its model makes one tool call; the handler saves child-owned state and
+returns a JSON result directly to `InContextStep`:
 
 ```ts
-private async executeParallel(
-  stepRequests: RunStepRequest[],
-): Promise<(MessageContent | null)[]> {
-  const uniqueSteps = new Set(stepRequests.map(({ step }) => step.id));
-  if (uniqueSteps.size !== stepRequests.length) {
-    throw new Error("runSteps() cannot execute the same step class twice.");
-  }
-  return await Promise.all(
-    stepRequests.map(({ step, userMessage }) =>
-      this.executeChild(step, userMessage),
-    ),
-  );
-}
-```
-
-Each child goes through the same `executeChild` path as `runStep()` — nested sequence
-level, execution scope, `onEnter`, `run`, `onExit` in a `finally`. The only difference
-is that the promises are joined rather than awaited one at a time.
-
-### The duplicate restriction
-
-`runSteps()` rejects the same class twice in one call. It is not an arbitrary
-limitation: a `Step` instance is a singleton within the flow, holding one `state`
-object and one memory namespace. Two concurrent invocations of the same instance would
-interleave writes to both. If you need the same logic on two inputs, either call it
-twice sequentially, or use batch mode ([lesson 17](/docs/tutorials/basic-flow/sessions-and-batch/))
-which gives each item its own session.
-
-## Two places to nest from
-
-BasicFlow deliberately nests from a different hook in each branch.
-
-`ConcurStep2` nests from `onEnter()` — before its own model call:
-
-```ts
-protected async onEnter() {
+protected override async onEnter() {
   await super.onEnter();
-  const [_concurStep3] = await this.runSteps([
-    {
-      step: ConcurStep4,
-      userMessage: "Run the ConcurStep3.",
-    },
+  this.saveState({ concurStep1: "Starting nested ConcurStep3." });
+  const batch = await this.runSteps([
+    { step: ConcurStep3, userMessage: "Run the ConcurStep3." },
   ]);
+  if (batch.rejected.length > 0) {
+    throw new Error(batch.rejected[0]!.error.message);
+  }
+}
+
+public override getPrompt(): string {
+  return `
+    You are ConcurStep1.
+    Immediately call 'complete_concurrent_step1' with no arguments.
+    Do not return prose.
+  `;
+}
+
+@Tool
+protected async complete_concurrent_step1(): Promise<ToolResponseType> {
+  const result = { completed: true };
+  this.saveState({ concurStep1: result });
+  return directResult(result);
 }
 ```
 
-`ConcurStep1` nests from `onResponse()` — after it:
+The marker is part of `ConcurStep3`'s fork snapshot. The completion tool later replaces it with
+`{ completed: true }`, which is the value published to the outer caller.
+
+`directResult(result)` finishes only this branch. It does not move the durable cursor and it
+does not make the usual follow-up model call. The caller receives the same object at
+`batch.fulfilled[0].output`; `InContextStep` saves it as its own `concurStep1` state. This is
+the child-only alternative to `direct()`, `go()`, and `stay()`, which are still invalid inside a
+parallel branch because they attempt a cursor transition.
+
+Every `directResult(...)` call has four rules:
+
+1. Return it from an `@Tool` or `@Tools` handler in an active `runSteps()` child.
+2. Pass only JSON-compatible data: string, number, boolean, `null`, array, or object.
+3. Save any child-owned state before returning it; the successful branch publishes that state at
+   the join.
+4. Return at most one `directResult(...)` for a single model tool turn.
+
+The direct-result path is deliberately terminal for the child:
+
+```text
+ConcurStep1 model call
+  -> complete_concurrent_step1 tool call
+  -> handler saves ConcurStep1 state
+  -> directResult({ completed: true })
+  -> batch.fulfilled[0].output in InContextStep
+```
+
+There is no second model call, no `onResponse()` call for `ConcurStep1`, and no cursor change.
+
+## Nested fan-out
+
+BasicFlow also retains a nested fan-out example:
+
+- `ConcurStep1` starts `ConcurStep3` from `onEnter()`, before its own model call.
+- `ConcurStep2` starts `ConcurStep4` from `onEnter()`, before its own model call.
+
+Use `onEnter()` for prerequisite work needed by the parent prompt. The nested call checks its
+structured batch result before continuing.
+
+If B changes its private state and then calls `B.runSteps([D, E])`, D and E both see B's
+materialized pre-fork state. They do not see each other's in-flight changes. Successful D/E
+state becomes visible to B at the inner join, and reaches the root session document only if B
+itself succeeds at the outer join.
+
+## Repeating one Step class
+
+The same Step class may occur more than once in one batch. Give every repeated invocation a
+non-empty, batch-unique key:
 
 ```ts
-public async onResponse(
-  llmResult: string | object,
-): Promise<LastResponseType> {
-  this.saveState({ concurStep1: llmResult as JsonValue });
-  const [_concurStep3] = await this.runSteps([
-    {
-      step: ConcurStep3,
-      userMessage: "Run the ConcurStep3.",
-    },
-  ]);
+await this.runSteps([
+  { step: QuoteStep, key: "basic", params: { plan: "basic" } },
+  { step: QuoteStep, key: "premium", params: { plan: "premium" } },
+]);
+```
 
-  return llmResult as string;
+Each request receives a separate `QuoteStep` state copy. If two copies replace the same state
+field, the barrier raises `ParallelStateConflictError`; the framework will not choose a winner
+based on timing. When combining copies is intentional, declare a reducer channel and contribute
+to it explicitly:
+
+```ts
+protected override parallelStateChannels() {
+  return { quoteByPlan: StepChannels.keyedByBranch() };
+}
+
+public override async run() {
+  const quote = await this.quote(this.getParallelInvocation().params);
+  this.contributeState("quoteByPlan", quote);
+  return quote;
 }
 ```
 
-The distinction is about data flow:
-
-| Hook | Runs | Use when |
-| --- | --- | --- |
-| `onEnter()` | before `getPrompt()` and the model call | the child produces input the parent's prompt needs |
-| `onResponse()` | after the model replied, before the result is returned | the child's work depends on what the model said |
-
-`ConcurStep2` discards its child's result into `_concurStep3` and never uses it, so
-`onEnter` versus `onResponse` makes no observable difference there; both are present to
-show the two shapes. In real code, the choice is forced: prerequisite lookups go in
-`onEnter`, follow-up work goes in `onResponse`.
-
-<div class="callout callout--note"><span class="callout__title">Note</span><p>The variable in <code>ConcurStep2</code> is named <code>_concurStep3</code> but the step it runs is <code>ConcurStep4</code>, and its <code>userMessage</code> also says &ldquo;Run the ConcurStep3&rdquo;. That is a copy-paste slip in the demo, not a behaviour: the class in the <code>step</code> field is what executes.</p></div>
+Reducers run in request order, not completion order.
 
 ## The resulting tree
 
-One `runStep(InContextStep)` from `NameStep`'s tool handler produces five nested model
-calls:
-
 ```text
-NameStep.user_name                        (top level, cursor = NameStep)
-  runStep(InContextStep)                                       depth 2
+NameStep.user_name                         (top level)
+  runStep(InContextStep)
     InContextStep.onEnter
-      runSteps([ConcurStep1, ConcurStep2])       -- Promise.all, depth 3
-        ConcurStep1: model call
-          onResponse -> runSteps([ConcurStep3])               depth 4
-        ConcurStep2: onEnter -> runSteps([ConcurStep4])       depth 4
-                     then its own model call
-    InContextStep: getPrompt + structured model call
-  go(DOBStep)                             (cursor moves, once, here)
+      runSteps([ConcurStep1, ConcurStep2])       (parallel barrier)
+        ConcurStep1.onEnter -> runSteps([ConcurStep3])
+                    then -> complete_concurrent_step1 -> directResult({ completed: true })
+        ConcurStep2 -> onEnter    -> runSteps([ConcurStep4])
+    InContextStep model call
+  go(DOBStep)                               (the owner moves the cursor)
 ```
 
-`ConcurStep1` and `ConcurStep2` are genuinely concurrent. `ConcurStep3` and
-`ConcurStep4` are concurrent with each other as a side effect of their parents being
-concurrent. All five children write their own state; none of them moves the cursor.
-
-## Independence requirements
-
-`Promise.all` gives no ordering guarantees between branches, so children must not
-depend on each other's effects. Concretely:
-
-**No shared step state.** Two children calling `flow.saveStepState(SameStep, ...)`
-race. Each child writing only to its own slot, as all four `ConcurStep`s do, is safe.
-
-**No transition attempts.** Every child is inside an execution scope, so `goto()`
-throws. This is enforced, not merely advised.
-
-**No ordering assumptions.** If B needs A's output, they are not independent. Call them
-in sequence with two `runStep()` calls.
-
-**No shared memory namespace.** This is the one that is not enforced.
-
-## The memory-namespace hazard
-
-Each of `ConcurStep1` through `ConcurStep4` is registered with no `.useMemory(...)`:
-
-```ts
-new ConcurStep1(this),
-new ConcurStep2(this),
-new ConcurStep3(this),
-new ConcurStep4(this),
-```
-
-so each falls back to `this.memorySpace = this.id` — its own class name. Four separate
-histories, no interleaving. That is why the fan-out is safe here.
-
-Now consider what would happen if two of them shared `.useMemory("default")`. A
-step's memory is a plain array fetched from the flow:
-
-```ts
-public getMemory(): MessageTypes[] {
-  const history = this.flow.getMemory(this.memorySpace);
-  // ...
-}
-```
-
-and the runner mutates it in place — it overwrites `history[0]` with the system
-message, pushes the user message, pushes tool-call and tool-result messages, and pushes
-the AI reply:
-
-```ts
-const systemMessage = new SystemMessage({
-  content: (await step.getPrompt()) ?? "",
-  id: step.genMessageId(),
-});
-history[0] = systemMessage;
-```
-
-Two concurrent children sharing that array would each overwrite slot 0 with their own
-system prompt and interleave their turns into one transcript. The second child's model
-call could see the first child's half-finished exchange. Nothing throws; you get a
-corrupted history and non-deterministic replies.
-
-<div class="callout callout--danger"><span class="callout__title">Danger</span><p>Never put two steps that share a memory namespace in the same <code>runSteps()</code> call. Nothing in the framework prevents it, the failure is intermittent, and the damage is written to the persisted document. If children must share context, run them sequentially.</p></div>
-
-The parent's namespace is the same hazard one level up. `InContextStep` is registered
-with `.useMemory("separate")`, so its transcript — and, through the tree, its
-children's — stays out of the `default` namespace that `NameStep`, `DOBStep`, and
-`AddressStep` share. Without that, five machine-generated exchanges about sci-fi movie
-ideas would be in the conversation history of the step that is about to ask for a date
-of birth.
-
-## Why it is written this way
-
-`runSteps()` is deliberately thin — a duplicate check and a `Promise.all` — and pushes
-the correctness burden onto the caller. That is the right split, because independence
-is a property of your domain that the framework cannot infer. What it *can* enforce, it
-does: duplicate classes throw immediately, and `goto()` from a child throws with an
-explanatory message.
-
-Results are returned positionally rather than as a map because the caller already knows
-the order it asked for, and destructuring reads better than key lookups.
-
-The two-level nesting in BasicFlow exists to prove the frames compose. Execution scope
-is an `AsyncLocalStorage` stack, so a child's child pushes another frame and
-`getExecutingStep()` always returns the innermost. The sequence trail records the depth,
-which is what makes a nested failure diagnosable after the fact.
+`ConcurStep1` and `ConcurStep2` run concurrently. Their nested branches can overlap, but no
+branch may change the durable cursor. Only the owning top-level Step decides a transition.
 
 ## Common mistakes
 
-- **Fanning out steps that share a memory namespace.** Silent history corruption. This
-  is the failure mode to watch for.
-- **Passing the same class twice.** Throws
-  `runSteps() cannot execute the same step class twice.`
-- **Assuming ordering.** Results are ordered; execution is not. If B reads what A
-  wrote, sequence them.
-- **Nesting from the wrong hook.** A prerequisite fetched in `onResponse()` is too
-  late for `getPrompt()`, which already ran.
-- **Ignoring child results and asserting only on the parent's reply.** A fluent outer
-  response can hide a failed branch. Assert on each child's persisted state, as the
-  end-to-end test does.
+- **Treating the result as an array.** Inspect `batch.rejected` and use `batch.fulfilled` or
+  `batch.branches`.
+- **Depending on a sibling's write.** Siblings see snapshots, not each other's live work.
+  Sequence dependent work with `runStep()`.
+- **Writing another Step's state.** Publish only the worker's own state; use a reducer for
+  deliberate fan-in from repeated copies.
+- **Returning `go()`, `stay()`, or `direct()` from a parallel tool.** Tools are allowed; only
+  their routing-style results are not. Use `directResult(json)` when the parent needs a branch
+  result.
+- **Using raw memory as the result channel.** Branch histories are private and discarded.
+- **Assuming a successful branch is immediately durable.** It is immediately visible to the
+  caller, then persists with the outer turn unless a root-join checkpoint is requested.
 
 ## Next
 
-`InContextStep` read a value with `getTransientState`.
+`InContextStep` reads a value with `getTransientState()`.
 [14. Transient state and context](/docs/tutorials/basic-flow/transient-state/) explains where
 that came from and what survives persistence.

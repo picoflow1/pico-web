@@ -115,8 +115,8 @@ name, deduplicated.
 
 ## Return a semantic transition
 
-A handler returns a `ToolResponseType`: a step class, a registered step-name string, or a
-builder from `go()` / `stay()` / `direct()`.
+A handler normally returns a `ToolResponseType`: a step class, a registered step-name string,
+or a builder from `go()` / `stay()` / `direct()`.
 
 ```ts
 @Tool
@@ -162,6 +162,30 @@ return direct(`${table}\nAnother comparison or ready to book?`);
 this.flow.markCompleted();
 return direct(args?.json).withContentType(HttpContentType.Json);
 ```
+
+### Return data from a parallel child
+
+Inside a child launched by `runSteps()`, a tool handler can return
+`directResult(value)`. It ends that child after the tool call—without another model call or a
+cursor transition—and places a JSON value at the corresponding `batch.fulfilled[*].output`.
+It is intentionally only for `runSteps()` children; `go()`, `stay()`, and `direct()` still
+throw there because they would attempt a transition in the parent's execution frame.
+
+```ts
+@Tool
+protected async lookup_inventory(): Promise<ToolResponseType> {
+  const item = await this.inventory.lookup(this.getParallelInvocation().params.sku);
+  this.saveState({ checked: true });
+  return directResult({ sku: item.sku, available: item.available });
+}
+
+// Parent step
+const batch = await this.runSteps([{ step: InventoryLookupStep, params: { sku } }]);
+const result = batch.fulfilled[0]?.output;
+```
+
+`value` must be JSON-compatible: a string, number, boolean, `null`, array, or object. It is
+not a replacement for `direct()`, which remains the normal user-facing response builder.
 
 <div class="callout callout--warning"><span class="callout__title">Every handler must return something routable</span><p>A handler that returns <code>null</code>, <code>undefined</code>, or an object without a <code>step</code> leaves the runner with nothing to apply. For single-tool handlers this produces no tool-result message; for group <code>@Tools</code> handlers it throws. Use <code>stay()</code> when the answer is "remain here".</p></div>
 

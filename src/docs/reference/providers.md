@@ -24,6 +24,7 @@ static createBuiltinAdapters(
 ```ts
 export type BuiltinProviderAdaptersOptions = Readonly<{
   openai?: ApiKeyProviderOptions;
+  openaiAuth?: OpenAIAuthProviderOptions;
   azureOpenai?: AzureOpenAIProviderOptions;
   google?: ApiKeyProviderOptions;
   anthropic?: ApiKeyProviderOptions;
@@ -50,6 +51,7 @@ providers: [
 | Option key | Registered provider name | LangChain runtime | Connection options |
 | --- | --- | --- | --- |
 | `openai` | `openai` | `openai` | `apiKey` |
+| `openaiAuth` | `openai-auth` | `openai` Responses API | `authFile?`, `baseUrl?`; local Codex session by default |
 | `azureOpenai` | `azure-openai` | `azure-openai` | `apiKey`, `endpoint`, `deploymentName`, `apiVersion` |
 | `google` | `google` | `google` | `apiKey` |
 | `anthropic` | `anthropic` | `anthropic` | `apiKey` |
@@ -62,15 +64,20 @@ providers: [
 Moonshot and Z.AI are OpenAI-compatible Chat Completions endpoints, so they reuse the OpenAI
 runtime with a `baseURL` override while keeping their own provider name.
 
-<div class="callout callout--note"><span class="callout__title">Available does not mean used by the demo</span><p><code>createBuiltinAdapters()</code> makes all nine bundled adapters available. The demo configures only OpenAI, Google, and Anthropic, because those are the providers its sample flows select. Add an option when your application selects another provider; an omitted credential surfaces only when that provider is used.</p></div>
+`openai-auth` is experimental. It reads the local Codex OAuth credential from
+`~/.codex/auth.json` (or `PICOFLOW_OPENAI_AUTH_FILE`) on every request and targets an
+undocumented ChatGPT/Codex endpoint. It is not a substitute for public OpenAI API-key
+authentication; use `openai` for that supported path.
 
-Each adapter is also available on its own: `createOpenAIAdapter`, `createAzureOpenAIAdapter`,
-`createGoogleAdapter`, `createAnthropicAdapter`, `createDeepSeekAdapter`,
+<div class="callout callout--note"><span class="callout__title">Available does not mean used by the demo</span><p><code>createBuiltinAdapters()</code> makes all ten bundled adapters available. The demo configures only OpenAI, Google, and Anthropic, because those are the providers its sample flows select. Add an option when your application selects another provider; an omitted credential surfaces only when that provider is used.</p></div>
+
+Each adapter is also available on its own: `createOpenAIAdapter`, `createOpenAIAuthAdapter`,
+`createAzureOpenAIAdapter`, `createGoogleAdapter`, `createAnthropicAdapter`, `createDeepSeekAdapter`,
 `createMoonshotAdapter`, `createZaiAdapter`, `createOllamaAdapter`, `createOpenRouterAdapter`.
 
 ### Declared capabilities
 
-Only the OpenAI adapter declares a capability today: it reports `temperature: false` for model
+The OpenAI and OpenAI-auth adapters declare a capability: they report `temperature: false` for model
 names matching the `gpt-5` family and the `o`-series. `ModelRegistry` then rejects a
 temperature override with `Model '<provider>:<name>' does not support temperature.`
 
@@ -145,7 +152,7 @@ Two different notions of "built-in" are worth keeping apart.
 
 | | Model catalog | Provider adapters |
 | --- | --- | --- |
-| Covers | `openai`, `google`, `anthropic`, `deepseek` | The nine names in the table above, plus anything you register |
+| Covers | `openai`, `openai-auth`, `google`, `anthropic`, `deepseek` | The ten names in the table above, plus anything you register |
 | Enforces | Exact model IDs and their parameter types, at compile time and runtime | Connection setup and optional capability checks |
 | Rejects an unknown model | Yes, for a built-in provider | No |
 

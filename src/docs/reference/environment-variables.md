@@ -97,6 +97,17 @@ it. Like `SESSION_STORE`, it is read by `CoreConfig` but absent from `.env-examp
 whose prompts embed the current date needs an equivalent override before its scenarios can be
 asserted. It is not part of `.env-example`.
 
+## Flow-test persistence
+
+| Variable | Read by | Purpose |
+| --- | --- | --- |
+| `USE_ENV=1` | PicoDemo flow-test harness | Retains the session-store settings loaded from `.env` instead of forcing that test's isolated SQLite store |
+
+Flow tests load `.env` in either mode. Without `USE_ENV=1`, they intentionally use an isolated
+SQLite database under `test/.tmp`; with it, they use the configured `SESSION_STORE` and related
+settings. This is a test-harness control, not a PicoFlow runtime setting, and it does not
+provide model credentials.
+
 ## Sample file versus the code
 
 | Variable | In `.env-example` | Read by code | Note |
