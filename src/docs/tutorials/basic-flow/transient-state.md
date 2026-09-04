@@ -183,14 +183,13 @@ depth: `getContext("config.tenant.region")`.
 
 ## A live bug in the demo
 
-<div class="callout callout--warning"><span class="callout__title">Warning</span><p>Look at these two lines in <code>name-step.ts</code>:</p><pre><code class="language-typescript">const runData = this.flow.getContext&lt;JsonObject&gt;("myRunData");
-this.saveState(runData);</code></pre><p>The path is missing the <code>config.</code> prefix. A request sending <code>{"config": {"myRunData": {...}}}</code> stores it at <code>config.myRunData</code>, so <code>getContext("myRunData")</code> returns <code>undefined</code>. Because <code>saveState</code> ignores a falsy argument, the call is a silent no-op rather than a crash. The correct read is <code>getContext&lt;JsonObject&gt;("config.myRunData")</code>.</p></div>
+<div class="callout callout--warning"><span class="callout__title">Warning</span><p>An earlier version of the demo had these two lines in <code>name-step.ts</code>:</p><pre><code class="language-typescript">const runData = this.flow.getContext&lt;JsonObject&gt;("myRunData");
+this.saveState(runData);</code></pre><p>The path is missing the <code>config.</code> prefix. A request sending <code>{"config": {"myRunData": {...}}}</code> stores it at <code>config.myRunData</code>, so <code>getContext("myRunData")</code> returns <code>undefined</code>. Because <code>saveState</code> ignores a falsy argument, the call is a silent no-op rather than a crash. The correct read is <code>getContext&lt;JsonObject&gt;("config.myRunData")</code>, which the current demo uses.</p></div>
 
 It is worth knowing about not because two lines of demo code matter, but because it is
 the archetypal context bug: the prefix is easy to forget, the read returns `undefined`
 rather than throwing, and the downstream write swallows it. If a context value seems
-absent, log the whole object with `getContext("")`-style inspection before assuming the
-config never arrived.
+absent, log the whole object with `getContext()` before assuming the config never arrived.
 
 ## Choosing between them
 
@@ -226,7 +225,7 @@ The rule to remember is that `config` configures a *session*, not a *request*.
 ## Common mistakes
 
 - **Omitting the `config.` prefix.** Returns `undefined`, and `saveState` swallows it.
-  The demo does this in `name-step.ts`.
+  An earlier version of the demo did this in `name-step.ts`.
 - **Expecting a new `config` to reconfigure a restored session.** It is overwritten by
   the stored context during `readDoc()`.
 - **Putting collected domain data in context.** It cannot be updated later. Use the
