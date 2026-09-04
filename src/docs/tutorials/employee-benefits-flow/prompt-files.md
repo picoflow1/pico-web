@@ -2,7 +2,7 @@
 title: 3. Prompt files and bounded collection
 eyebrow: EmployeeBenefitsFlow tutorial
 lede: Let the model guide a concise conversation, but never let it become the source of eligibility, money, or plan facts.
-source: pico-demo/src/myflow/employee-benefits-flow/prompt, pico-demo/src/myflow/employee-benefits-flow/step/eligibility-step.ts
+source: pico-demo/src/myflow/employee-benefits-flow/prompt, pico-demo/src/myflow/employee-benefits-flow/eligibility-step.ts
 ---
 
 Each conversational stage has a focused prompt file. The prompt tells the model what to collect, when to call a stage tool, and what it must not decide. This is deliberately narrower than a single assistant prompt that attempts to carry the whole enrollment policy.

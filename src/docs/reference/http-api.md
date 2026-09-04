@@ -35,8 +35,6 @@ curl -i http://localhost:8000/ai/run \
   }'
 ```
 
-<div class="callout callout--warning"><span class="callout__title">The Swagger DTO names the wrong field</span><p><code>ApiRunBodyDto</code> declares the field as <code>userMessage</code>, so the generated OpenAPI document is wrong. The controller binds <code>@Body(K.message)</code>, and <code>K.message</code> is the string <code>"message"</code>. Send <code>message</code>.</p></div>
-
 The header name is `K.ChatSessionID`, the literal string `CHAT_SESSION_ID`.
 
 ### Response
@@ -106,7 +104,7 @@ curl http://localhost:8000/ai/flows
 ```
 
 ```json
-["BasicFlow", "HotelFlow", "InvoiceFlow"]
+["BasicFlow", "HotelFlow", "InvoiceFlow", "SupportFlow", "HomeInsuranceQuoteFlow", "EmployeeBenefitsFlow"]
 ```
 
 This is the fastest check that registration succeeded after adding a flow.

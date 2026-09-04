@@ -202,8 +202,6 @@ npm run test:basic-flow                                       # live provider
 BASIC_FLOW_USE_SCRIPTED_MODEL=1 npm run test:basic-flow       # scripted, no provider calls
 ```
 
-<div class="callout callout--note"><span class="callout__title">Note</span><p>The demo's internal guide refers to an <code>npm run test:basic-flow:contract</code> script. No such script exists in <code>pico-demo/package.json</code>; set <code>BASIC_FLOW_USE_SCRIPTED_MODEL=1</code> on the normal test script instead.</p></div>
-
 The scripted variant is selected by `BASIC_FLOW_USE_SCRIPTED_MODEL=1`, and the test swaps
 the model factory on the prototype:
 

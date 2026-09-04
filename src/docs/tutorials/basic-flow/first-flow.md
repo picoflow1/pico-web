@@ -180,7 +180,7 @@ Per request, the engine does this:
 
 ```text
 new BasicFlow()          // fresh instance, no state
-flow.addContext(config)  // only when a config object was supplied
+flow.addContext({ config })  // only when a config object was supplied
 flow.init()              // your async setup hook, default no-op
 flow.collectSteps()      // defineSteps() runs here
 flow.bootstrap(...)      // validate call policy, resolve models, load the doc and state

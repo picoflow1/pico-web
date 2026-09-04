@@ -257,10 +257,11 @@ const table = GenChart.getChart(finalHotels);
 return direct(`${table}\nAnother comparison or ready to book?`);
 ```
 
-Two things happen on the way out. The enriched rows are saved as
-`chosen_hotels`, which is the key `getPrompt()` reads — so the *next* turn's
-prompt renders a non-empty `ChosenHotels` and `compare.md`'s State 2 rules let
-the user say "compare on amenities" without naming hotels again. And the table
+Two things happen on the way out. The selected names remain in `compare_hotel`,
+which is the key `getPrompt()` reads for the first comparison. The enriched rows
+are saved as `chosen_hotels` as a fallback for later turns, so the *next* turn's
+prompt still renders a non-empty `ChosenHotels` and `compare.md`'s State 2 rules
+let the user say "compare on amenities" without naming hotels again. The table
 plus a follow-up question are returned directly.
 
 The follow-up question is part of the string because there is no model call to

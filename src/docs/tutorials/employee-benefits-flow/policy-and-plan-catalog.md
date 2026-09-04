@@ -2,7 +2,7 @@
 title: 4. Deterministic eligibility, plans, and limits
 eyebrow: EmployeeBenefitsFlow tutorial
 lede: Make the policy layer the single source of truth for every factual enrollment decision.
-source: pico-demo/src/myflow/employee-benefits-flow/backend/benefits-policy.ts, pico-demo/src/myflow/employee-benefits-flow/step/plan-evaluation-step.ts
+source: pico-demo/src/myflow/employee-benefits-flow/backend/benefits-policy.ts, pico-demo/src/myflow/employee-benefits-flow/plan-evaluation-step.ts
 ---
 
 `BenefitsPolicy` contains the fictional employee directory, enrollment-window rules, medical and ancillary plan catalog, provider directory, contribution limits, pricing, and submitted-record construction. Its job is not to sound friendly; its job is to return a repeatable answer from structured inputs.

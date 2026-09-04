@@ -204,8 +204,8 @@ The reason to erase is behavioural. `PresentStep` is re-entered every time the
 user comes back from a comparison or a new search, and each entry presents a
 *different* result list. Leaving the previous list in history invites the model
 to mix old hotel names and old prices into the new presentation. The data it
-actually needs is not in the history at all — it is in `hotelFound`, injected
-into the prompt as JSON on every turn.
+actually needs is not in the history at all — it is in `PresentStep` state,
+injected into that step's prompt as JSON on every presentation turn.
 
 That is the rule of thumb the two policies express:
 
@@ -251,8 +251,9 @@ when the user leaves and comes back.
   step. If two steps share one via `.useMemory(...)`, both lose their history.
 - **Expecting `onEnter()` on a self-transition.** It does not fire; the cursor
   never moved.
-- **Relying on history to carry data across a transition.** Use state and
-  re-inject it into the prompt, which is exactly what `hotelFound` does.
+- **Relying on history to carry data across a transition.** Use destination
+  state and re-inject it into the prompt, which is exactly what `PresentStep`
+  does with `hotelFound`.
 
 ## Next
 

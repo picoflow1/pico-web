@@ -25,8 +25,6 @@ All examples assume the demo is running on port 8000. See
 
 The session ID travels in the `CHAT_SESSION_ID` **header**, not the body.
 
-<div class="callout callout--warning"><span class="callout__title">Warning</span><p>The demo's Swagger DTO documents the message field as <code>userMessage</code>. The controller actually binds <code>@Body(K.message)</code>, and <code>K.message</code> is <code>"message"</code>. Send <code>message</code>. The OpenAPI document is wrong on this point.</p></div>
-
 ### Response body
 
 ```json
@@ -108,7 +106,7 @@ curl http://localhost:8000/ai/flows
 ```
 
 ```json
-["BasicFlow","HotelFlow","InvoiceFlow"]
+["BasicFlow","HotelFlow","InvoiceFlow","SupportFlow","HomeInsuranceQuoteFlow","EmployeeBenefitsFlow"]
 ```
 
 This is `FlowEngine.getFlowNames()`. It is the cheapest possible boot check: if a flow name

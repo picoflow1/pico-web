@@ -2,7 +2,7 @@
 title: 6. Correct, review, and submit
 eyebrow: EmployeeBenefitsFlow tutorial
 lede: Preserve valid work, isolate the correction, and turn final submission into an explicit deterministic boundary.
-source: pico-demo/src/myflow/employee-benefits-flow/step/health-account-step.ts, pico-demo/src/myflow/employee-benefits-flow/step/beneficiary-step.ts, pico-demo/src/myflow/employee-benefits-flow/step/enrollment-review-step.ts, pico-demo/src/myflow/employee-benefits-flow/step/commit-enrollment-step.ts
+source: pico-demo/src/myflow/employee-benefits-flow/health-account-step.ts, pico-demo/src/myflow/employee-benefits-flow/beneficiary-step.ts, pico-demo/src/myflow/employee-benefits-flow/enrollment-review-step.ts, pico-demo/src/myflow/employee-benefits-flow/commit-enrollment-step.ts
 ---
 
 Complex enrollment is full of recoverable mistakes. A contribution may exceed a limit, a beneficiary allocation may total 90 percent, or a user may revise an election after seeing the review. Those are normal branches, not reasons to discard the session or ask the model to reconstruct the whole application.

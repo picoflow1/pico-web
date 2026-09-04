@@ -6,7 +6,7 @@
   "description": "PicoFlow marketing site and documentation, built with Eleventy.",
   "scripts": {
     "dev": "eleventy --serve",
-    "build": "eleventy && node scripts/check.mjs",
+    "build": "node scripts/check.mjs --source-only && eleventy && node scripts/check.mjs",
     "check": "node scripts/check.mjs",
     "clean": "rm -rf _site"
   },

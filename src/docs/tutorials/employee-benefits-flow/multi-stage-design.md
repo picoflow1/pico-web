@@ -2,7 +2,7 @@
 title: 2. Designing an enrollment journey
 eyebrow: EmployeeBenefitsFlow tutorial
 lede: Break a complex enrollment into stages with one clear responsibility and explicit state handoffs.
-source: pico-demo/src/myflow/employee-benefits-flow/employee-benefits-flow.ts, pico-demo/src/myflow/employee-benefits-flow/step
+source: pico-demo/src/myflow/employee-benefits-flow/employee-benefits-flow.ts, pico-demo/src/myflow/employee-benefits-flow
 ---
 
 Enrollment is not one form with a chat skin. It is a sequence of decisions whose prerequisites matter: there is no meaningful plan comparison before eligibility and household tier, and there must be no submission before a complete review.

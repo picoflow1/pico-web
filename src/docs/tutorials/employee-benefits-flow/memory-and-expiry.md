@@ -2,7 +2,7 @@
 title: 5. Memory namespaces and expiry
 eyebrow: EmployeeBenefitsFlow tutorial
 lede: Carry only the conversational context each stage needs, while the session record remains the durable source of truth.
-source: pico-demo/src/myflow/employee-benefits-flow/employee-benefits-flow.ts, pico-demo/src/myflow/employee-benefits-flow/step/medical-plan-step.ts
+source: pico-demo/src/myflow/employee-benefits-flow/employee-benefits-flow.ts, pico-demo/src/myflow/employee-benefits-flow/medical-plan-step.ts
 ---
 
 The flow gives related intake stages a shared `benefits-intake` memory namespace, then isolates later domains. That preserves enough continuity for the early conversation without carrying every prior plan question and correction into every later model call.

@@ -36,8 +36,8 @@ npm run typecheck        # tsc --project tsconfig.contract.json
 Each spec is a plain `node --test` file executed through `tsx`, with no test framework beyond
 `node:assert/strict`.
 
-Every flow suite loads `.env`. It honors `SESSION_STORE` and `DOCUMENT_DB` when configured;
-otherwise it falls back to SQLite under `test/.tmp/`. For example, `SESSION_STORE=MONGO`
+Every flow suite loads `.env`. It honors `SESSION_STORE` when configured; otherwise it
+falls back to SQLite under `test/.tmp/`. For example, `SESSION_STORE=MONGO`
 writes the test session to MongoDB.
 
 There are also two unit specs, `test/tool-decorator.spec.ts` and

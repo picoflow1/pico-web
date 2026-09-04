@@ -230,7 +230,7 @@ instead. Moving to the step that is already current is a no-op.
 
 | Method | Signature |
 | --- | --- |
-| `getContext` | `getContext<T>(key: string): T` |
+| `getContext` | `getContext<T = JsonObject>(key?: string): T` |
 | `addContext` | `addContext(json: object): void` |
 | `setContext` | `setContext(context: object): void` |
 

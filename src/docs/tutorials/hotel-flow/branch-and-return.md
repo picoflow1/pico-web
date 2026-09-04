@@ -139,18 +139,40 @@ hotels the user picked and the hotels that were available to pick from.
 protected async go_compare(
   args: Record<string, any>,
 ): Promise<ToolResponseType> {
+  const rawHotels = args?.hotelsToCompare;
+  if (
+    !Array.isArray(rawHotels) ||
+    rawHotels.some((hotelName) => typeof hotelName !== "string")
+  ) {
+    return stay("Choose hotels from the presented list to compare.");
+  }
+  const requestedHotels = rawHotels
+    .map((hotelName: string) => hotelName.trim())
+    .filter((hotelName: string) => hotelName.length > 0);
+  const availableHotels =
+    (this.getState("hotelFound") as SearchHotelEntry[] | undefined) ?? [];
+  const availableByName = new Map(
+    availableHotels.map((hotel) => [
+      hotel.hotelName.toLowerCase(),
+      hotel.hotelName,
+    ]),
+  );
+  const selectedHotelNames = requestedHotels.map((hotelName) =>
+    availableByName.get(hotelName.toLowerCase()),
+  );
+  if (
+    requestedHotels.length === 0 ||
+    selectedHotelNames.some((hotelName) => hotelName === undefined) ||
+    new Set(selectedHotelNames).size !== selectedHotelNames.length
+  ) {
+    return stay("Choose distinct hotels from the presented list to compare.");
+  }
+
   this.flow.saveStepState(CompareStep, {
-    compare_hotel: args?.hotelsToCompare,
+    compare_hotel: selectedHotelNames,
   });
 
-  const availableHotel = this.flow.getStepState(
-    PresentStep,
-    "hotelFound",
-  ) as [];
-
-  const strAvailableHotel = availableHotel.map((entry) => {
-    return entry["hotelName"];
-  }) as string[];
+  const strAvailableHotel = availableHotels.map((entry) => entry.hotelName);
 
   // go(...) enters comparison mode with the selected hotel data as destination state.
   return go(CompareStep)
@@ -176,12 +198,14 @@ in `CompareStep`'s state bag before its prompt is built, so in this handler the
 choice is stylistic. It stops being stylistic if the transition can fail or be
 overridden downstream — `saveStepState` has already written by then.
 
-Note also `flow.getStepState(PresentStep, "hotelFound")`. `PresentStep` is
-reading its own state through the flow rather than through `this.getState(...)`.
-Both work; the explicit form is a useful habit in a handler that is already
-reading and writing three different steps.
+Here `this.getState("hotelFound")` reads the results that `PresentStep` owns.
+If a handler needs to read another step's state, use the explicit
+`flow.getStepState(StepClass, key)` form instead.
 
-<div class="callout callout--warning"><span class="callout__title">A key mismatch in the demo</span><p><code>go_compare</code> writes <code>compare_hotel</code>, but <code>CompareStep.getPrompt()</code> reads <code>chosen_hotels</code>. On the first comparison, <code>ChosenHotels</code> is therefore rendered as <code>[]</code> and only the forwarded message tells the model which hotels were meant. It works because <code>generate_comparison</code> later writes <code>chosen_hotels</code> itself, which is what makes the follow-up turn &ldquo;compare on amenities&rdquo; reuse the previous selection. If you are copying this pattern, make the writer and the reader agree on one key.</p></div>
+`go_compare` validates the requested names against the current result list and writes
+the canonical names to `compare_hotel`. `CompareStep.getPrompt()` reads that same key
+on the first comparison; after a chart is generated it can also render the enriched
+`chosen_hotels` rows.
 
 ## Reading the primed state back
 
@@ -189,7 +213,9 @@ From `pico-demo/src/myflow/hotel-flow/compare-step.ts`:
 
 ```ts
 public getPrompt(): string {
-  const chosen_hotels = (this.getState("chosen_hotels") as []) ?? [];
+  const compare_hotel = (this.getState("compare_hotel") as string[]) ?? [];
+  const chosen_hotels =
+    (this.getState("chosen_hotels") as Array<{ hotelName?: string }>) ?? [];
   const available_hotel = this.getState(`available_hotel`) ?? [];
 
   let prompt = `
@@ -197,9 +223,10 @@ public getPrompt(): string {
   ${FlowPrompt.EndChat}
   `;
 
-  const hotels = chosen_hotels.map((entry) => {
-    return { hotelName: entry["hotelName"] };
-  });
+  const hotels =
+    compare_hotel.length > 0
+      ? compare_hotel.map((hotelName) => ({ hotelName }))
+      : chosen_hotels.map(({ hotelName }) => ({ hotelName }));
 
   prompt = Prompt.replace(prompt, {
     ChosenHotels: JSON.stringify(hotels),
@@ -266,8 +293,8 @@ callers cannot accidentally break that guarantee.
   step-scoped id from `genMessageId()`, the runner cannot attribute the message.
 - **Calling `getLastMessage()` after switching namespaces in your head.** It
   reads the *current* step's namespace, not the conversation as a whole.
-- **Priming a key the destination does not read.** Exactly the
-  `compare_hotel` / `chosen_hotels` mismatch above.
+- **Skipping validation before priming comparison state.** Resolve every requested
+  name against the current result list and reject unknown or duplicate names.
 - **Assuming `onCrossing()` fires on every turn.** It fires only when the step
   actually changed during the turn.
 - **Carrying data forward in the message text.** Put data in state and words in

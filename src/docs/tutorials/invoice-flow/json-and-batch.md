@@ -165,6 +165,7 @@ protected async spawnSteps(): Promise<string> {
 
   const msg = `Finished concurrent flow: ${this.id}`;
   new SessionLogger(this.getSessionDoc()).log(msg);
+  this.markCompleted();
   return msg;
 }
 ```

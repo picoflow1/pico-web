@@ -230,7 +230,7 @@ on. Every case people reach for `run()` is better served by a step hook, a `Logi
 | Execution frame | `getExecutingStep()`, `requireExecutingStep()` |
 | Steps | `getStep(name)`, `requireStep(name)` |
 | Cross-step state | `getStepState(StepClass, key?)`, `saveStepState(...)`, `saveTransientStepState(...)` |
-| Context | `getContext<T>(key)`, `addContext(json)`, `setContext(obj)` |
+| Context | `getContext<T = JsonObject>(key?)`, `addContext(json)`, `setContext(obj)` |
 | Memory | `getMemory()`, `getMemory(namespace)` |
 | Session | `getSessionId()`, `getSessionDoc()`, `saveSession()`, `markCompleted()` |
 | Tools | `getTool(name)`, `requireTool(name)` |

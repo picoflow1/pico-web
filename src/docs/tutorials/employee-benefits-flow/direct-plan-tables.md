@@ -2,7 +2,7 @@
 title: 7. Exact plan tables and response fallback
 eyebrow: EmployeeBenefitsFlow tutorial
 lede: Use code-rendered responses when a plan comparison, limit, or review must be complete and exact.
-source: pico-demo/src/myflow/employee-benefits-flow/backend/benefits-presenter.ts, pico-demo/src/myflow/employee-benefits-flow/step/medical-plan-step.ts, pico-demo/src/myflow/employee-benefits-flow/step/dependent-care-step.ts
+source: pico-demo/src/myflow/employee-benefits-flow/backend/benefits-presenter.ts, pico-demo/src/myflow/employee-benefits-flow/medical-plan-step.ts, pico-demo/src/myflow/employee-benefits-flow/dependent-care-step.ts
 ---
 
 Friendly model prose is useful for questions and transitions, but it is a poor place to reproduce a plan table exactly. The demo has a `BenefitsPresenter` that turns deterministic policy results into authoritative Markdown for medical comparisons, dental options, life coverage explanations, dependent-care FSA information, and the enrollment review.

@@ -142,8 +142,7 @@ The scripted BasicFlow scenario sends LA and NYC in one model response and
 asserts the durable values on `WeatherStep`:
 
 ```bash
-BASIC_FLOW_USE_SCRIPTED_MODEL=1 BASIC_FLOW_TEST_DOCUMENT_DB=memory \
-  npm run test:basic-flow
+BASIC_FLOW_USE_SCRIPTED_MODEL=1 npm run test:basic-flow
 ```
 
 ## Next

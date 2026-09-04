@@ -123,7 +123,7 @@ invoice as its body, and a `CHAT_SESSION_ID` header. The spec asserts the
 returned JSON against `prompt/invoice-example.json` and then checks that the
 persisted `ExtractInvoiceStep.state.json` is deep-equal to the HTTP body.
 
-<div class="callout callout--warning"><span class="callout__title">This is not an upload endpoint</span><p>The demo reads files that ship with the server. The filename travels from request config, through a prompt, through a model, and back into <code>path.join</code> — a path that lesson 4 examines in detail, because it is exploitable as written.</p></div>
+<div class="callout callout--note"><span class="callout__title">Bundled documents only</span><p>The demo reads only the four invoice documents that ship with the server. The request names one of those document IDs, and the flow maps it to a server-owned path before uploading it.</p></div>
 
 ## Next
 

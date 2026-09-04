@@ -4,6 +4,12 @@ import path from "node:path";
 import docsNav from "../src/_data/docsNav.js";
 
 const siteDirectory = path.resolve("_site");
+const workspaceDirectory = path.resolve(process.cwd(), "..");
+const sourceRoots = new Map([
+  ["pf", "picoflow"],
+  ["picoflow", "picoflow"],
+  ["pico-demo", "pico-demo"],
+]);
 const problems = [];
 const warnings = [];
 
@@ -25,11 +31,89 @@ async function collectHtmlFiles(directory) {
   return files;
 }
 
+async function collectMarkdownFiles(directory) {
+  const files = [];
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const fullPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) files.push(...(await collectMarkdownFiles(fullPath)));
+    else if (entry.name.endsWith(".md") || entry.name.endsWith(".njk")) files.push(fullPath);
+  }
+  return files;
+}
+
+async function checkPublicSourceContracts() {
+  const docsDirectory = path.resolve("src/docs");
+  const docsFiles = await collectMarkdownFiles(docsDirectory);
+  const stalePatterns = [
+    {
+      pattern: /getContext(?:<[^>\n]+>)?\(\s*["']myRunData["']\s*\)/,
+      message: 'reads myRunData without the required config. prefix',
+    },
+    {
+      pattern: /flow\.addContext\(\s*config\s*\)/,
+      message: 'passes config to addContext without the context wrapper',
+    },
+    {
+      pattern: /response\s*\[\s*["']message["']\s*\]/,
+      message: 'reads the batch response envelope outside response.data',
+    },
+    {
+      pattern: /path\.join\(\s*__dirname\s*,\s*fileName\s*\)/,
+      message: 'opens a model-supplied filename without an allowlist',
+    },
+    {
+      pattern: /BASIC_FLOW_TEST_DOCUMENT_DB|\bDOCUMENT_DB\b/,
+      message: 'references the retired DOCUMENT_DB setting; use SESSION_STORE',
+    },
+    {
+      pattern: /test:basic-flow:contract/,
+      message: 'uses a test script that is not published by the demo package',
+    },
+  ];
+
+  for (const file of docsFiles) {
+    const content = await readFile(file, "utf8");
+    const relativeFile = path.relative(process.cwd(), file);
+    const sourceLine = content.match(/^source:\s*(.+)$/m)?.[1];
+    if (sourceLine) {
+      for (const source of sourceLine.split(",").map((value) => value.trim()).filter(Boolean)) {
+        const [alias, ...segments] = source.split("/");
+        const sourceRoot = sourceRoots.get(alias);
+        if (!sourceRoot) continue;
+
+        const rootDirectory = path.resolve(workspaceDirectory, sourceRoot);
+        const sourcePath = path.resolve(workspaceDirectory, sourceRoot, ...segments);
+        if (sourcePath !== rootDirectory && !sourcePath.startsWith(`${rootDirectory}${path.sep}`)) {
+          fail(`${relativeFile}: source reference escapes its repository root: ${source}`);
+        } else if (!existsSync(sourcePath)) {
+          fail(`${relativeFile}: source-of-truth path does not exist: ${source}`);
+        }
+      }
+    }
+
+    for (const { pattern, message } of stalePatterns) {
+      if (pattern.test(content)) fail(`${relativeFile}: ${message}.`);
+    }
+  }
+}
+
 function urlToFile(url) {
   const clean = url.split("#")[0].split("?")[0];
   if (clean.endsWith("/")) return path.join(siteDirectory, clean, "index.html");
   if (path.extname(clean)) return path.join(siteDirectory, clean);
   return path.join(siteDirectory, clean, "index.html");
+}
+
+await checkPublicSourceContracts();
+
+if (process.argv.includes("--source-only")) {
+  if (problems.length) {
+    console.error(`\n${problems.length} public documentation problem(s):`);
+    for (const problem of problems) console.error(`  FAIL  ${problem}`);
+    process.exit(1);
+  }
+  console.log("OK — public source contracts passed.");
+  process.exit(0);
 }
 
 if (!existsSync(siteDirectory)) {
@@ -141,5 +225,5 @@ if (problems.length) {
   for (const problem of problems) console.error(`  FAIL  ${problem}`);
   process.exitCode = 1;
 } else {
-  console.log("\nOK — internal links, SEO basics, docs migration, and script-free output passed.");
+  console.log("\nOK — public source contracts, internal links, SEO basics, docs migration, and script-free output passed.");
 }
