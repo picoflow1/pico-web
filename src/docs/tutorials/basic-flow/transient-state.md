@@ -119,7 +119,7 @@ by lodash. For scalars this is indistinguishable. For objects it is not. Call
 `saveState` once per logical value and the distinction never bites you.
 
 **A falsy argument is a silent no-op.** `if (json)` guards the whole body, so
-`saveState(undefined)` does nothing at all. This matters in the next section.
+`saveState(undefined)` does nothing at all.
 
 Every write stamps `_saveOn`, which is why persisted state objects contain a timestamp
 you did not put there.
@@ -181,15 +181,17 @@ state, not context.
 `getContext` is a lodash `get` over the context object, so dotted paths work to any
 depth: `getContext("config.tenant.region")`.
 
-## A live bug in the demo
+## Correct context access
 
-<div class="callout callout--warning"><span class="callout__title">Warning</span><p>An earlier version of the demo had these two lines in <code>name-step.ts</code>:</p><pre><code class="language-typescript">const runData = this.flow.getContext&lt;JsonObject&gt;("myRunData");
-this.saveState(runData);</code></pre><p>The path is missing the <code>config.</code> prefix. A request sending <code>{"config": {"myRunData": {...}}}</code> stores it at <code>config.myRunData</code>, so <code>getContext("myRunData")</code> returns <code>undefined</code>. Because <code>saveState</code> ignores a falsy argument, the call is a silent no-op rather than a crash. The correct read is <code>getContext&lt;JsonObject&gt;("config.myRunData")</code>, which the current demo uses.</p></div>
+Values supplied in the request's `config` object are read through the `config.` path:
 
-It is worth knowing about not because two lines of demo code matter, but because it is
-the archetypal context bug: the prefix is easy to forget, the read returns `undefined`
-rather than throwing, and the downstream write swallows it. If a context value seems
-absent, log the whole object with `getContext()` before assuming the config never arrived.
+```ts
+const runData = this.flow.getContext<JsonObject>("config.myRunData");
+this.saveState(runData);
+```
+
+The same prefix applies to nested values such as `config.tenant.region`. If you need to
+inspect the complete context object, call `this.flow.getContext()` without a path.
 
 ## Choosing between them
 
@@ -224,8 +226,6 @@ The rule to remember is that `config` configures a *session*, not a *request*.
 
 ## Common mistakes
 
-- **Omitting the `config.` prefix.** Returns `undefined`, and `saveState` swallows it.
-  An earlier version of the demo did this in `name-step.ts`.
 - **Expecting a new `config` to reconfigure a restored session.** It is overwritten by
   the stored context during `readDoc()`.
 - **Putting collected domain data in context.** It cannot be updated later. Use the
