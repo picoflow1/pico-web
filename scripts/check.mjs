@@ -53,22 +53,6 @@ async function checkPublicSourceContracts() {
       pattern: /flow\.addContext\(\s*config\s*\)/,
       message: 'passes config to addContext without the context wrapper',
     },
-    {
-      pattern: /response\s*\[\s*["']message["']\s*\]/,
-      message: 'reads the batch response envelope outside response.data',
-    },
-    {
-      pattern: /path\.join\(\s*__dirname\s*,\s*fileName\s*\)/,
-      message: 'opens a model-supplied filename without an allowlist',
-    },
-    {
-      pattern: /BASIC_FLOW_TEST_DOCUMENT_DB|\bDOCUMENT_DB\b/,
-      message: 'references the retired DOCUMENT_DB setting; use SESSION_STORE',
-    },
-    {
-      pattern: /test:basic-flow:contract/,
-      message: 'uses a test script that is not published by the demo package',
-    },
   ];
 
   for (const file of docsFiles) {

@@ -144,9 +144,7 @@ this.flow.markCompleted();
 return direct(args?.json).withContentType(HttpContentType.Json);
 ```
 
-`concurrentSteps()` does not mark the outer session completed. After all workers finish,
-call `sessionCompleted()` on a step or `markCompleted()` on the flow before returning.
-`InvoiceFlow.spawnSteps()` uses `markCompleted()` for its coordinator.
+<div class="callout callout--warning"><span class="callout__title">Returning a string from spawnSteps() does not complete anything</span><p>Neither <code>concurrentSteps()</code> nor a returned message changes <code>runStatus</code>. A coordinator that omits <code>sessionCompleted()</code> leaves its session <code>running</code> indefinitely — which is exactly what <code>InvoiceFlow.spawnSteps()</code> does today.</p></div>
 
 Note the interaction with the response envelope. `completed` is computed from
 `requireCurrentStep().isEnd()`, and the default `isEnd()` reads `runStatus`. So calling

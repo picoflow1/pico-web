@@ -53,8 +53,7 @@ flow:
 
 ```ts
 public getPrompt(): string {
-  const hotelFoundInfo =
-    (this.getState("hotelFound") as SearchHotelEntry[] | undefined) ?? [];
+  const hotelFoundInfo = this.getState("hotelFound") as SearchHotelEntry;
   let prompt = `
   ${PresentPrompt}
   ${FlowPrompt.EndChat}
@@ -119,32 +118,14 @@ part worth validating.
 protected async chosen_hotel(
   args: Record<string, any>,
 ): Promise<ToolResponseType> {
-  const availableHotels =
-    (this.getState("hotelFound") as SearchHotelEntry[] | undefined) ?? [];
-  const requestedName =
-    typeof args?.hotelName === "string" ? args.hotelName.trim() : "";
-  const numericChoice = /^\d+$/.test(requestedName)
-    ? Number(requestedName)
-    : Number.NaN;
-  const selectedHotel =
-    Number.isInteger(numericChoice) && numericChoice >= 1
-      ? availableHotels[numericChoice - 1]
-      : availableHotels.find(
-          ({ hotelName }) =>
-            hotelName.toLowerCase() === requestedName.toLowerCase(),
-        );
-  if (!selectedHotel) {
-    return stay("Choose one of the hotels in the presented list.");
-  }
-
-  this.saveState({ hotel: selectedHotel.hotelName });
-  const msg = `Tell user ${selectedHotel.hotelName} is booked with confirmation number ${this.generateConfirmationNumber()}. Thank the user for choosing ${selectedHotel.hotelName}. Do not discuss other topics.`;
+  this.saveState({ hotel: args?.hotelName });
+  const msg = `Tell user hotel is booked with confirmation #:${this.generateConfirmationNumber()}. Thank the user for choosing Hilton, you MUST NOT talk other things!`;
   // go(...) activates the terminal step, which asks the model to confirm the booking.
   return go(TerminateSessionStep).withPrompt(msg);
 }
 
 private generateConfirmationNumber(): number {
-  return randomInt(100_000, 1_000_000);
+  return Math.floor(100000 + Math.random() * 900000);
 }
 ```
 
@@ -192,10 +173,7 @@ content it must convey, including the confirmation number, is fixed by code.
 That is the same division of labour as the rest of the flow: the model chooses
 words, the application chooses facts.
 
-The handler resolves either the model's hotel name or a one-based list number against
-the current `hotelFound` results. Only the canonical result-list name is saved and
-interpolated into the confirmation prompt, and the confirmation number is generated
-in code with `randomInt(100_000, 1_000_000)`.
+<div class="callout callout--warning"><span class="callout__title">The demo hardcodes the brand and drops the hotel name</span><p>The message always says &ldquo;Thank the user for choosing Hilton&rdquo; and never interpolates <code>args?.hotelName</code>, even though the handler just saved it. It also does not check the name against <code>hotelFound</code>, so a hallucinated hotel would be booked. In a real booking system, resolve the choice against the result list first, fail the tool with <code>stay(...)</code> if it does not match, and put the resolved name into both the saved state and the confirmation prompt.</p></div>
 
 ### Overriding getPrompt on a withPrompt target
 

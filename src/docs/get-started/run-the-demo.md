@@ -75,6 +75,8 @@ SQLITE_PATH=ignore/session/session.sqlite
 `COSMO` or `COSMOS`. Session-idle policy belongs to the Flow's
 `onRestoreSessionDoc()` hook; it is not an environment setting.
 
+<div class="callout callout--warning"><span class="callout__title">Warning</span><p>The shipped <code>.env-example</code> sets <code>DOCUMENT_DB=COSMO</code>. The library reads <code>SESSION_STORE</code>, not <code>DOCUMENT_DB</code>. If you only set <code>DOCUMENT_DB</code> you will silently get the in-process <code>MEMORY</code> store, and every session will disappear on restart. Set <code>SESSION_STORE</code>.</p></div>
+
 SQLite is the recommended local durable store. Relative `SQLITE_PATH` values resolve from
 the project root. For MongoDB or Cosmos DB, fill in the corresponding block:
 
@@ -249,6 +251,8 @@ BASIC_FLOW_USE_SCRIPTED_MODEL=1 npm run test:basic-flow
 ```
 
 In that mode only `PICOFLOW_KEY` is required.
+
+<div class="callout callout--warning"><span class="callout__title">Warning</span><p>The demo <code>README.md</code> refers to a <code>test:basic-flow:contract</code> script for the deterministic run. No such script exists in <code>package.json</code>. Set <code>BASIC_FLOW_USE_SCRIPTED_MODEL=1</code> on the normal script instead.</p></div>
 
 `HotelFlow`'s scenario is graded by its API-key semantic judge. Pair live scenarios with
 deterministic contract assertions so a fluent answer cannot disguise missing state or a wrong

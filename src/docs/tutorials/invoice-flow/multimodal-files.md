@@ -24,9 +24,7 @@ the request.
 
 ```ts
 public getPrompt(): string {
-  const fileName =
-    this.getContext<string>("config.fileName") ??
-    "one of the available invoice documents";
+  const fileName = this.getContext<string>("config.fileName");
   const prompt = Prompt.replace(InvoicePrompt.ExtractInvoicePrompt, {
     FileName: fileName,
   });
@@ -116,24 +114,12 @@ protected async fetch_file(
   args: Record<string, any>,
 ): Promise<ToolResponseType> {
   const fileName = args?.name;
-  const documents: Record<string, string> = {
-    "data/ACME.png": path.resolve(__dirname, "data/ACME.png"),
-    "data/ACME.pdf": path.resolve(__dirname, "data/ACME.pdf"),
-    "data/Evergreen.png": path.resolve(__dirname, "data/Evergreen.png"),
-    "data/Evergreen.pdf": path.resolve(__dirname, "data/Evergreen.pdf"),
-  };
-  if (typeof fileName !== "string" || !documents[fileName]) {
-    return stay("That document is not available. Ask for a bundled invoice document.");
-  }
-  if (this.getState("fileName")) {
-    return stay("A document is already attached. Call capture_json instead.");
-  }
-  const localPath = documents[fileName];
+  const localPath = path.join(__dirname, fileName);
+  this.saveState({ fileName: localPath });
   try {
     await this.cleanupUploadedFile();
     const fileMgr = new LLMFileManager(this.getLLMType());
     const result = await fileMgr.uploadFile(localPath);
-    this.saveState({ fileName: localPath });
     this.uploadedFileCleanup = result.cleanup;
     const id = fileMgr.getFileId(result);
     const userMsg = new HumanMessage({
@@ -152,9 +138,9 @@ protected async fetch_file(
 
     // go(...) re-enters this step so the model can read the attached invoice file.
     return go(ExtractInvoiceStep).withMessage(userMsg);
-  } catch (error) {
+  } catch (_error) {
     await this.cleanupUploadedFile();
-    throw new Error(`read file ${fileName} failed`, { cause: error });
+    throw new Error(`read file ${fileName} failed`);
   }
 }
 
@@ -254,20 +240,54 @@ for (const msg of toolResponseMessages) {
 The comment says "rare". This is that case: a tool that needs to inject content
 into the conversation rather than answer with text.
 
-### Keep the original error cause
+### The error path loses the cause
 
 ```ts
-} catch (error) {
-  await this.cleanupUploadedFile();
-  throw new Error(`read file ${fileName} failed`, { cause: error });
+} catch (_error) {
+  throw new Error(`read file ${fileName} failed`);
 }
 ```
 
-The handler accepts only the four server-owned document names and maps each one
-to a fixed path. The model cannot use `..`, an absolute path, or an arbitrary
-extension to select another local file. The handler also rejects a second upload
-after an attachment has been made, while `getPrompt()` supplies a clear fallback
-when the request omitted `config.fileName`.
+The original error — a missing file, an expired API key, a rejected MIME type —
+is discarded. Wrap with `{ cause: _error }` or log it before rethrowing;
+debugging a provider upload failure from this message alone is unpleasant.
+
+## The path is exploitable
+
+<div class="callout callout--danger"><span class="callout__title">Security</span><p><code>const localPath = path.join(__dirname, fileName);</code> joins a directory to a string the <em>model</em> supplied in a tool argument. <code>path.join</code> resolves <code>..</code> segments, so a returned name of <code>../../../.env</code> produces a path outside the flow directory, and the file at that path is uploaded to a third-party provider. There is no allowlist, no <code>path.resolve</code> containment check, and no extension check. Treat every tool argument as untrusted input, exactly as you would a query parameter.</p></div>
+
+The fix has two layers. Resolve and contain:
+
+```ts
+const dataRoot = path.resolve(__dirname, "data");
+const candidate = path.resolve(dataRoot, args?.name ?? "");
+if (candidate !== dataRoot && !candidate.startsWith(dataRoot + path.sep)) {
+  return stay("That document is not available. Ask for a valid document id.");
+}
+```
+
+Better still, do not accept paths at all. Have the tool take an opaque document
+id and map it to a server-owned path:
+
+```ts
+const DOCUMENTS: Record<string, string> = {
+  acme: "data/ACME.png",
+  evergreen: "data/Evergreen.png",
+};
+
+const relative = DOCUMENTS[args?.id];
+if (!relative) {
+  return stay("Unknown document id.");
+}
+```
+
+The model then cannot express a path that is not on the list, and the
+`config.fileName` round trip through the prompt stops being a hazard.
+
+Two smaller gaps in the same handler are worth closing at the same time:
+`getPrompt()` does not check that `config.fileName` is present, so a request
+without it renders `undefined` into the prompt; and nothing bounds the number
+of times `fetch_file` may be called in one session.
 
 ## Why it is written this way
 
@@ -283,8 +303,8 @@ requirement into two lines of application code.
 
 ## Common mistakes
 
-- **Treating a model-supplied name as a filesystem path.** Accept a document ID
-  and map it to a server-owned allowlist entry before opening any file.
+- **Joining a model-supplied string to a base directory.** This is the demo's
+  own defect; do not copy it.
 - **Omitting `id: this.genMessageId()`.** The message cannot be attributed to a
   step's history.
 - **Returning the file bytes as tool feedback.** Tool results are text; the

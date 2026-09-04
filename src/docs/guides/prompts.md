@@ -27,14 +27,14 @@ Next.getPrompt() -> model call -> ...
 Two consequences:
 
 - the prompt can reflect state saved by the tool handler that just ran, which is how
-  `PresentStep` re-injects the current hotel list after a search;
+  `ExploreStep` re-injects an updated hotel list on the next turn;
 - it must be cheap. Do not call a network service from `getPrompt()`.
 
 The returned string becomes the system message at index 0 of the step's memory namespace,
 replacing whatever was there. Returning `null` yields an empty system message.
 
 It may read this step's state, another step's state through the flow, session context, static
-files, and the environment. `ExploreStep` reads its prompt file and the environment:
+files, and the environment. `ExploreStep` reads all four:
 
 ```ts
 public getPrompt(): string {
@@ -42,6 +42,11 @@ public getPrompt(): string {
   const currentDate =
     process.env.HOTEL_FLOW_CURRENT_DATE ?? moment().utc().format();
   set(hotelJson, "currentDate", currentDate);
+
+  const hotelFound = this.getState("hotelFound");
+  if (hotelFound) {
+    set(hotelJson, "hotelFound", hotelFound);
+  }
 
   return Prompt.replace(ExplorePrompt, {
     HOTEL_JSON: JSON.stringify(hotelJson),

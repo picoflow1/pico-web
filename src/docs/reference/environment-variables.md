@@ -51,6 +51,8 @@ reads them. They become live only when you uncomment or add the corresponding
 Accepted values are `MEMORY`, `SQLITE`, `MONGO`, and `COSMO` or `COSMOS`. Anything else throws
 `No valid session store '<value>'. Use MEMORY, MONGO, COSMO, or SQLITE.`
 
+<div class="callout callout--danger"><span class="callout__title">.env-example names the wrong variable</span><p><code>pico-demo/.env-example</code> sets <code>DOCUMENT_DB=COSMO</code>. No code in <code>pf/src</code> or <code>pico-demo/src</code> reads <code>DOCUMENT_DB</code>. The variable <code>CoreConfig</code> actually reads is <code>SESSION_STORE</code>, and it does not appear in the sample file at all — so an application copied from <code>.env-example</code> silently runs on the in-memory store.</p></div>
+
 ### Store-specific settings
 
 | Variable | Required for | Default | Purpose |
@@ -83,7 +85,7 @@ global expiry environment variable or persist an `expireAfter` field.
 
 `Flow.concurrentSteps(...)` posts one request per work item back to this application. Point it
 at the run endpoint, for example `http://localhost:8000/ai/run`. Only batch coordinators need
-it. It is read by `CoreConfig` but absent from `.env-example`.
+it. Like `SESSION_STORE`, it is read by `CoreConfig` but absent from `.env-example`.
 
 ## Test determinism
 
@@ -110,9 +112,10 @@ provide model credentials.
 
 | Variable | In `.env-example` | Read by code | Note |
 | --- | --- | --- | --- |
-| `SESSION_STORE` | yes | yes | The session store selector; the sample uses `SQLITE` |
+| `SESSION_STORE` | no | yes | The real store selector |
 | `SELF_URL` | no | yes | Required for batch mode |
 | `HOTEL_FLOW_CURRENT_DATE` | no | yes | Demo test determinism |
+| `DOCUMENT_DB` | yes | **no** | Superseded by `SESSION_STORE`; has no effect |
 | `MOONSHOT_API_KEY` | yes | no | Only referenced by commented-out demo wiring |
 | `ZAI_API_KEY` | yes | no | Only referenced by commented-out demo wiring |
 | `DEEPSEEK_API_KEY` | yes | no | nly referenced by commented-out demo wiring |

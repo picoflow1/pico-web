@@ -48,6 +48,8 @@ COSMODB_ID=picoflow
 COSMODB_SESSION_ID=sessions
 ```
 
+<div class="callout callout--danger"><span class="callout__title">DOCUMENT_DB is dead configuration</span><p>The demo's <code>.env-example</code> sets <code>DOCUMENT_DB=COSMO</code>. No PicoFlow source reads that variable. The store is selected exclusively from <code>SESSION_STORE</code>, read in <code>CoreConfig</code> and defaulting to <code>MEMORY</code>. A project that only sets <code>DOCUMENT_DB</code> silently runs on the in-memory store and loses every session on restart.</p></div>
+
 Configuration is read once, when `FlowEngine` is constructed, through a `ConfigManager` whose
 precedence is explicit values, then the environment, then a dotenv file. Changing an
 environment variable at runtime has no effect.
@@ -153,7 +155,7 @@ is not a `RunResponseType`; it has no `completed` or `contentType`.
 | Symptom | Cause |
 | --- | --- |
 | Sessions vanish after a restart | `SESSION_STORE` unset or set to `MEMORY` |
-| Sessions vanish after a deploy, with a durable store | `SESSION_STORE` is unset or selects `MEMORY` |
+| Sessions vanish after a deploy, with a durable store | `DOCUMENT_DB` was set instead of `SESSION_STORE` |
 | Conversations restart mid-way | A Flow-owned restore policy returned `null`; inspect its idle or validation rule |
 | Conversations restart after a release | `onRestoreSessionDoc()` reset them on a schema version bump |
 | `Configuration value 'MONGODB_URL' is required.` | Mongo selected without a connection string |

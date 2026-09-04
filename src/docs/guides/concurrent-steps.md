@@ -51,10 +51,7 @@ protected async spawnSteps(): Promise<string> {
     batchSize: 3,
     onConfig: (item) => ({ nth: item, isPresident: true }),
     onBotResponse(item, response) {
-      const message = response.data?.message;
-      if (typeof message === "string" && message.length > 0) {
-        step.saveState({ [item]: message });
-      }
+      step.saveState({ [item]: response["message"] });
     },
   });
 
@@ -97,16 +94,7 @@ Processing batch 1/3 (batch size:3)
 Batch 1 completed.
 ```
 
-`onBotResponse` receives the client's HTTP response object, so the standard PicoFlow
-body is under `response.data`. For example, a worker that returns the normal envelope
-can save its message like this:
-
-```ts
-const message = response.data?.message;
-if (typeof message === "string" && message.length > 0) {
-  step.saveState({ [item]: message });
-}
-```
+<div class="callout callout--warning"><span class="callout__title">onBotResponse receives the HTTP response, not the flow envelope</span><p>The callback argument is the client's response object, so the PicoFlow body is under <code>response.data</code>. <code>BasicFlow.spawnSteps()</code> reads <code>response["message"]</code> directly, which is <code>undefined</code> — it should be <code>response.data.message</code>. Verify the shape you actually receive before saving it.</p></div>
 
 There is a second wrinkle. When a worker step sets a non-plain content type, the demo
 controller sends the raw payload instead of the standard envelope. `InvoiceFlow` workers
@@ -159,8 +147,8 @@ root. Three properties follow from this design:
 A failed item never reaches `onBotResponse`. If you only count callbacks, a batch where every
 worker failed looks exactly like a batch that was never started.
 
-`InvoiceFlow.spawnSteps()` uses the same pattern and calls `this.markCompleted()` after
-all workers finish, so its coordinator session is also closed explicitly.
+`InvoiceFlow.spawnSteps()` illustrates the gap: it fans out correctly, but never marks the
+coordinator session complete, so that session remains `running` forever.
 
 ## isBatch()
 

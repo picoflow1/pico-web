@@ -107,7 +107,6 @@ protected async spawnSteps(): Promise<string> {
 
   const msg = `Finished concurrent flow: ${this.id}`;
   new SessionLogger(this.getSessionDoc()).log(msg);
-  this.markCompleted();
   return msg;
 }
 ```
@@ -170,9 +169,7 @@ They are frequently confused. They share nothing.
 
 ## Common wrong turns
 
-`concurrentSteps()` does not mark the outer session completed. After all workers finish,
-call `sessionCompleted()` on a step or `markCompleted()` on the flow before returning.
-`InvoiceFlow.spawnSteps()` uses `markCompleted()` for its coordinator.
+<div class="callout callout--warning"><span class="callout__title">A coordinator that never finishes</span><p><code>concurrentSteps()</code> does not mark the outer session completed. Returning a string from <code>spawnSteps()</code> does not either. Call <code>sessionCompleted()</code> on a step, or <code>markCompleted()</code> on the flow, when the coordinator is genuinely done. <code>InvoiceFlow.spawnSteps()</code> is a live example of a coordinator that leaves its session running.</p></div>
 
 <div class="callout callout--danger"><span class="callout__title">Infinite fan-out</span><p>Never return <code>_concurrent: true</code> from <code>onConfig</code>. Each worker would start another coordinator, which would spawn more workers.</p></div>
 

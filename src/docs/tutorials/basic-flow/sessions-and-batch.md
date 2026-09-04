@@ -229,10 +229,7 @@ protected async spawnSteps(): Promise<string> {
       };
     },
     onBotResponse(item, response) {
-      const message = response.data?.message;
-      if (typeof message === "string" && message.length > 0) {
-        step.saveState({ [item]: message });
-      }
+      step.saveState({ [item]: response["message"] });
     },
   });
 
@@ -300,10 +297,7 @@ via the closure:
 
 ```ts
 onBotResponse(item, response) {
-  const message = response.data?.message;
-  if (typeof message === "string" && message.length > 0) {
-    step.saveState({ [item]: message });
-  }
+  step.saveState({ [item]: response["message"] });
 }
 ```
 

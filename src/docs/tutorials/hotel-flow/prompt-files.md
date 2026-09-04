@@ -153,7 +153,8 @@ non-engineer as a `.md` file than as a string in a TypeScript module.
   "cPriceRange": { "min": null, "max": null },
   "cDistance": {"cityCenter":null,"airport":null},
   "cDate": { "start": null, "end": null },
-  "cDateArray": []
+  "cDateArray": [],
+  "hotelFound":[]
 }
 ```
 
@@ -174,6 +175,11 @@ public getPrompt(): string {
   const currentDate =
     process.env.HOTEL_FLOW_CURRENT_DATE ?? moment().utc().format();
   set(hotelJson, "currentDate", currentDate);
+
+  const hotelFound = this.getState("hotelFound");
+  if (hotelFound) {
+    set(hotelJson, "hotelFound", hotelFound);
+  }
 
   const prompt = Prompt.replace(ExplorePrompt, {
     HOTEL_JSON: JSON.stringify(hotelJson),
@@ -258,6 +264,8 @@ handler decides whether to accept it.
 - **Letting the prompt's vocabulary drift from the data.** `explore.json`'s
   `amenities` array must stay in sync with the keys in `hotels.json`, or the
   model will emit an amenity the catalogue filter can never match.
+
+<div class="callout callout--info"><span class="callout__title">A dead branch worth knowing about</span><p><code>getPrompt()</code> re-injects <code>hotelFound</code> from <code>this.getState("hotelFound")</code>, but nothing ever writes that key to <code>ExploreStep</code>. The search results are sent to <code>PresentStep</code> with <code>go(PresentStep).withState({ hotelFound })</code>, and <code>.withState()</code> writes to the destination. The branch is harmless, but it never fires. To make it work, <code>ExploreStep</code> would have to read <code>flow.getStepState(PresentStep, "hotelFound")</code>.</p></div>
 
 ## Next
 
