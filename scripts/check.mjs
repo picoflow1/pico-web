@@ -4,12 +4,6 @@ import path from "node:path";
 import docsNav from "../src/_data/docsNav.js";
 
 const siteDirectory = path.resolve("_site");
-const workspaceDirectory = path.resolve(process.cwd(), "..");
-const sourceRoots = new Map([
-  ["pf", "picoflow"],
-  ["picoflow", "picoflow"],
-  ["pico-demo", "pico-demo"],
-]);
 const problems = [];
 const warnings = [];
 
@@ -41,7 +35,7 @@ async function collectMarkdownFiles(directory) {
   return files;
 }
 
-async function checkPublicSourceContracts() {
+async function checkPublicDocumentationContracts() {
   const docsDirectory = path.resolve("src/docs");
   const docsFiles = await collectMarkdownFiles(docsDirectory);
   const stalePatterns = [
@@ -58,22 +52,8 @@ async function checkPublicSourceContracts() {
   for (const file of docsFiles) {
     const content = await readFile(file, "utf8");
     const relativeFile = path.relative(process.cwd(), file);
-    const sourceLine = content.match(/^source:\s*(.+)$/m)?.[1];
-    if (sourceLine) {
-      for (const source of sourceLine.split(",").map((value) => value.trim()).filter(Boolean)) {
-        const [alias, ...segments] = source.split("/");
-        const sourceRoot = sourceRoots.get(alias);
-        if (!sourceRoot) continue;
-
-        const rootDirectory = path.resolve(workspaceDirectory, sourceRoot);
-        const sourcePath = path.resolve(workspaceDirectory, sourceRoot, ...segments);
-        if (sourcePath !== rootDirectory && !sourcePath.startsWith(`${rootDirectory}${path.sep}`)) {
-          fail(`${relativeFile}: source reference escapes its repository root: ${source}`);
-        } else if (!existsSync(sourcePath)) {
-          fail(`${relativeFile}: source-of-truth path does not exist: ${source}`);
-        }
-      }
-    }
+    // Source front matter is provenance metadata; this standalone site must not
+    // resolve paths in sibling repositories during its build.
 
     for (const { pattern, message } of stalePatterns) {
       if (pattern.test(content)) fail(`${relativeFile}: ${message}.`);
@@ -88,7 +68,7 @@ function urlToFile(url) {
   return path.join(siteDirectory, clean, "index.html");
 }
 
-await checkPublicSourceContracts();
+await checkPublicDocumentationContracts();
 
 if (process.argv.includes("--source-only")) {
   if (problems.length) {
@@ -96,7 +76,7 @@ if (process.argv.includes("--source-only")) {
     for (const problem of problems) console.error(`  FAIL  ${problem}`);
     process.exit(1);
   }
-  console.log("OK — public source contracts passed.");
+  console.log("OK — public documentation contracts passed.");
   process.exit(0);
 }
 
@@ -209,5 +189,5 @@ if (problems.length) {
   for (const problem of problems) console.error(`  FAIL  ${problem}`);
   process.exitCode = 1;
 } else {
-  console.log("\nOK — public source contracts, internal links, SEO basics, docs migration, and script-free output passed.");
+  console.log("\nOK — public documentation contracts, internal links, SEO basics, docs migration, and script-free output passed.");
 }
