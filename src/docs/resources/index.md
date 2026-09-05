@@ -35,45 +35,23 @@ This comparison is arranged into two complementary tracks:
 
 The fundamental choice is between a **cohesive, class-based application model backed by a single human-readable Case Record** versus a **low-level graph of nodes and edges backed by normalized database checkpoint blobs**:
 
-```text
-                 PICOFLOW                                        LANGGRAPH
-        (The Business Application)                        (The Low-Level Graph)
- ─────────────────────────────────────────       ─────────────────────────────────────────
+<figure class="flow-journey">
+  <img src="/assets/img/picoflow-vs-langgraph-architecture.svg" width="1200" height="680" alt="Architectural comparison between PicoFlow's cohesive application model with single session case record vs LangGraph's distributed graph with checkpoint blobs.">
+  <figcaption>PicoFlow packages the multi-turn application layer into cohesive steps and one readable session document, while LangGraph exposes low-level graph scheduling and fragmented checkpoint storage.</figcaption>
+</figure>
 
-          ┌─────────────────────┐                         ┌─────────────────────┐
-          │  Cohesive Flow/Step │                         │ Node A  ──►  Node B │
-          │  ┌───────────────┐  │                         │   │            │    │
-          │  │  Prompt       │  │                         │   ▼            ▼    │
-          │  │  Tools & Zod  │  │                         │ Conditional Edges   │
-          │  │  State & Goto │  │                         │ (Scattered Routing) │
-          │  └───────────────┘  │                         └─────────────────────┘
-          └──────────┬──────────┘                                    │
-                     │ (Single Turn)                                 │ (Superstep Barrier)
-                     ▼                                               ▼
-          ┌─────────────────────┐                         ┌─────────────────────┐
-          │  Single JSON Doc    │                         │ Multi-Table Schema  │
-          │  ┌───────────────┐  │                         │ ┌─────────────────┐ │
-          │  │ state         │  │                         │ │ checkpoints     │ │
-          │  │ memory        │  │                         │ │ checkpoint_blobs│ │
-          │  │ currentStep   │  │                         │ │ writes / queues │ │
-          │  │ diagnostics   │  │                         │ └─────────────────┘ │
-          │  └───────────────┘  │                         │ (Requires LangSmith │
-          │ (Human & AI Read)   │                         │  for visibility)    │
-          └─────────────────────┘                         └─────────────────────┘
-```
+| Architecture Dimension | PicoFlow (The Application Layer) | Direct LangGraph (The Graph Layer) |
+| :--- | :--- | :--- |
+| **Mental Model & Authoring** | **Cohesive Step Classes:** 1 file bundles prompt, Zod schemas, `@Tool` handlers, state updates, and transitions. | **Distributed Graph Topologies:** Logic is scattered across agent nodes, tool nodes, edge router functions, and state schemas. |
+| **Execution Control Flow** | **Call-Stack Execution:** Standard program control flow (`go()`, `stay()`, `direct()`) stepped through directly in an IDE debugger. | **Pregel Supersteps:** Inversion of control where an external graph scheduler evaluates edges between barriers. |
+| **State Persistence** | **Single Case Record (`SessionDoc`):** All step states, cursor, memory, audit sequence, and logs in one readable JSON document. | **Fragmented Checkpoints:** Serialized channel blobs spread across `checkpoints`, `checkpoint_blobs`, and `checkpoint_writes` tables. |
+| **Operational Visibility** | **Native Database Queries:** Run 3-line MongoDB / Cosmos queries for drop-off funnels and token costs with zero SaaS dependency. | **Proprietary Observability:** Heavy reliance on LangSmith or custom ETL pipelines to de-serialize checkpoint channel blobs. |
+| **Post-Mortem Incident Triage** | **30-Second AI Diagnosis:** Pass raw `session.json` directly to an LLM prompt to diagnose failures in full context. | **Complex Trace Scripting:** Requires custom scripts to traverse parent checkpoint hashes and stitch message threads. |
 
-### The 6 Foundational Pillars
-
-| Pillar | PicoFlow | Direct LangGraph | Deep Dive Reference |
-| :--- | :--- | :--- | :--- |
-| **1. State & Persistence** | **Single Case Record:** Whole session stored as one readable JSON document (`SessionDoc`). | **Checkpoint Blobs:** Fragmented across multiple relational/blob tables. | [State & Persistence](/docs/resources/state-memory-and-persistence/) |
-| **2. Mental Model** | **Cohesive OOP:** 1 Step file bundles prompt, Zod tools, handlers, state, and routing. | **Fragmented DAG:** Code scattered across nodes, edge routers, state schemas. | [Architecture & Routing](/docs/resources/architecture-and-routing/) |
-| **3. DevOps & Analytics** | **Native DB Queries:** Standard MongoDB / Cosmos queries for funnels and costs. Zero SaaS lock-in. | **Proprietary Cloud:** Heavy reliance on LangSmith for production observability. | [Architectural Inventory](/docs/resources/architectural-advantages/) |
-| **4. AI Incident Triage** | **Instant Root Cause:** Dump `session.json` directly into an LLM prompt for analysis. | **Complex Scripting:** Must traverse checkpoint parent hashes to reconstruct traces. | [Architectural Inventory](/docs/resources/architectural-advantages/) |
-| **5. Replay & Time Travel** | **Single-Cursor Manipulation:** Reset `flow.currentStep` to rewind and test. | **Checkpoint Tree Forking:** Branching from internal checkpoint DAG nodes. | [Interrupts & Operations](/docs/resources/interrupts-replay-and-operations/) |
-| **6. Concurrency** | **Coordinator Pattern:** Calling step aggregates parallel outputs with standard TypeScript. | **Pregel Supersteps:** Lockstep execution with binary channel reducers. | [Parallelism & Fan-Out](/docs/resources/parallelism-and-fanout/) |
-
-For the complete, itemized technical breakdown across all six pillars, see the **[Architectural Advantages Inventory](/docs/resources/architectural-advantages/)**.
+<div class="callout callout--tip">
+  <p class="callout__title">Technical Reference</p>
+  <p>For the complete, itemized technical breakdown across all six pillars (State, OOP Contracts, DevOps, AI Incident Triage, Replay, and Concurrency), see the <strong><a href="/docs/resources/architectural-advantages/">Architectural Advantages Inventory</a></strong>.</p>
+</div>
 
 ---
 

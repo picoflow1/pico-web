@@ -11,14 +11,12 @@ authors a state graph around nodes and routing.
 
 ## The two authoring shapes
 
-```text
-PicoFlow                         Direct LangGraph hotel example
-
-Flow                              StateGraph(state)
-  currentStep                       START -- conditional route --> agent node
-  Step: prompt + tools + state       agent node --> tool node | END
-  tool result --> go/stay/direct     tool node --> next agent | END
-```
+| Architecture Component | PicoFlow Implementation | Direct LangGraph Hotel Example |
+| :--- | :--- | :--- |
+| **Top-Level Coordinator** | `Flow` owning registered steps and model policies | `StateGraph(state)` declaring channels and nodes |
+| **Active Milestone Cursor** | `flow.currentStep` managed by runtime | Application-managed `phase` and `route` state fields |
+| **Stage Execution Unit** | Cohesive `Step` class combining prompt, tools, and state | Split pairs: `agent node` (LLM prompt) + `tool node` (execution) |
+| **Transition Outcome** | Explicit return: `go()`, `stay()`, or `direct()` | Conditional edge functions inspecting message arrays |
 
 `HotelFlow` registers `ExploreStep`, `PresentStep`, and `CompareStep`. The active step name is
 persisted in `flow.currentStep`; a tool handler returns `go(TargetStep)`, `stay(...)`, or

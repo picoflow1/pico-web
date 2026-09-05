@@ -4,22 +4,11 @@ eyebrow: Compare
 lede: A complete, normative inventory of PicoFlow's architectural differentiators over LangGraph across state persistence, cognitive ergonomics, DevOps, AI-assisted debugging, deterministic replay, and concurrency.
 ---
 
-This document serves as the complete technical reference for teams evaluating PicoFlow against direct LangGraph. While LangGraph provides low-level primitives for arbitrary directed cyclic graphs, PicoFlow provides an application-level runtime specifically engineered for multi-turn, tool-calling business workflows.
+This reference document provides a normative, itemized technical inventory of PicoFlow's architectural differentiators over direct LangGraph. While LangGraph provides low-level primitives for arbitrary directed cyclic graphs, PicoFlow provides an application-level runtime specifically engineered for multi-turn, tool-calling business workflows.
 
-The architectural differences fall into six foundational pillars:
+A visual overview comparing the two models is available in the [Overview and visual guide](/docs/resources/).
 
-```text
-                     PICOFLOW vs. LANGGRAPH
-                    =========================
-  ┌─────────────────────────────────────────────────────────┐
-  │ 1. State & Persistence Architecture (Case Record vs Blobs)│
-  │ 2. Programming Model (Cohesive OOP vs Fragmented DAG)    │
-  │ 3. Operations & DevOps (Native DB vs SaaS Lock-in)       │
-  │ 4. AI-Assisted Debugging (Readable JSON vs DAG Tracing)  │
-  │ 5. Time-Travel & Replay (Cursor Rewind vs DAG Branches)  │
-  │ 6. Concurrency & Parallelism (Coordinator vs Supersteps) │
-  └─────────────────────────────────────────────────────────┘
-```
+The architectural distinctions are cataloged below across six foundational pillars:
 
 ---
 
@@ -27,34 +16,13 @@ The architectural differences fall into six foundational pillars:
 
 The most profound difference between PicoFlow and LangGraph is **how application state is modeled, stored, and queried**.
 
-```text
-PicoFlow Persistence: The Self-Contained Case Record
-┌──────────────────────────────────────────────────────────────────┐
-│ Session Document (Single JSON in MongoDB / CosmosDB / SQLite)    │
-│ ┌──────────────────────┐  ┌────────────────────────────────────┐ │
-│ │ currentStep cursor   │  │ flow context & configuration       │ │
-│ ├──────────────────────┤  ├────────────────────────────────────┤ │
-│ │ steps[n].state (own) │  │ memory (per-step message spaces)   │ │
-│ ├──────────────────────┤  ├────────────────────────────────────┤ │
-│ │ sequence audit trail │  │ tokens (input, output, reasoning)  │ │
-│ ├──────────────────────┤  ├────────────────────────────────────┤ │
-│ │ runStatus            │  │ structured logs, warnings, errors  │ │
-│ └──────────────────────┘  └────────────────────────────────────┘ │
-└──────────────────────────────────────────────────────────────────┘
-
-LangGraph Persistence: Fragmented Checkpoint Blobs
-┌──────────────────────────────────────────────────────────────────┐
-│ Relational / Key-Value Store (Multiple normalized tables)        │
-│ ┌──────────────────────┐  ┌────────────────────────────────────┐ │
-│ │ checkpoints table    │  │ checkpoint_blobs table             │ │
-│ │ (UUIDs, parent hash, │  │ (Opaque serialized channel state,  │ │
-│ │  thread_id, step idx)│  │  binary / JSON delta dumps)        │ │
-│ ├──────────────────────┤  ├────────────────────────────────────┤ │
-│ │ checkpoint_writes    │  │ checkpoint_metadata                │ │
-│ │ (task_id, channel)   │  │ (step, source, writes)             │ │
-│ └──────────────────────┘  └────────────────────────────────────┘ │
-└──────────────────────────────────────────────────────────────────┘
-```
+| Persistence Concern | PicoFlow (The Self-Contained Case Record) | LangGraph (Fragmented Checkpoint Blobs) | Architectural Impact |
+| :--- | :--- | :--- | :--- |
+| **Storage Unit** | **Single JSON Document (`SessionDoc`)** stored in MongoDB, CosmosDB, or SQLite. | **Normalized DB Tables** (`checkpoints`, `checkpoint_blobs`, `checkpoint_writes`). | PicoFlow stores the **domain business record**; LangGraph stores a **virtual machine core dump**. |
+| **Co-located Data** | Step states, current cursor, conversation memory, audit sequence, token usage, and diagnostic logs in **one place**. | State channels, message arrays, and metadata are serialized into separate blob rows keyed by UUIDs. | PicoFlow enables zero-join inspection; LangGraph requires multi-table reconstruction. |
+| **Database Queryability** | Full document is queryable with standard document aggregation (MQL / SQL). | Internal channel states are opaque serialized blobs; cannot be queried directly with DB indexes. | PicoFlow supports native operational dashboards; LangGraph requires external SaaS or ETL. |
+| **Write Safety** | In-memory session lock + integer compare-and-swap (`revision`) CAS concurrency. | Append-only rows in `checkpoints` table; concurrency errors if two nodes write unreduced keys. | PicoFlow eliminates lost updates with strict optimistic locking. |
+| **Inspection Tooling** | Open MongoDB Compass, Azure Portal, or run `cat session.json`. | Requires custom Python/TypeScript scripts or the LangGraph Studio UI. | Instant human inspectability without specialized CLI or SDK tools. |
 
 ### 1.1 The Single Case Record vs. Checkpoint Blobs
 
@@ -73,29 +41,14 @@ LangGraph Persistence: Fragmented Checkpoint Blobs
 
 PicoFlow models conversational applications around **cohesive classes with clear responsibilities**, whereas LangGraph models them around **topological graphs with scattered nodes, edges, and state channels**.
 
-```text
-PicoFlow: Cohesive Class Model (1 File)
-┌────────────────────────────────────────┐
-│ class BookingStep extends Step         │
-│ ├── Prompt file or template            │
-│ ├── Tool definitions (Zod schema)      │
-│ ├── Tool handlers (@Tool capture_x)    │
-│ ├── Local state writes (saveState)     │
-│ └── Explicit routing (go / stay)       │
-└────────────────────────────────────────┘
-  ▲ All business logic is locally reasoned
-
-LangGraph: Fragmented Graph Model (4+ Files)
-┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-│ Agent Node   │  │ Tool Node    │  │ State Schema │
-│ (LLM caller) │  │ (Executors)  │  │ & Reducers   │
-└──────┬───────┘  └──────┬───────┘  └──────┬───────┘
-       │                 │                 │
-       └────────► ┌──────▼───────┐ ◄───────┘
-                  │ Conditional  │
-                  │ Edge Router  │
-                  └──────────────┘
-```
+| Stage Requirement | PicoFlow Cohesive Step (1 File) | Direct LangGraph Implementation (4+ Files) | Developer Experience Impact |
+| :--- | :--- | :--- | :--- |
+| **Prompt Definition** | `getPrompt()` method inside the Step class | Prompt file or inline text loaded in Agent Node | PicoFlow colocates prompt with handlers |
+| **Tool Declaration** | `defineTool()` with explicit Zod schema | LangChain DynamicStructuredTool definition | Both provide strong schema validation |
+| **Validation & Handling** | `@Tool` decorated method with business logic | Separate Tool Node function + manual argument checks | PicoFlow keeps validation and tool logic in one class |
+| **Stage State Ownership** | `this.saveState()` isolates writes to Step slot | Returns dictionary merged across state channels | PicoFlow prevents accidental key collision |
+| **Stage Transitions** | Return `go(NextStep)`, `stay()`, or `direct()` | Conditional edge router function inspecting messages | PicoFlow executes on native call stack; LangGraph uses DAG scheduler |
+| **Files to Read per Stage** | **1 File:** Open `BookingStep.ts` | **4+ Files:** Node file, Tool file, Schema file, Router file | PicoFlow allows fast local reasoning without context switching |
 
 ### 2.1 The Step as a Cohesive Responsibility Bundle
 
@@ -158,24 +111,13 @@ Doing this in LangGraph without a SaaS observability platform requires building,
 
 When a conversational assistant fails in production, diagnosing *why* it failed is critical.
 
-```text
-PicoFlow AI Triage (30 Seconds)
-┌───────────────────────────┐      "Prompt: Analyze this session document.
-│ session.json              │      Why did the customer fail to book?"
-│ - user & assistant chat   │ ───► ┌────────────────────────────────────────┐
-│ - step states & cursor    │      │ LLM immediately identifies:             │
-│ - validation warnings     │      │ 'User entered invalid date at turn 3;  │
-│ - structured error log    │      │  ExploreStep validation threw warning.'│
-└───────────────────────────┘      └────────────────────────────────────────┘
-
-LangGraph AI Triage (Hours of Scripting)
-┌───────────────────────────┐      Must write custom SDK scripts to:
-│ Normalized DB Tables      │      1. Query checkpoints table for thread_id
-│ - checkpoints             │ ───► 2. Traverse parent_checkpoint_id chain
-│ - checkpoint_blobs        │      3. De-serialize channel state blobs
-│ - checkpoint_writes       │      4. Stitch messages back into a dialogue
-└───────────────────────────┘      5. Finally feed reconstructed trace to LLM
-```
+| Triage Phase | PicoFlow AI Incident Triage | LangGraph Incident Triage |
+| :--- | :--- | :--- |
+| **1. Locate Session Record** | Single database query by `sessionId`. | Query `checkpoints` table for matching `thread_id`. |
+| **2. Reconstruct Conversation** | **Already Done:** Complete conversation, state, and logs are in the single JSON document. | Must traverse `parent_checkpoint_id` chain across dozens of rows to find history. |
+| **3. Extract Message Dialogue** | Direct access via `doc.flow.memory[stage].messages`. | Must de-serialize binary channel blobs and sort by step index. |
+| **4. AI Root-Cause Analysis** | Paste raw `session.json` directly into an LLM prompt: *"Why did the user fail at turn 3?"* | Requires writing custom extraction scripts or inspecting traces in LangSmith SaaS. |
+| **5. Time to Diagnosis** | **30 Seconds:** LLM sees prompts, tool calls, step states, and error logs in context. | **Minutes to Hours:** Complex multi-table joins or reliance on external SaaS UI. |
 
 * **PicoFlow:** The entire incident history—the messages, the step states, the transition sequence, and the error logs—lives in **one self-contained JSON document**. To triage a bug, an engineer (or an automated supervisor agent) can simply pass the raw `session.json` to an LLM for root-cause diagnosis.
 * **LangGraph:** State is distributed across checkpoint tables and channel writes. An engineer cannot simply inspect a single database row to see the conversation; they must use the LangGraph SDK or write custom scripts to traverse parent checkpoint hashes and re-assemble the message thread.
