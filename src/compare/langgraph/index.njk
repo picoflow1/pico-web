@@ -164,33 +164,33 @@ permalink: /compare/langgraph/
   <div class="shell comparison-content">
     <div class="section-heading">
       <p class="eyebrow">Evidence, scoped</p>
-      <h2 id="evidence-title">One hotel flow showed 66.1% less workflow/runtime code with PicoFlow.</h2>
+      <h2 id="evidence-title">One hotel flow showed 65.8% less workflow/runtime code with PicoFlow.</h2>
       <p>It is useful implementation evidence—not a universal benchmark, a performance test, or a claim that every LangGraph application will have the same line count.</p>
     </div>
-    <div class="comparison-reduction-hero" aria-label="PicoFlow uses 486 application-owned workflow and runtime lines compared with 1,434 direct LangGraph lines, a 66.1 percent reduction of 948 lines.">
+    <div class="comparison-reduction-hero" aria-label="PicoFlow uses 618 application-owned workflow and runtime lines compared with 1,809 direct LangGraph lines, a 65.8 percent reduction of 1,191 lines.">
       <p>Same 14-turn hotel workflow</p>
-      <strong>66.1%</strong>
+      <strong>65.8%</strong>
       <span>less workflow/runtime code</span>
-      <small>486 PicoFlow lines vs. 1,434 direct LangGraph lines · 948 fewer lines</small>
+      <small>618 PicoFlow lines vs. 1,809 direct LangGraph lines · 1,191 fewer lines</small>
     </div>
     <div class="comparison-evidence__grid">
       <div class="comparison-metric">
-        <span class="comparison-metric__value">486</span>
+        <span class="comparison-metric__value">618</span>
         <span class="comparison-metric__label">PicoFlow HotelFlow application-boundary lines</span>
       </div>
       <div class="comparison-metric comparison-metric--contrast">
-        <span class="comparison-metric__value">1,434</span>
+        <span class="comparison-metric__value">1,809</span>
         <span class="comparison-metric__label">Direct LangGraph hotel application-boundary lines</span>
       </div>
       <div class="comparison-metric comparison-metric--delta">
-        <span class="comparison-metric__value">−948</span>
+        <span class="comparison-metric__value">−1,191</span>
         <span class="comparison-metric__label">workflow/runtime lines in this specific direct implementation</span>
       </div>
     </div>
     <div class="comparison-evidence__body">
-      <p>The two implementations cover the same 14-turn hotel-reservation conversation: collecting dates and search criteria, searching a local catalog, presenting priced results, comparing hotels, returning to booking, and confirming a reservation. The 486 versus 1,434 count isolates the application boundary, and both sides are nameable files you can open in the demo repository.</p>
-      <p>PicoFlow: <code>hotel-flow.ts</code> (51), <code>explore-step.ts</code> (149), <code>present-step.ts</code> (129), <code>compare-step.ts</code> (157). Direct LangGraph: <code>hotel-langgraph.ts</code> (1,100), <code>hotel-session-store.ts</code> (218), <code>hotel-langgraph.state.ts</code> (90), <code>hotel-types.ts</code> (26). The 218-line session store is the most informative row — it is a hand-written memory, SQLite, and MongoDB adapter set that PicoFlow ships as part of the runtime.</p>
-      <p>These are <code>wc -l</code> counts, so imports, comments, and blank lines are included; framework source is excluded on both sides. The full project totals are context rather than a scorecard—the direct implementation includes a more compact chart helper, for example. Read the <a href="/docs/get-started/why-picoflow/">full comparison and its trade-offs</a> before treating the count as decision evidence.</p>
+      <p>The two implementations cover the same 14-turn hotel-reservation conversation: collecting dates and search criteria, searching a local catalog, presenting priced results, comparing hotels, returning to booking, and confirming a reservation. The 618 versus 1,809 count isolates the application boundary, and both sides are nameable files you can open in the demo repository.</p>
+      <p>PicoFlow: <code>hotel-flow.ts</code> (64), <code>explore-step.ts</code> (178), <code>present-step.ts</code> (183), <code>compare-step.ts</code> (193). Direct LangGraph: <code>hotel-langgraph.ts</code> (1,374), <code>hotel-session-store.ts</code> (312), <code>hotel-langgraph.state.ts</code> (97), <code>hotel-types.ts</code> (26). The custom store remains useful evidence: it is a hand-written memory, SQLite, and MongoDB adapter set that PicoFlow supplies through its runtime.</p>
+      <p>These are <code>wc -l</code> counts, so imports, comments, and blank lines are included; framework source is excluded on both sides. The full project totals are context rather than a scorecard—the direct implementation includes a more compact chart helper, for example. Read the <a href="/docs/resources/hotel-flow-benchmark/">scoped HotelFlow benchmark and its trade-offs</a> before treating the count as decision evidence.</p>
     </div>
   </div>
 </section>

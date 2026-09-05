@@ -443,9 +443,12 @@ export default {
 			url: "/docs/resources/",
 			groups: [
 				{
-					label: "Architectural Comparison",
+					label: "Architecture & operating model",
 					items: [
-						{ title: "Overview and visual guide", url: "/docs/resources/" },
+						{
+							title: "Architecture and operating model",
+							url: "/docs/resources/",
+						},
 						{
 							title: "Architectural advantages inventory",
 							url: "/docs/resources/architectural-advantages/",
@@ -469,8 +472,12 @@ export default {
 					],
 				},
 				{
-					label: "HotelFlow Benchmark & Code",
+					label: "HotelFlow case study & evidence",
 					items: [
+						{
+							title: "The 14-turn HotelFlow benchmark",
+							url: "/docs/resources/hotel-flow-benchmark/",
+						},
 						{
 							title: "One turn, traced twice",
 							url: "/docs/resources/one-turn-traced-twice/",

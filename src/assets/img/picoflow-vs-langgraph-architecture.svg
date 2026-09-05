@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" width="100%" height="auto" role="img" aria-labelledby="title desc">
-  <title id="title">PicoFlow vs LangGraph Architectural Comparison</title>
-  <desc id="desc">Visual contrast between PicoFlow cohesive step model with single case record vs LangGraph distributed graph with checkpoint blobs.</desc>
+  <title id="title">PicoFlow and direct LangGraph ownership choices</title>
+  <desc id="desc">PicoFlow supplies a standardized application and session convention. Direct LangGraph keeps graph topology, state, persistence, and operational choices in application hands.</desc>
   <defs>
     <linearGradient id="canvas-bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#141c24"/>
@@ -18,8 +18,8 @@
   <rect width="800" height="520" rx="16" fill="url(#canvas-bg)" stroke="#233240" stroke-width="1.5"/>
 
   <!-- Top Title Banner -->
-  <text x="400" y="34" fill="#ffd86c" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="12" font-weight="700" letter-spacing="1.5" text-anchor="middle">ARCHITECTURAL CONTRAST AT A GLANCE</text>
-  <text x="400" y="60" fill="#ffffff" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="20" font-weight="800" text-anchor="middle">Application Layer vs. Graph Layer</text>
+  <text x="400" y="34" fill="#ffd86c" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="12" font-weight="700" letter-spacing="1.5" text-anchor="middle">OWNERSHIP CHOICES AT A GLANCE</text>
+  <text x="400" y="60" fill="#ffffff" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="20" font-weight="800" text-anchor="middle">Standardized convention vs. direct graph control</text>
 
   <!-- Center Divider & VS Badge -->
   <line x1="400" y1="80" x2="400" y2="495" stroke="#253545" stroke-width="1.5" stroke-dasharray="4 4"/>
@@ -32,32 +32,32 @@
     <rect x="0" y="0" width="352" height="34" rx="8" fill="#102636" stroke="#2b597d" stroke-width="1"/>
     <circle cx="18" cy="17" r="5" fill="#54bee8"/>
     <text x="32" y="22" fill="#54bee8" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="800" letter-spacing="0.5">PICOFLOW</text>
-    <text x="122" y="22" fill="#d2e3f0" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="12" font-weight="500">· Cohesive Application Model</text>
+    <text x="122" y="22" fill="#d2e3f0" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="12" font-weight="500">· Standard application convention</text>
 
-    <!-- Top Card: Cohesive Step -->
+    <!-- Top Card: Standardized application convention -->
     <rect x="0" y="44" width="352" height="152" rx="10" fill="#15212c" stroke="#2c455c" stroke-width="1.5"/>
-    <text x="16" y="70" fill="#ffffff" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="15" font-weight="700">BookingStep <tspan fill="#8ca8be" font-weight="400">extends Step (1 File)</tspan></text>
+    <text x="16" y="70" fill="#ffffff" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="15" font-weight="700">Flow + Step <tspan fill="#8ca8be" font-weight="400">business-stage modules</tspan></text>
     
     <g fill="#d8e5ee" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="12">
-      <text x="20" y="94"><tspan fill="#54bee8" font-weight="700">✓</tspan>  Prompt Definition <tspan fill="#8ca8be">(getPrompt)</tspan></text>
-      <text x="20" y="116"><tspan fill="#54bee8" font-weight="700">✓</tspan>  Zod Schemas &amp; Tool Handlers <tspan fill="#8ca8be">(@Tool)</tspan></text>
-      <text x="20" y="138"><tspan fill="#54bee8" font-weight="700">✓</tspan>  Step-Owned State <tspan fill="#8ca8be">(this.saveState)</tspan></text>
-      <text x="20" y="160"><tspan fill="#54bee8" font-weight="700">✓</tspan>  Direct Routing <tspan fill="#8ca8be">(go / stay / direct)</tspan></text>
+      <text x="20" y="94"><tspan fill="#54bee8" font-weight="700">•</tspan>  Prompt, selected tools, and state</text>
+      <text x="20" y="116"><tspan fill="#54bee8" font-weight="700">•</tspan>  Domain transitions <tspan fill="#8ca8be">(go / stay / direct)</tspan></text>
+      <text x="20" y="138"><tspan fill="#54bee8" font-weight="700">•</tspan>  Runtime-owned durable cursor</text>
+      <text x="20" y="160"><tspan fill="#54bee8" font-weight="700">•</tspan>  Shared model and provider policy</text>
     </g>
     
     <rect x="10" y="172" width="332" height="18" rx="4" fill="#0d2b24"/>
-    <text x="176" y="185" fill="#4cbf9f" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">All business logic locally reasoned in 1 file</text>
+    <text x="176" y="185" fill="#4cbf9f" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">A common lifecycle for similarly shaped flows</text>
 
     <!-- Down Arrow: Turn Transition -->
     <g transform="translate(176, 202)">
       <line x1="0" y1="0" x2="0" y2="28" stroke="#54bee8" stroke-width="2" marker-end="url(#arrow-down-blue)"/>
       <rect x="-65" y="4" width="130" height="18" rx="4" fill="#0d1b26" stroke="#254d6f" stroke-width="1"/>
-      <text x="0" y="16" fill="#8ecdf2" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">Call-Stack Turn Flow</text>
+      <text x="0" y="16" fill="#8ecdf2" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">Shared session lifecycle</text>
     </g>
 
-    <!-- Bottom Card: Single Case Record -->
+    <!-- Bottom Card: Shared application record -->
     <rect x="0" y="240" width="352" height="165" rx="10" fill="#15212c" stroke="#1d5c50" stroke-width="1.5"/>
-    <text x="16" y="266" fill="#ffffff" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="15" font-weight="700">SessionDoc <tspan fill="#4cbf9f" font-weight="400">(Single JSON Document)</tspan></text>
+    <text x="16" y="266" fill="#ffffff" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="15" font-weight="700">SessionDoc <tspan fill="#4cbf9f" font-weight="400">(shared application record)</tspan></text>
 
     <!-- Schema Badges -->
     <g font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="11" font-weight="600">
@@ -75,60 +75,60 @@
     </g>
 
     <rect x="10" y="342" width="332" height="24" rx="4" fill="#0d2b24"/>
-    <text x="176" y="354" fill="#4cbf9f" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">✓ Native DB Queries (MongoDB / Cosmos)</text>
-    <text x="176" y="363" fill="#6dbfae" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="9" text-anchor="middle">Instant AI root-cause triage: dump session.json into an LLM</text>
+    <text x="176" y="354" fill="#4cbf9f" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">A standard baseline for inspection and metrics</text>
+    <text x="176" y="363" fill="#6dbfae" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="9" text-anchor="middle">Use your chosen database, retention, and observability tools</text>
   </g>
 
-  <!-- ==================== RIGHT: LANGGRAPH ==================== -->
+  <!-- ==================== RIGHT: DIRECT LANGGRAPH ==================== -->
   <g transform="translate(424, 80)">
     <!-- Column Header -->
     <rect x="0" y="0" width="352" height="34" rx="8" fill="#2d1c16" stroke="#7a4128" stroke-width="1"/>
     <circle cx="18" cy="17" r="5" fill="#e07a5f"/>
     <text x="32" y="22" fill="#e07a5f" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="800" letter-spacing="0.5">LANGGRAPH</text>
-    <text x="132" y="22" fill="#ebd9d0" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="12" font-weight="500">· Low-Level Graph Model</text>
+    <text x="132" y="22" fill="#ebd9d0" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="12" font-weight="500">· Application-chosen convention</text>
 
-    <!-- Top Card: Distributed Graph -->
+    <!-- Top Card: Graph topology under application control -->
     <rect x="0" y="44" width="352" height="152" rx="10" fill="#201815" stroke="#523224" stroke-width="1.5"/>
-    <text x="16" y="70" fill="#ffffff" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="15" font-weight="700">StateGraph <tspan fill="#b89382" font-weight="400">(Scattered 4+ Files)</tspan></text>
+    <text x="16" y="70" fill="#ffffff" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="15" font-weight="700">StateGraph <tspan fill="#b89382" font-weight="400">(topology is a design object)</tspan></text>
     
     <g fill="#ead7ce" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="12">
-      <text x="20" y="94"><tspan fill="#e07a5f" font-weight="700">✗</tspan>  Agent Nodes <tspan fill="#a07d6d">(Prompt functions)</tspan></text>
-      <text x="20" y="116"><tspan fill="#e07a5f" font-weight="700">✗</tspan>  Tool Nodes <tspan fill="#a07d6d">(Separate executors)</tspan></text>
-      <text x="20" y="138"><tspan fill="#e07a5f" font-weight="700">✗</tspan>  Conditional Edge Routers <tspan fill="#a07d6d">(Edge code)</tspan></text>
-      <text x="20" y="160"><tspan fill="#e07a5f" font-weight="700">✗</tspan>  Schema Channel Reducers <tspan fill="#a07d6d">(add/merge)</tspan></text>
+      <text x="20" y="94"><tspan fill="#e07a5f" font-weight="700">•</tspan>  Nodes and conditional edges</text>
+      <text x="20" y="116"><tspan fill="#e07a5f" font-weight="700">•</tspan>  State channels and reducers</text>
+      <text x="20" y="138"><tspan fill="#e07a5f" font-weight="700">•</tspan>  Tool and model-loop policies</text>
+      <text x="20" y="160"><tspan fill="#e07a5f" font-weight="700">•</tspan>  Application-owned transitions</text>
     </g>
 
     <rect x="10" y="172" width="332" height="18" rx="4" fill="#30150e"/>
-    <text x="176" y="185" fill="#e07a5f" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">Logic scattered across nodes, tools &amp; routers</text>
+    <text x="176" y="185" fill="#e07a5f" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">Maximum local topology and state control</text>
 
-    <!-- Down Arrow: Superstep Barrier -->
+    <!-- Down Arrow: Graph-scheduled execution -->
     <g transform="translate(176, 202)">
       <line x1="0" y1="0" x2="0" y2="28" stroke="#e07a5f" stroke-width="2" stroke-dasharray="3 3" marker-end="url(#arrow-down-orange)"/>
       <rect x="-75" y="4" width="150" height="18" rx="4" fill="#201511" stroke="#5a2f1f" stroke-width="1"/>
-      <text x="0" y="16" fill="#e59f8c" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">Pregel Superstep Barrier</text>
+      <text x="0" y="16" fill="#e59f8c" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">Graph-scheduled execution</text>
     </g>
 
-    <!-- Bottom Card: Multi-Table Checkpoint Blobs -->
+    <!-- Bottom Card: Application-selected persistence and operations -->
     <rect x="0" y="240" width="352" height="165" rx="10" fill="#201815" stroke="#5a2f1f" stroke-width="1.5"/>
-    <text x="16" y="266" fill="#ffffff" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="15" font-weight="700">Relational DB <tspan fill="#e07a5f" font-weight="400">(Checkpoint Blobs)</tspan></text>
+    <text x="16" y="266" fill="#ffffff" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="15" font-weight="700">Persistence &amp; operations <tspan fill="#e07a5f" font-weight="400">(application choice)</tspan></text>
 
     <!-- Table Rows -->
     <g font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="10.5">
       <rect x="14" y="278" width="324" height="22" rx="4" fill="#2c1a14" stroke="#4a2a1f" stroke-width="1"/>
-      <text x="24" y="293" fill="#e59f8c" font-weight="700">checkpoints</text>
-      <text x="110" y="293" fill="#a88577">UUID · thread_id · parent hash</text>
+      <text x="24" y="293" fill="#e59f8c" font-weight="700">Checkpointer / store</text>
+      <text x="158" y="293" fill="#a88577">choose, configure, operate</text>
 
       <rect x="14" y="304" width="324" height="22" rx="4" fill="#2c1a14" stroke="#4a2a1f" stroke-width="1"/>
-      <text x="24" y="319" fill="#e59f8c" font-weight="700">checkpoint_blobs</text>
-      <text x="135" y="319" fill="#a88577">opaque serialized channels</text>
+      <text x="24" y="319" fill="#e59f8c" font-weight="700">Application state</text>
+      <text x="135" y="319" fill="#a88577">shape and data boundary</text>
 
       <rect x="14" y="330" width="324" height="22" rx="4" fill="#2c1a14" stroke="#4a2a1f" stroke-width="1"/>
-      <text x="24" y="345" fill="#e59f8c" font-weight="700">checkpoint_writes</text>
-      <text x="140" y="345" fill="#a88577">intermediate task write dumps</text>
+      <text x="24" y="345" fill="#e59f8c" font-weight="700">Observability</text>
+      <text x="124" y="345" fill="#a88577">LangSmith, OTel, logs, or internal tools</text>
     </g>
 
     <rect x="10" y="358" width="332" height="38" rx="4" fill="#30150e"/>
-    <text x="176" y="372" fill="#e07a5f" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">✗ Fragmented Blobs · Heavy SaaS Lock-in</text>
-    <text x="176" y="386" fill="#b87865" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="9" text-anchor="middle">Requires LangSmith SaaS or complex scripts to reconstruct traces</text>
+    <text x="176" y="372" fill="#e07a5f" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">Choose the durable record and operations shape</text>
+    <text x="176" y="386" fill="#b87865" font-family="-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif" font-size="9" text-anchor="middle">A team can standardize a shared application layer when it needs one</text>
   </g>
 </svg>

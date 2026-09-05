@@ -2,7 +2,7 @@
 title: Why PicoFlow
 eyebrow: Get started
 lede: What PicoFlow actually removes from an application, what the HotelFlow versus LangGraph comparison measured, and the cases where a lower-level orchestration library is the better choice.
-source: pico-demo/docs/hotel-flow-critical-evaluation.md
+source: pico-demo/package.json, pico-demo/yarn.lock, pico-demo/src/myflow/hotel-flow/, pico-demo/src/myflow/hotel-langgraph/
 ---
 
 PicoFlow's strongest value is a multi-turn, tool-calling conversation that has to survive
@@ -38,21 +38,20 @@ The repository contains two independent implementations of the same hotel reserv
 conversation: collect a date range and search criteria, search a local catalog, present
 priced results, compare hotels, return to booking, finish with a confirmation number. One
 is `HotelFlow` on PicoFlow. The other is a direct LangGraph graph with its own state
-definition, types, and session store. Both pass the same 14-turn semantic scenario.
+definition, types, and session store. Each has a corresponding 14-turn semantic scenario.
 
 | Scope | HotelFlow with PicoFlow | Direct LangGraph | Difference |
 | --- | ---: | ---: | ---: |
-| Workflow boundary: flow/steps versus graph/state/types/store | 486 | 1,434 | +948 for LangGraph |
-| All hotel application code, including backend and charting | 967 | 1,754 | +787 for LangGraph |
-| Complete hotel directory inventory | 1,860 | 2,648 | +788 for LangGraph |
+| Workflow boundary: flow/steps versus graph/state/types/store | 618 | 1,809 | +1,191 for LangGraph |
 
 The first row is the one that isolates the framework. It compares the code an application
 author writes to express the conversation against the code needed to build the direct
 graph's state machine and session runtime. Counts are `wc -l`, so they include imports,
 comments and blank lines, and framework source is excluded on both sides.
 
-The second and third rows are context, not a scoreboard. The direct implementation has a
-more compact chart helper, so not every line of difference is a framework win.
+The scoped [HotelFlow benchmark](/docs/resources/hotel-flow-benchmark/) records the exact files,
+dependency versions, exclusions, and caveats. The figure is an ownership measure, not a
+performance, quality, or delivery-time benchmark.
 
 ### Modularity
 
@@ -155,5 +154,5 @@ validation in your own code. Tool schemas and handler code are the runtime bound
 text is not.
 
 The full evaluation, including the functional comparison, the memory and session-document
-analysis, and the direct-LangGraph risk section, is in
-[Compare](/docs/resources/).
+analysis, and the direct-LangGraph risk section, is in the
+[HotelFlow benchmark](/docs/resources/hotel-flow-benchmark/).

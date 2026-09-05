@@ -41,7 +41,7 @@ application responsibilities.
 | Session lifecycle | `FlowEngine` and `FlowSession` | `HotelLanggraph.run()` and `HotelSessionStore` |
 
 PicoFlow decomposes by business stage and inherits infrastructure. The direct implementation
-decomposes some concerns into helper files, but its 1,063-line `HotelLanggraph` class remains
+decomposes some concerns into helper files, but its 1,374-line `HotelLanggraph` class remains
 the integration point for topology, prompts, tools, models, validation, domain operations,
 response creation, and session lifecycle.
 
