@@ -443,20 +443,16 @@ export default {
 			url: "/docs/resources/",
 			groups: [
 				{
-					label: "PicoFlow and LangGraph",
+					label: "Architectural Comparison",
 					items: [
-						{ title: "Overview and decision guide", url: "/docs/resources/" },
+						{ title: "Overview and visual guide", url: "/docs/resources/" },
+						{
+							title: "Architectural advantages inventory",
+							url: "/docs/resources/architectural-advantages/",
+						},
 						{
 							title: "Architecture and routing",
 							url: "/docs/resources/architecture-and-routing/",
-						},
-						{
-							title: "One turn, traced twice",
-							url: "/docs/resources/one-turn-traced-twice/",
-						},
-						{
-							title: "Tool loops and validation",
-							url: "/docs/resources/tool-loops-and-validation/",
 						},
 						{
 							title: "State, memory, and persistence",
@@ -469,6 +465,19 @@ export default {
 						{
 							title: "Parallelism and fan-out",
 							url: "/docs/resources/parallelism-and-fanout/",
+						},
+					],
+				},
+				{
+					label: "HotelFlow Benchmark & Code",
+					items: [
+						{
+							title: "One turn, traced twice",
+							url: "/docs/resources/one-turn-traced-twice/",
+						},
+						{
+							title: "Tool loops and validation",
+							url: "/docs/resources/tool-loops-and-validation/",
 						},
 						{
 							title: "Reliability and production gaps",

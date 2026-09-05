@@ -22,6 +22,61 @@ diagnostic artifact. Less code is only the visible symptom. The larger savings a
 comprehension, faster review and onboarding, fewer local conventions, and the ability to fix a
 runtime concern once for every flow.
 
+## Two perspectives on this evaluation
+
+This comparison is arranged into two complementary tracks:
+
+1. **Type 1: Architectural Comparison & Capabilities** — The foundational principles, cognitive mental models, persistence boundaries, DevOps observability, and AI-assisted debugging advantages. For the complete reference inventory, read [Architectural Advantages Inventory](/docs/resources/architectural-advantages/).
+2. **Type 2: Empirical Case Study (HotelFlow Benchmark)** — A reproducible side-by-side implementation of the same 14-turn hotel booking assistant, featuring code-size measurements (486 vs. 1,434 lines), file inventories, and turn-by-turn code execution traces.
+
+---
+
+## Architectural contrast at a glance
+
+The fundamental choice is between a **cohesive, class-based application model backed by a single human-readable Case Record** versus a **low-level graph of nodes and edges backed by normalized database checkpoint blobs**:
+
+```text
+                 PICOFLOW                                        LANGGRAPH
+        (The Business Application)                        (The Low-Level Graph)
+ ─────────────────────────────────────────       ─────────────────────────────────────────
+
+          ┌─────────────────────┐                         ┌─────────────────────┐
+          │  Cohesive Flow/Step │                         │ Node A  ──►  Node B │
+          │  ┌───────────────┐  │                         │   │            │    │
+          │  │  Prompt       │  │                         │   ▼            ▼    │
+          │  │  Tools & Zod  │  │                         │ Conditional Edges   │
+          │  │  State & Goto │  │                         │ (Scattered Routing) │
+          │  └───────────────┘  │                         └─────────────────────┘
+          └──────────┬──────────┘                                    │
+                     │ (Single Turn)                                 │ (Superstep Barrier)
+                     ▼                                               ▼
+          ┌─────────────────────┐                         ┌─────────────────────┐
+          │  Single JSON Doc    │                         │ Multi-Table Schema  │
+          │  ┌───────────────┐  │                         │ ┌─────────────────┐ │
+          │  │ state         │  │                         │ │ checkpoints     │ │
+          │  │ memory        │  │                         │ │ checkpoint_blobs│ │
+          │  │ currentStep   │  │                         │ │ writes / queues │ │
+          │  │ diagnostics   │  │                         │ └─────────────────┘ │
+          │  └───────────────┘  │                         │ (Requires LangSmith │
+          │ (Human & AI Read)   │                         │  for visibility)    │
+          └─────────────────────┘                         └─────────────────────┘
+```
+
+### The 6 Foundational Pillars
+
+| Pillar | PicoFlow | Direct LangGraph | Deep Dive Reference |
+| :--- | :--- | :--- | :--- |
+| **1. State & Persistence** | **Single Case Record:** Whole session stored as one readable JSON document (`SessionDoc`). | **Checkpoint Blobs:** Fragmented across multiple relational/blob tables. | [State & Persistence](/docs/resources/state-memory-and-persistence/) |
+| **2. Mental Model** | **Cohesive OOP:** 1 Step file bundles prompt, Zod tools, handlers, state, and routing. | **Fragmented DAG:** Code scattered across nodes, edge routers, state schemas. | [Architecture & Routing](/docs/resources/architecture-and-routing/) |
+| **3. DevOps & Analytics** | **Native DB Queries:** Standard MongoDB / Cosmos queries for funnels and costs. Zero SaaS lock-in. | **Proprietary Cloud:** Heavy reliance on LangSmith for production observability. | [Architectural Inventory](/docs/resources/architectural-advantages/) |
+| **4. AI Incident Triage** | **Instant Root Cause:** Dump `session.json` directly into an LLM prompt for analysis. | **Complex Scripting:** Must traverse checkpoint parent hashes to reconstruct traces. | [Architectural Inventory](/docs/resources/architectural-advantages/) |
+| **5. Replay & Time Travel** | **Single-Cursor Manipulation:** Reset `flow.currentStep` to rewind and test. | **Checkpoint Tree Forking:** Branching from internal checkpoint DAG nodes. | [Interrupts & Operations](/docs/resources/interrupts-replay-and-operations/) |
+| **6. Concurrency** | **Coordinator Pattern:** Calling step aggregates parallel outputs with standard TypeScript. | **Pregel Supersteps:** Lockstep execution with binary channel reducers. | [Parallelism & Fan-Out](/docs/resources/parallelism-and-fanout/) |
+
+For the complete, itemized technical breakdown across all six pillars, see the **[Architectural Advantages Inventory](/docs/resources/architectural-advantages/)**.
+
+---
+
 ## Scope and API baseline
 
 This is a comparison of two applications, not a claim that either framework lacks capabilities
@@ -57,18 +112,22 @@ different, fixed session-document model out of the box.
 | Which is easier to diagnose without another platform? | PicoFlow. Messages, state, cursor, sequence, models, tokens, logs, warnings, and errors travel in one session document. |
 | Does production LangGraph require observability? | Yes. LangSmith is its official integrated option; otherwise the team must supply equivalent tracing and operations itself. |
 
-## Tutorial map
+## Tutorial and comparison map
 
-Read the comparison as a sequence rather than one verdict:
+Explore the comparison through its two distinct tracks:
 
-1. **Architecture and routing** — what each runtime considers the primary unit.
-2. **One turn, traced twice** — the same comparison turn through both stacks.
-3. **Tool loops and validation** — model tool calls, dispatch, direct responses, and trust boundaries.
-4. **State, memory, and persistence** — durable shapes, message histories, expiry, and concurrency.
-5. **Interrupts, replay, and operations** — what the implementations have versus what LangGraph can add.
-6. **Parallelism and fan-out** — helper-owned work versus graph-scheduled branches.
-7. **Reliability and production gaps** — concrete defects and hardening work on both sides.
-8. **Testing and evaluation** — what the tests actually prove and what they do not.
+### Track 1: Architectural Comparison & Capabilities
+1. **[Architectural Advantages Inventory](/docs/resources/architectural-advantages/)** — The normative catalog of advantages across state, ergonomics, DevOps, triage, and concurrency.
+2. **[Architecture and routing](/docs/resources/architecture-and-routing/)** — What each runtime considers the primary unit: cohesive steps vs. explicit nodes and edges.
+3. **[State, memory, and persistence](/docs/resources/state-memory-and-persistence/)** — Durable shapes, single JSON case records, message histories, expiry, and concurrency.
+4. **[Interrupts, replay, and operations](/docs/resources/interrupts-replay-and-operations/)** — Single-cursor rewind vs. checkpoint trees, human-in-the-loop holds, and production operations.
+5. **[Parallelism and fan-out](/docs/resources/parallelism-and-fanout/)** — Coordinator-owned work vs. graph-scheduled superstep branches.
+
+### Track 2: HotelFlow Benchmark & Code
+6. **[One turn, traced twice](/docs/resources/one-turn-traced-twice/)** — The same comparison turn traced line-by-line through both stacks.
+7. **[Tool loops and validation](/docs/resources/tool-loops-and-validation/)** — Model tool calls, dispatch loops, direct responses, and trust boundaries.
+8. **[Reliability and production gaps](/docs/resources/reliability-and-production-gaps/)** — Concrete defects, production gaps, and hardening work observed on both sides.
+9. **[Testing and evaluation](/docs/resources/testing-and-evaluation/)** — What the 14-turn deterministic scenarios actually prove and what they do not.
 
 ## What was compared
 
