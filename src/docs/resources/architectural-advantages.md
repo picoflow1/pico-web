@@ -142,31 +142,49 @@ How the two frameworks handle parallel execution highlights their fundamental di
 | **Execution style** | Procedural fork/join: `await this.runSteps([...])`. | Active nodes can run concurrently in graph supersteps. |
 | **State mutation** | Workers run in isolated instances and return results to a coordinator. | Nodes return state updates; schemas, reducers, and ownership rules define how those updates combine. |
 | **Aggregation** | A coordinator Step makes the aggregate business decision. | Reducers, coordinator nodes, or custom state handling can aggregate updates. |
-| **Duplicate tasks** | Multiple worker instances return an array of results. | Dynamic `Send()` or another graph fan-out design can create work dynamically. |
+| **Duplicate tasks** | Distinct branch keys identify fresh worker instances; a structured batch contains their results. | Dynamic `Send()` or another graph fan-out design can create work dynamically. |
 | **Chat memory** | Branch scratchpads can be isolated and discarded by default. | An application may use a shared `add_messages` channel or branch-specific state, depending on its schema. |
 
 ### The Coordinator Advantage
 
 LangGraph reducers (for example, `(current, update) => current + update`) are useful for combining compatible updates. For a parallel result that needs a richer business decision, a direct graph can add a coordinator node or custom state update; PicoFlow makes that decision a natural part of the coordinator Step:
-- *"Collect 3 hotel offers, compare their amenity scores, discard any above budget, and pick the top 2."*
 
-In PicoFlow, the **Coordinator Step** that called `runSteps()` receives all worker outputs as a typed array and writes standard, readable TypeScript code to evaluate and persist the winners:
+- *"Collect hotel offers, discard any above budget, and pick the two cheapest."*
+
+In PicoFlow, the **Coordinator Step** that called `runSteps()` receives a structured batch and
+uses `batch.fulfilled` to evaluate successful worker outputs. In this example, a registered
+`ScraperStep` returns each offer through a tool's `directResult({ provider, price })`, without
+writing competing replacements to a shared Step field. The coordinator validates the output
+and persists its selection:
 
 ```ts
-const results = await this.runSteps([
-  { step: ScraperStep, params: { target: 'A' } },
-  { step: ScraperStep, params: { target: 'B' } },
+// In a coordinator Step method; z is imported from "zod".
+const offerSchema = z.object({
+  provider: z.string(),
+  price: z.number().nonnegative(),
+});
+const budget = 250;
+const batch = await this.runSteps([
+  { step: ScraperStep, key: 'A', params: { target: 'A' } },
+  { step: ScraperStep, key: 'B', params: { target: 'B' } },
 ]);
 
-const valid = results
-  .filter((r) => r.status === 'fulfilled')
-  .map((r) => r.state.data)
-  .sort(byCheapest);
+const selectedOffers = batch.fulfilled
+  .map((branch) => offerSchema.parse(branch.output))
+  .filter((offer) => offer.price <= budget)
+  .sort((a, b) => a.price - b.price)
+  .slice(0, 2);
 
-this.saveState({ selectedOffers: valid });
+this.saveState({ selectedOffers });
 ```
 
+This policy accepts available offers when some workers fail and saves an empty selection if
+none qualify. Invalid offer output fails validation. A workflow that requires every provider
+to respond can check `batch.rejected` before selecting offers.
+
 The same workflow can be represented in a direct graph with explicit nodes, state updates, and routing. PicoFlow's trade-off is to keep the aggregation in ordinary coordinator code by default.
+See [Parallelism and fan-out](/docs/resources/parallelism-and-fanout/) for scheduling,
+nested state visibility, and crash-recovery boundaries.
 
 ---
 
