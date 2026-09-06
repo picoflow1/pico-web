@@ -2,15 +2,17 @@
 title: Concurrent batch mode
 eyebrow: Guides
 lede: One coordinator session fans work out to N worker sessions over self-HTTP. Each worker gets its own session document, and the coordinator owns completion, retry and partial-failure policy itself.
-source: pico-demo/docs/picoflow-workflow-developer-guide.md
+source: picoflow/src/picoflow/flow/flow.ts, picoflow/src/picoflow/flow/step.ts, pico-demo/docs/picoflow-workflow-developer-guide.md
 ---
 
 Use batch mode when you have N independent work items and each deserves its own session
 document — its own history, token accounting, run status and error log. Extracting fifty
 invoices, scoring a queue of documents, running the same interview against a list of subjects.
 
-This is not the same mechanism as [nested execution](/docs/guides/nested-execution/), and mixing
-them up is the most common mistake in this area.
+<div class="callout callout--note">
+  <span class="callout__title">Choose your concurrency API</span>
+  <p>Use <code>runStep()</code> for one nested child, <code>runSteps()</code> for parallel children within the caller's session, and <code>concurrentSteps()</code> for independent flow requests with separate sessions. This guide covers <code>concurrentSteps()</code>. For isolated parallel workers, reducers, and join policies, start with <a href="/docs/guides/nested-execution/#runsteps-isolated-children-in-parallel">runSteps(): isolated children in parallel</a>.</p>
+</div>
 
 ## Selecting the coordinator
 
@@ -165,20 +167,76 @@ batch dispatch path.
 
 ## Contrast with nested execution
 
-| | `runStep()` / `runSteps()` | `concurrentSteps()` |
-| --- | --- | --- |
-| Selected by | A call inside a step | `config._concurrent` on the first request |
-| Session documents | One, shared with the parent | One new document per item |
-| Transport | In-process call | HTTP POST to `SELF_URL` |
-| What runs | One registered step | The whole flow, from its initial step |
-| Input | `userMessage` and transient state | `onConfig(item)` only |
-| Can move the cursor | No — throws | Yes, it is a normal top-level run |
-| Failure | Rejects the parent turn | Caught and logged per item |
-| Tokens | Charged to the parent session | Charged to each worker session |
-| Result | `MessageContent` returned to the caller | Whatever `onBotResponse` extracts |
+| Question | `runStep()` | `runSteps()` | `concurrentSteps()` |
+| --- | --- | --- | --- |
+| Started by | Calling Step | Calling Step supplies a request array | Coordinator calls the helper, usually from `spawnSteps()` selected by `config._concurrent` |
+| Session documents | Caller's session | One durable session; private worker snapshots | One new session per item |
+| Transport | In-process child call | In-process fork/join | HTTP POST to `SELF_URL` |
+| What runs | One registered child | A fresh worker instance for each Step request | The whole flow, from its initial Step |
+| Input | Optional `userMessage`; prepared child state or transient state | Immutable `params`, optional `userMessage`, branch keys | `onConfig(item)` |
+| State visibility | Registered child state is available to the caller | Selected worker state is published at the join | Separate child state; coordinator records HTTP results |
+| Can move the cursor? | Child cannot move the durable parent cursor | Workers cannot move the durable parent cursor | Each worker controls its own session cursor |
+| Ordinary failure | Throws to caller unless handled | Returns rejected branch results; default retains successful state | Caught and logged per item |
+| Concurrency bound | One child per awaited call | `maxConcurrency` bounds each batch | `batchSize`; each chunk finishes before the next starts |
+| Persistence | Normal session save boundaries | Outer save by default; optional `root-join` checkpoint | Each worker saves its own session |
+| Tokens | Charged to caller's session | Charged to caller's session | Charged to each worker session |
+| Result | Child output or `null` | `ParallelBatchResult`: `branches`, `fulfilled`, `rejected`, publication metadata | Helper returns no aggregate; `onBotResponse` handles each successful response |
 
-Rule of thumb: if the caller needs the result synchronously to make its own decision, nest.
-If the item is a unit of work in its own right, batch.
+The `runStep()` column describes a sequential call outside a parallel worker. Inside a
+`runSteps()` worker, `runStep()` uses an isolated, atomic one-child barrier and propagates a
+child failure to its caller.
+
+Choose nested execution when child work belongs to the caller's decision within one session.
+Choose batch mode when each item needs its own independently saved flow session.
+
+### A small runSteps() example
+
+Suppose a registered `InventoryLookupStep` reads a SKU from
+`this.getParallelInvocation().params`. Its tool returns JSON through `directResult(...)`.
+It returns each lookup as branch output, so repeated workers do not need to replace the same
+Step state field. The calling Step can collect available results and failures:
+
+```ts
+const batch = await this.runSteps(
+  [
+    { step: InventoryLookupStep, key: "shirt", params: { sku: "SHIRT-01" } },
+    { step: InventoryLookupStep, key: "hat", params: { sku: "HAT-02" } },
+  ],
+  { maxConcurrency: 2 },
+);
+
+this.saveState({
+  inventoryChecks: {
+    results: batch.fulfilled.map((branch) => ({
+      key: branch.key,
+      output: branch.output,
+    })),
+    failures: batch.rejected.map((branch) => ({
+      key: branch.key,
+      error: branch.error,
+    })),
+  },
+});
+```
+
+Distinct keys are required when a Step class appears more than once. Results remain in
+request order. This example records partial success; the caller must decide whether the
+available inventory checks are sufficient for its next action.
+
+The default `retain-successes` policy publishes successful worker state at the join.
+`{ failurePolicy: "atomic" }` suppresses that batch's application-state publication if any
+branch fails; it still returns branch outcomes. Invalid shared mutations, conflicting writes,
+and other framework failures throw. Neither policy rolls back external side effects.
+
+For nested calls, publication reaches the immediate caller's private scope first; canonical
+session state changes only when the enclosing outer join accepts those updates. A join is
+also distinct from a durable save: `checkpoint: "root-join"` requests a session save after a
+root join applies state, but does not provide automatic per-child crash recovery.
+
+Continue with [Nested execution](/docs/guides/nested-execution/) for state isolation, explicit
+reducer contributions, nested joins, and cancellation; the [Step reference](/docs/reference/step/)
+for API contracts; and [Parallelism and fan-out](/docs/resources/parallelism-and-fanout/) for
+the contrast with LangGraph's scheduling and recovery boundaries.
 
 ## Failure modes
 
