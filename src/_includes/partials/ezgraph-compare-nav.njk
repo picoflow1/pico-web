@@ -1,0 +1,15 @@
+<aside class="ezgraph-compare-sidebar">
+  <nav aria-label="EZGraph vs. LangGraph sections">
+    <p class="ezgraph-compare-sidebar__title">vs. LangGraph</p>
+    {% for group in ezgraphCompareNav %}
+    <div class="ezgraph-compare-sidebar__group">
+      <h2>{{ group.label }}</h2>
+      <ul>
+        {% for item in group.items %}
+        <li><a href="{{ item.url }}"{% if page.url == item.url %} aria-current="page"{% endif %}>{{ item.title }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+  </nav>
+</aside>

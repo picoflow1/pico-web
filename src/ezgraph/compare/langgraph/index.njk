@@ -1,462 +1,122 @@
 ---
 layout: layouts/ezgraph.njk
-title: EZGraph versus direct LangGraph
-description: A measured, scoped comparison of the same guided conversational application built with EZGraph and directly with LangGraph.
+title: EZGraph vs. LangGraph
+description: Compare EZGraph's application and session conventions with direct LangGraph, then explore the separate QuoteGraph case study and implementation evidence.
 permalink: /ezgraph/compare/langgraph/
 ezgraph: true
+ezgraphCompare: true
 ---
 <section class="tight">
   <div class="wrap">
-    <span class="eyebrow">The benchmark</span>
-    <h1 style="font-size:clamp(2rem,4.4vw,3.1rem);max-width:22ch">One chatbot, built twice, measured</h1>
-    <p class="lede" style="max-width:74ch">
-      Everything on this page is reproducible from
-      <a href="https://github.com/picoflowio/ezgraph-demo">github.com/picoflowio/ezgraph-demo</a>.
-      Both implementations live side by side, share the same domain backend, and pass the same
-      live evaluation. If you think a number here is wrong, the control group is right there
-      to check it against. Start with the
-      <a href="/ezgraph/quote-graph/">QuoteGraph walkthrough</a> if you have not opened the tree
-      yet.
-    </p>
+    <span class="eyebrow">Architecture &amp; operating model</span>
+    <h1>EZGraph vs. LangGraph</h1>
+    <p class="lede">Keep LangGraph as the execution engine. Choose which application conventions your team wants supplied.</p>
+    <p>EZGraph is an application layer built on LangGraph and LangChain. It brings class-based
+      nodes, conversation handling, and durable session management to guided applications.
+      Direct LangGraph gives your team the graph primitives and lets you choose the surrounding
+      application structure.</p>
+    <p>Start here for the architecture. The <a href="/ezgraph/compare/langgraph/quotegraph-case-study/">QuoteGraph case study</a>
+      separately examines one insurance chatbot built both ways, with code counts, edit sites,
+      and the measurement method.</p>
+  </div>
+</section>
 
-    <div class="grid grid-2 mt-32">
-      <div class="card">
-        <div class="ico">EZ</div>
-        <h3><code>quote-graph</code> — the EZGraph implementation</h3>
-        <p>
-          Five conversational stages as five node classes, plus a graph definition and a state
-          annotation. <strong>617 normalized lines.</strong>
-        </p>
-      </div>
-      <div class="card">
-        <div class="ico">LG</div>
-        <h3><code>quote-langgraph</code> — the control group</h3>
-        <p>
-          The identical product on raw LangGraph, importing <em>no</em> EZGraph code: one
-          980-line graph class, a 177-line session store, a state annotation, and a types
-          module. <strong>1,283 normalized lines.</strong>
-        </p>
-      </div>
+<section class="band" id="ownership">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Architecture</span>
+      <h2>The ownership choice</h2>
+      <p>Both execute LangGraph graphs. EZGraph standardizes the conversation and session layer around them.</p>
     </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Concern</th><th>EZGraph supplies</th><th>A direct LangGraph team chooses</th></tr></thead>
+        <tbody>
+          <tr><td>Authoring</td><td>Node classes with prompts, tools, state writes, and outcomes; validated registration through <code>StateGraphExt</code>.</td><td>Node functions, state schemas, edges, and how to organize those responsibilities in application code.</td></tr>
+          <tr><td>Conversation handling</td><td>A reusable <code>ConversationNode</code> model/tool loop and response contracts.</td><td>How to compose model calls, tool handling, validation, and response policy, including available LangChain helpers.</td></tr>
+          <tr><td>Session lifecycle</td><td><code>GraphEngine</code> coordinates restore, invocation, progress persistence, and final saves through a session manager.</td><td>The invocation boundary and how graph execution connects to application sessions and storage.</td></tr>
+          <tr><td>Execution</td><td>A class-based authoring layer that compiles to a LangGraph <code>StateGraph</code>.</td><td>Direct use of graph topology, channels, reducers, and execution controls.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="mt-32">LangGraph's <a href="https://docs.langchain.com/oss/javascript/langgraph/graph-api">Graph API</a>
+      defines the underlying execution model. Adding EZGraph changes the application contract;
+      it does not replace that scheduler with PicoFlow's Flow/Step runtime.</p>
+  </div>
+</section>
 
+<section id="state-and-sessions">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Operating model</span>
+      <h2>State, memory, and sessions</h2>
+      <p>A shared session convention gives each conversation an application-readable operating record.</p>
+    </div>
+    <p>EZGraph keeps business data in graph-owned state, with node-owned channels and named
+      histories. Node classes group behavior; mutable instance fields are not a place to keep
+      one customer's conversation state, because graph and node objects serve multiple sessions.</p>
+    <p>The session layer restores the saved conversation and records progress and diagnostics.
+      This provides a common boundary for continuing a conversation, inspecting a failed turn,
+      and applying application-specific restore policy. See the
+      <a href="/ezgraph/docs/developer-guide/">developer guide</a> for state ownership and node contracts.</p>
     <div class="callout tip">
-      <span class="label">What "identical" means here</span>
-      <p>
-        Same product: Sequoia Auto Insurance quoting. Five ordered stages — driver, vehicle,
-        insurance history, coverage, quote — with 8 tools, 3 isolated history channels, real
-        slot validation, gates that refuse to advance on invalid input, a backward transition
-        from quote to coverage, a deterministic rating engine, 30-minute idle expiry, and a
-        <code>terminate_session</code> path. Both share the <em>same</em> rating engine,
-        prompts, vehicle catalog and clock helpers — <b>287 normalized lines each</b>, which is
-        how we know the delta is framework cost rather than a difference in scope.
-      </p>
+      <span class="label">Session records and checkpoints serve different boundaries</span>
+      <p>EZGraph's normal session persistence is an application-level record. It is not a promise
+        of LangGraph checkpoint history or arbitrary mid-node resume. Direct LangGraph offers
+        <a href="https://docs.langchain.com/oss/javascript/langgraph/persistence">checkpointers and stores</a>;
+        a team can use them alongside its own domain records. Choose the recovery and inspection
+        boundaries your application needs.</p>
     </div>
   </div>
 </section>
 
-<!-- ============================== HEADLINE ============================== -->
-<section class="band" id="headline">
+<section class="band" id="conversation-contracts">
   <div class="wrap">
     <div class="section-head">
-      <span class="eyebrow">4.1</span>
-      <h2>The headline metric</h2>
-      <p>
-        Normalized executable lines: blank lines, comment-only lines, and import statements
-        removed, so neither side is rewarded for terse imports or punished for documenting
-        itself.
-      </p>
+      <span class="eyebrow">Application contracts</span>
+      <h2>One convention across conversation stages</h2>
+      <p>A node brings its prompt, allowed tools, validation, and transition decision together.</p>
     </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Scope</th>
-            <th class="num">EZGraph <span class="dim">quote-graph</span></th>
-            <th class="num">LangGraph <span class="dim">quote-langgraph</span></th>
-            <th class="num">Reduction</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="total">
-            <td><strong>Framework-facing graph code</strong></td>
-            <td class="num"><strong>617</strong></td>
-            <td class="num"><strong>1,283</strong></td>
-            <td class="num win"><strong>51.9% less</strong></td>
-          </tr>
-          <tr><td>Shared domain backend</td><td class="num">287</td><td class="num">287</td><td class="num zero">0% — identical</td></tr>
-          <tr><td>NestJS controller</td><td class="num">47</td><td class="num">74</td><td class="num win">36.5% less</td></tr>
-          <tr><td>Graph code + controller</td><td class="num">664</td><td class="num">1,357</td><td class="num win">51.1% less</td></tr>
-          <tr><td>Raw lines, nothing removed</td><td class="num">924</td><td class="num">1,588</td><td class="num win">41.8% less</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <h3 class="mt-40" style="font-size:1.2rem">File by file</h3>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>EZGraph</th><th class="num">Lines</th>
-            <th>LangGraph</th><th class="num">Lines</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td><code>quote-graph.ts</code></td><td class="num">49</td><td><code>quote-langgraph.ts</code></td><td class="num">980</td></tr>
-          <tr><td><code>quote-graph.state.ts</code></td><td class="num">66</td><td><code>quote-langgraph.state.ts</code></td><td class="num">83</td></tr>
-          <tr><td><code>nodes/driver.node.ts</code></td><td class="num">81</td><td><code>quote-session-store.ts</code></td><td class="num">177</td></tr>
-          <tr><td><code>nodes/vehicle.node.ts</code></td><td class="num">110</td><td><code>quote-types.ts</code></td><td class="num">43</td></tr>
-          <tr><td><code>nodes/history.node.ts</code></td><td class="num">79</td><td class="dim">—</td><td class="num dim">—</td></tr>
-          <tr><td><code>nodes/coverage.node.ts</code></td><td class="num">71</td><td class="dim">—</td><td class="num dim">—</td></tr>
-          <tr><td><code>nodes/quote.node.ts</code></td><td class="num">161</td><td class="dim">—</td><td class="num dim">—</td></tr>
-          <tr class="total"><td>Total</td><td class="num">617</td><td>Total</td><td class="num">1,283</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="verdict">
-      <b>The shape of the two trees is itself the finding.</b> EZGraph's code is five node files
-      of comparable size, each one a stage — you open the stage you care about. LangGraph's is a
-      single 980-line class that owns every stage, the request boundary, the agent loop and the
-      routing, plus a separate 177-line persistence module. The line count is a symptom; the
-      structure is the disease.
-    </div>
+    <p>In a guided conversation, collecting information is only part of the work. A stage must
+      decide whether input is valid, whether to ask again, whether to return a direct response,
+      and when to advance. EZGraph supplies common node and tool contracts so those decisions
+      can be expressed consistently across stages.</p>
+    <p>The business policy remains application code: eligibility checks, pricing, authorization,
+      and external effects still need explicit handlers. Direct LangGraph can implement the
+      same behavior through node functions and shared helpers. The architectural choice is
+      whether EZGraph's existing conventions fit the product and the team's preferred authoring model.</p>
+    <p>Follow the <a href="/ezgraph/tutorial/">small tutorial</a> to see the contracts in use,
+      or the <a href="/ezgraph/quote-graph/">QuoteGraph walkthrough</a> for a complete staged conversation.</p>
   </div>
 </section>
 
-<!-- ============================== CONCERNS ============================== -->
-<section id="concerns">
+<section id="choosing">
   <div class="wrap">
     <div class="section-head">
-      <span class="eyebrow">4.2</span>
-      <h2>Where the 666 lines went</h2>
-      <p>
-        The first four rows are the current, additive source artifacts behind the headline.
-        The remaining rows are independently recounted repetition counts: they explain what
-        makes the source artifacts different, but are not added again. The comparison does not
-        count framework source on either side. <b>The main reduction is recurring application
-        plumbing, not insurance-domain logic.</b>
-      </p>
+      <span class="eyebrow">Decision guide</span>
+      <h2>Which layer should your team own?</h2>
     </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>Concern</th><th class="num">LangGraph</th><th class="num">EZGraph</th><th class="num">Delta</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><b>Source artifacts — additive normalized lines</b></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
-          <tr><td>Main graph and all stage implementations</td><td class="num">980</td><td class="num">551</td><td class="num win">−429</td></tr>
-          <tr><td>State definition and reducers</td><td class="num">83</td><td class="num">66</td><td class="num win">−17</td></tr>
-          <tr><td>Session store — 3 backends + serialize/hydrate</td><td class="num">177</td><td class="num">0</td><td class="num win">−177</td></tr>
-          <tr><td>Standalone domain type module</td><td class="num">43</td><td class="num">0 <span class="dim">types live with node state</span></td><td class="num win">−43</td></tr>
-          <tr class="total"><td><strong>Framework-facing graph code</strong></td><td class="num"><strong>1,283</strong></td><td class="num"><strong>617</strong></td><td class="num win"><strong>−666</strong></td></tr>
-          <tr><td><b>Repetition counts — not additive line buckets</b></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
-          <tr><td>Manual <code>Schema.parse(call.args)</code> blocks</td><td class="num">8</td><td class="num">0</td><td class="num win">−8</td></tr>
-          <tr><td>Tool-name dispatch comparisons</td><td class="num">14</td><td class="num">0</td><td class="num win">−14</td></tr>
-          <tr><td>Explicit <code>route:</code> state writes</td><td class="num">16</td><td class="num">0</td><td class="num win">−16</td></tr>
-          <tr><td>Termination handling sites in graph code</td><td class="num">7</td><td class="num">0 <span class="dim">built-in node</span></td><td class="num win">−7</td></tr>
-          <tr><td>Reducer helpers / channels</td><td class="num">2 × 17</td><td class="num">0</td><td class="num win">framework-owned</td></tr>
-          <tr><td>Domain tool declarations</td><td class="num">8</td><td class="num">8</td><td class="num zero">same product scope</td></tr>
-          <tr><td>Explicit response sites</td><td class="num">route/branch updates</td><td class="num">5 <code>go</code>, 8 <code>stay</code>, 1 <code>direct</code>, 1 <code>finish</code></td><td class="num zero">visible contract</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="grid grid-2 mt-32">
-      <div class="card">
-        <h3>The expensive work is concentrated</h3>
-        <p>
-          The direct graph's 980-line file owns stage prompts, tool declarations and dispatch,
-          model calls, message handling, validation, persistence boundary, and routing. The
-          recounted repetition rows show the maintenance cost hidden inside that one artifact.
-          EZGraph splits its corresponding 551 lines between a small graph definition and five
-          stage files, while the framework owns the repeated turn mechanics.
-        </p>
-        <p>
-          The domain logic itself is unchanged between the two implementations, and that is the
-          claim in one sentence: this is not a DSL that compresses business rules, it is a
-          framework that deletes plumbing.
-        </p>
-      </div>
-      <div class="card">
-        <h3>What this count does not claim</h3>
-        <p>
-          It does not claim that a line count measures quality, performance, or every LangGraph
-          application. The quote application's provider, prompts, domain rules, and rating
-          backend remain intentionally equivalent.
-        </p>
-        <p>
-          The source counts are useful because they are reproducible and scoped: they include
-          application code, exclude the framework itself, and keep matching domain backend code
-          out of the headline.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================== MODULARITY ============================== -->
-<section class="band" id="modularity">
-  <div class="wrap">
-    <div class="section-head">
-      <span class="eyebrow">4.3</span>
-      <h2>Modularity, measured as edit sites</h2>
-      <p>
-        Line counts are a proxy. The honest test of modularity is <b>how many places you touch
-        to add a sixth stage</b> — say a <code>DiscountsNode</code> between coverage and quote.
-        This is the number that predicts your team's velocity in month six.
-      </p>
-    </div>
-
-    <div class="split">
-      <div>
-        <h3 style="margin-bottom:14px">LangGraph — <span class="loss">14 edit sites</span></h3>
-        <div class="table-wrap">
-          <table style="min-width:0">
-            <thead><tr><th class="num">#</th><th>Edit</th><th>Location</th></tr></thead>
-            <tbody>
-              <tr><td class="num">1</td><td>Add <code>"discounts"</code> to the <code>QuoteStage</code> union</td><td class="mono dim" style="font-size:0.78rem">quote-langgraph.ts:52</td></tr>
-              <tr><td class="num">2</td><td>Add a <code>stageMessageKey</code> entry</td><td class="mono dim" style="font-size:0.78rem">:92–98</td></tr>
-              <tr><td class="num">3</td><td>Declare the Zod schema const</td><td class="mono dim" style="font-size:0.78rem">:100–160</td></tr>
-              <tr><td class="num">4</td><td>Wrap it in a <code>tool()</code> const</td><td class="mono dim" style="font-size:0.78rem">:162–212</td></tr>
-              <tr><td class="num">5</td><td>Add a <code>stageTools</code> entry</td><td class="mono dim" style="font-size:0.78rem">:214–225</td></tr>
-              <tr><td class="num">6</td><td>Bind a model in the constructor</td><td class="mono dim" style="font-size:0.78rem">:267–273</td></tr>
-              <tr><td class="num">7</td><td>Write the <code>discountsAgent</code> method</td><td class="mono dim" style="font-size:0.78rem">:473–526</td></tr>
-              <tr><td class="num">8</td><td>Write the <code>discountsTools</code> method</td><td class="mono dim" style="font-size:0.78rem">:553–932</td></tr>
-              <tr><td class="num">9</td><td><code>addNode("discountsAgent", …)</code></td><td class="mono dim" style="font-size:0.78rem">:427–471</td></tr>
-              <tr><td class="num">10</td><td><code>addNode("discountsTools", …)</code></td><td class="mono dim" style="font-size:0.78rem">:427–471</td></tr>
-              <tr><td class="num">11</td><td><code>addConditionalEdges</code> for the agent, plus one for the tools node</td><td class="mono dim" style="font-size:0.78rem">:427–471</td></tr>
-              <tr><td class="num">12</td><td>Add an <code>agentRoutes</code> entry</td><td class="mono dim" style="font-size:0.78rem">:957–964</td></tr>
-              <tr><td class="num">13</td><td>Add to <code>QuoteLanggraphPhase</code></td><td class="mono dim" style="font-size:0.78rem">state.ts:12–18</td></tr>
-              <tr><td class="num">14</td><td>Add to <code>QuoteLanggraphRoute</code>, plus state channels for the new data</td><td class="mono dim" style="font-size:0.78rem">:20–26, :39–100</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p class="table-note">
-          <b>Eleven of these are one-line edits to shared module-level structures, and nothing
-          checks that they agree.</b> A missed <code>agentRoutes</code> entry is a runtime
-          <code>KeyError</code> on the first customer who reaches that stage — in production,
-          not in CI.
-        </p>
-      </div>
-
-      <div>
-        <h3 style="margin-bottom:14px">EZGraph — <span class="win">5 edit sites</span></h3>
-        <div class="table-wrap">
-          <table style="min-width:0">
-            <thead><tr><th class="num">#</th><th>Edit</th><th>Location</th></tr></thead>
-            <tbody>
-              <tr><td class="num">1</td><td>Write <code>nodes/discounts.node.ts</code> — the whole stage: prompt, tools, handlers, validation, state saves, and responses</td><td class="mono dim" style="font-size:0.78rem">new file</td></tr>
-              <tr><td class="num">2</td><td>Add a <code>DiscountsNode?: NodeStateValue&lt;…&gt;</code> key</td><td class="mono dim" style="font-size:0.78rem">quote-graph.state.ts</td></tr>
-              <tr><td class="num">3</td><td>Add <code>[DiscountsNode, "quote-intake"]</code> to <code>historySpaces</code></td><td class="mono dim" style="font-size:0.78rem">quote-graph.ts:37–44</td></tr>
-              <tr><td class="num">4</td><td>Add <code>DiscountsNode</code> to <code>registerTurnNodes(...)</code></td><td class="mono dim" style="font-size:0.78rem">quote-graph.ts:64–71</td></tr>
-              <tr><td class="num">5</td><td>Change the upstream <code>go(QuoteNode)</code> to <code>go(DiscountsNode)</code></td><td class="mono dim" style="font-size:0.78rem">coverage.node.ts</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p class="table-note">
-          One new file plus four one-line edits — and <b>edits 3, 4 and 5 take the class</b>, so
-          forgetting one is a <code>compile()</code> error or a type error rather than a
-          production <code>KeyError</code>. Conversational routing lives in the explicit
-          <code>go(TargetNode)</code> response returned by the upstream node.
-        </p>
-        <div class="verdict">
-          This is what "modular" means concretely: <b>a stage is a file.</b> Its prompt, tool
-          schemas, handlers, validation, persisted slice and transition all live in one place,
-          and adding one does not require editing five shared tables that nothing cross-checks.
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================== PATTERNS ============================== -->
-<section id="patterns">
-  <div class="wrap wrap-narrow">
-    <div class="section-head">
-      <span class="eyebrow">4.4</span>
-      <h2>Boilerplate patterns, counted</h2>
-      <p>
-        Exact <code>ripgrep</code> counts over the two trees. These are the repetitions that
-        grow every time you add a tool or a stage.
-      </p>
-    </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Pattern</th><th class="num">LangGraph</th><th class="num">EZGraph</th></tr></thead>
-        <tbody>
-          <tr><td>Manual <code>Schema.parse(call.args)</code> in <code>try</code>/<code>catch</code></td><td class="num">8</td><td class="num win">0</td></tr>
-          <tr><td>Tool-name dispatch checks — <code>call.name === / !==</code></td><td class="num">14</td><td class="num win">0</td></tr>
-          <tr><td><code>terminate_session</code> handling sites</td><td class="num">7</td><td class="num win">0 <span class="dim">framework node</span></td></tr>
-          <tr><td>Explicit <code>route:</code> writes in application code</td><td class="num">16</td><td class="num win">0</td></tr>
-          <tr><td>Hand-written reducers</td><td class="num">2 helpers × 17 channels</td><td class="num win">0</td></tr>
-          <tr><td>Hand-written session store implementations</td><td class="num">3</td><td class="num win">0 <span class="dim">4 ship with it</span></td></tr>
-          <tr><td>Tool handler declarations</td><td class="num">8 <span class="dim">in <code>if</code>/<code>else</code> chains</span></td><td class="num">8 <span class="dim"><code>@Tool</code> decorators</span></td></tr>
-          <tr><td>Quit checks in application code</td><td class="num">5 <span class="dim">inside dispatch chains</span></td><td class="num">5 <span class="dim"><code>quitRequested</code> guards</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="verdict">
-      <b>The <code>terminate_session</code> row is the contract argument in one line.</b> In
-      LangGraph it is a schema, a <code>tool()</code> wrapper, an entry in all five
-      <code>stageTools</code> lists, and a handler branch in all five tool nodes — seven sites,
-      and a sixth stage makes it nine. In EZGraph every <code>ConversationNode</code> inherits
-      the handler, <code>TerminateSessionNode</code> supplies the definition once,
-      <code>quit()</code> routes through it, and <code>compile()</code> fails loudly if you
-      forget to register it. Seven sites become zero, and the failure mode moves from
-      "one stage silently can't be quit" to a build error.
-    </div>
-
-    <div class="callout warn">
-      <span class="label">A bug the benchmark found in its own control group</span>
-      <p>
-        Writing the LangGraph version honestly surfaced a real defect: the hand-rolled agent
-        loop services only <b>one tool call per pass</b>. Give it a genuine multi-tool batch and
-        it appends one <code>ToolMessage</code> and drops the rest — a conversation shape
-        providers reject. Nobody wrote that bug on purpose. It is what happens when the loop is
-        application code that has to be reimplemented per stage, and it is the strongest
-        argument on this page for moving the loop into a framework where it gets written once
-        and tested once.
-      </p>
-    </div>
-  </div>
-</section>
-
-<!-- ============================== METHOD ============================== -->
-<section class="band" id="method">
-  <div class="wrap wrap-narrow">
-    <div class="section-head">
-      <span class="eyebrow">Method</span>
-      <h2>How to reproduce every number</h2>
-      <p>
-        A benchmark you cannot re-run is an advertisement. Here is the exact normalizer.
-      </p>
-    </div>
-
-    <div class="code">
-      <div class="code-head">
-        <span class="dots"><i></i><i></i><i></i></span>
-        <span class="file">normalize.js</span>
-        <span class="note">drops blanks, comments, and imports</span>
-      </div>
-<pre><code>function normalize(lines) {
-  let total = 0, inBlockComment = false, inImport = false;
-  for (const raw of lines) {
-    const line = raw.trim();
-    if (inBlockComment) { if (line.includes("*/")) inBlockComment = false; continue; }
-    if (inImport) { if (/from\s+["'].*["']/.test(line) || /;\s*$/.test(line)) inImport = false; continue; }
-    if (line === "") continue;
-    if (line.startsWith("//")) continue;
-    if (line.startsWith("/*")) { if (!line.includes("*/")) inBlockComment = true; continue; }
-    if (line.startsWith("*")) continue;
-    if (/^import\b/.test(line)) {
-      if (!/from\s+["'].*["']\s*;?\s*$/.test(line)) inImport = true;
-      continue;
-    }
-    total += 1;
-  }
-  return total;
-}</code></pre>
-    </div>
-
-    <p class="mt-32">
-      Pattern counts are plain <code>ripgrep</code> over the two trees — for example, the
-      manual argument-parse count:
-    </p>
-
-    <div class="install">
-      <span class="prompt">$</span>
-      <code>rg -c 'Schema\.parse\(call\.args\)' src/graphs/quote-langgraph/</code>
-    </div>
-
-    <h3 class="mt-40" style="font-size:1.2rem">Honesty notes</h3>
-    <ul class="checks">
-      <li>
-        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" style="color:var(--amber)"><path d="M8 3.5v6m0 2.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        <span><b>Same authors, both sides.</b> A LangGraph specialist would write the control
-          group somewhat tighter. What they could not do is delete the session store (177), the
-          request boundary (187), the tool dispatch (113), the agent loop (79) or the reducers
-          (64) — 620 lines of pure plumbing that a tighter style trims by a few percent at
-          best.</span>
-      </li>
-      <li>
-        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" style="color:var(--amber)"><path d="M8 3.5v6m0 2.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        <span><b>The 177-line session store is a fair charge, not a strawman.</b> A LangGraph
-          app could use a checkpointer instead — but then it inherits the schema-migration and
-          retention problems in <a href="/ezgraph/#pain">pain point 01</a>, which is precisely
-          why the control group writes an application-level store.</span>
-      </li>
-      <li>
-        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" style="color:var(--amber)"><path d="M8 3.5v6m0 2.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        <span><b>EZGraph's 617 lines exclude the framework itself.</b> That is the point of a
-          framework — but it does mean you are trading code you own for code you don't. Read
-          <a href="/ezgraph/#limits">the limits</a> before deciding that trade is worth it.</span>
-      </li>
-      <li>
-        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" style="color:var(--amber)"><path d="M8 3.5v6m0 2.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        <span><b>One data point.</b> One five-stage guided conversation. Generalize from the
-          <a href="#concerns">per-concern table</a>, not from 51.9%: if your app needs
-          persistence, a request boundary, tool dispatch, an agent loop and state reducers,
-          expect a similar result. If it needs none of them, don't adopt this.</span>
-      </li>
-    </ul>
-
-    <div class="btn-row mt-40">
-      <a class="btn btn-primary" href="/ezgraph/docs/langgraph-pain-points/">
-        Read the full 8-section analysis
-      </a>
-      <a class="btn btn-ghost" href="/ezgraph/quote-graph/">Walk QuoteGraph</a>
-      <a class="btn btn-ghost" href="/ezgraph/#limits">What EZGraph does not do</a>
-    </div>
-  </div>
-</section>
-
-<!-- ============================== REFERENCES ============================== -->
-<section id="references">
-  <div class="wrap wrap-narrow">
-    <div class="section-head">
-      <span class="eyebrow">References</span>
-      <h2>Primary sources</h2>
-      <p>
-        The pain points on this site are not invented. Each is documented by LangGraph's own
-        documentation, its v1 feedback thread, or a public production write-up.
-      </p>
-    </div>
-
     <div class="grid grid-2">
       <div class="card">
-        <h3>LangGraph documentation</h3>
-        <ul style="margin-bottom:0">
-          <li><a href="https://docs.langchain.com/oss/javascript/langgraph/graph-api" target="_blank" rel="noopener">Graph API — state, reducers, conditional edges</a></li>
-          <li><a href="https://docs.langchain.com/oss/python/langgraph/interrupts" target="_blank" rel="noopener">Interrupts — resume re-runs the whole node</a></li>
-          <li><a href="https://docs.langchain.com/oss/javascript/langgraph/persistence" target="_blank" rel="noopener">Persistence — checkpointers and threads</a></li>
-          <li><a href="https://docs.langchain.com/oss/javascript/langchain/agents" target="_blank" rel="noopener">Agents — <code>createAgent</code> and its scope</a></li>
-        </ul>
+        <h3>Choose EZGraph when…</h3>
+        <p>You want guided, multi-turn applications on LangGraph with reusable node, tool,
+          state, and session conventions. The value is a common application baseline that
+          your team can apply across conversations.</p>
       </div>
       <div class="card">
-        <h3>Community &amp; production reports</h3>
-        <ul style="margin-bottom:0">
-          <li><a href="https://github.com/langchain-ai/langgraph/issues/4973" target="_blank" rel="noopener">langgraph#4973 — the v1 feedback thread</a></li>
-          <li><a href="https://github.com/langchain-ai/langgraphjs/issues/2040" target="_blank" rel="noopener">langgraphjs#2040 — concurrent writes to one thread</a></li>
-          <li><a href="https://pub.towardsai.net/langgraph-checkpointing-is-not-free-a-production-postmortem-398bc86861f4" target="_blank" rel="noopener">"Checkpointing is not free" — a production postmortem</a></li>
-          <li><a href="https://dev.to/elenarevicheva/langgraph-checkpointing-three-production-rewrites-to-stop-losing-state-231b" target="_blank" rel="noopener">Three production rewrites to stop losing state</a></li>
-          <li><a href="https://azguards.com/ai-engineering/mitigating-checkpoint-collisions-write-skew-in-langgraph/" target="_blank" rel="noopener">Mitigating checkpoint collisions and write skew</a></li>
-        </ul>
+        <h3>Choose direct LangGraph when…</h3>
+        <p>You want to design the graph and surrounding application contracts directly, or
+          already have a platform that supplies those conventions. Check the fit carefully
+          when custom execution and checkpoint behavior are central requirements.</p>
       </div>
     </div>
-
-    <div class="callout tip">
-      <p>
-        <b>Credit where it is due.</b> LangGraph is a genuinely good low-level orchestration
-        runtime, and EZGraph runs on it — every graph here compiles to a real
-        <code>StateGraph</code> and LangGraph executes it. Nothing on this page is a claim that
-        LangGraph is doing something wrong. It is a claim that a guided enterprise chatbot needs
-        an application layer above it, and that you should not have to write that layer five
-        times per company.
-      </p>
+    <p class="mt-32">The <a href="/ezgraph/#limits">EZGraph limits</a> describe the abstraction's
+      boundaries. The <a href="/ezgraph/compare/langgraph/quotegraph-case-study/">case study</a>
+      provides evidence for one implementation; its code reduction is not a universal
+      performance, quality, or productivity result.</p>
+    <div class="btn-row mt-32">
+      <a class="btn btn-primary" href="/ezgraph/compare/langgraph/quotegraph-case-study/">Read the QuoteGraph case study</a>
+      <a class="btn btn-ghost" href="/ezgraph/docs/developer-guide/">Explore the developer guide</a>
     </div>
   </div>
 </section>

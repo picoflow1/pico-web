@@ -15,7 +15,7 @@
         <a href="/ezgraph/">Overview</a>
         <a href="/ezgraph/tutorial/">Get started</a>
         <a href="/ezgraph/quote-graph/">QuoteGraph</a>
-        <a href="/ezgraph/compare/langgraph/">Compare</a>
+        <a href="/ezgraph/compare/langgraph/"{% if ezgraphCompare %} aria-current="{% if page.url == '/ezgraph/compare/langgraph/' %}page{% else %}true{% endif %}"{% endif %}>vs. LangGraph</a>
         <a href="/ezgraph/docs/developer-guide/">Docs</a>
         <a href="/ezgraph/license/">License</a>
       </div>
@@ -35,10 +35,19 @@
     </div>
   </section>
   <main id="main" class="ezgraph-main">
-    <div class="ezgraph-content">
+    <div class="ezgraph-content{% if ezgraphCompare %} ezgraph-content--compare{% endif %}">
+      {% if ezgraphCompare %}
+      <div class="ezgraph-compare-layout">
+        {% include "partials/ezgraph-compare-nav.njk" %}
+        <div class="ezgraph-compare-body">
+      {% endif %}
       {% if ezgraphDocument %}<article class="wrap ezgraph-document">{% endif %}
       {{ content | safe }}
       {% if ezgraphDocument %}</article>{% endif %}
+      {% if ezgraphCompare %}
+        </div>
+      </div>
+      {% endif %}
     </div>
   </main>
   {% include "partials/site-footer.njk" %}

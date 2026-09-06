@@ -54,6 +54,87 @@
   white-space: nowrap;
 }
 .ezgraph-product-nav__links a:hover { color: #8ec4e4; }
+.ezgraph-product-nav__links a[aria-current] { color: #e6edf3; }
+
+/* Comparison navigation follows the architecture / case-study split in Docs. */
+.ezgraph-content.ezgraph-content--compare { overflow: visible; }
+.ezgraph-compare-layout {
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr);
+  gap: 28px;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+.ezgraph-compare-sidebar {
+  position: sticky;
+  top: 195px;
+  align-self: start;
+  max-height: calc(100dvh - 215px);
+  overflow-y: auto;
+  padding-block: 28px;
+  z-index: 2;
+}
+.ezgraph-content .ezgraph-compare-sidebar__title {
+  margin: 0 0 22px;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.ezgraph-compare-sidebar__group + .ezgraph-compare-sidebar__group {
+  margin-top: 26px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.ezgraph-content .ezgraph-compare-sidebar h2 {
+  margin: 0 0 10px;
+  color: var(--text-muted);
+  font: 700 0.72rem/1.5 var(--font);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.ezgraph-content .ezgraph-compare-sidebar ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ezgraph-content .ezgraph-compare-sidebar li { margin: 0; }
+.ezgraph-content .ezgraph-compare-sidebar a {
+  display: block;
+  padding: 7px 10px;
+  border-radius: 6px;
+  color: var(--text-dim);
+  font-size: 0.81rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.ezgraph-content .ezgraph-compare-sidebar a:hover,
+.ezgraph-content .ezgraph-compare-sidebar a[aria-current="page"] {
+  color: var(--text);
+  background: var(--surface-2);
+}
+.ezgraph-compare-body { min-width: 0; }
+.ezgraph-content .ezgraph-compare-body .grid > *,
+.ezgraph-content .ezgraph-compare-body .split > * { min-width: 0; }
+.ezgraph-content .ezgraph-compare-body section[id] { scroll-margin-top: 195px; }
+.ezgraph-content .ezgraph-compare-body h1 { font-size: clamp(2rem, 4vw, 3.1rem); }
+
+@media (max-width: 1100px) {
+  .ezgraph-compare-layout { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .ezgraph-compare-sidebar {
+    position: relative;
+    top: auto;
+    max-height: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .ezgraph-content .ezgraph-compare-body .wrap { padding-inline: 0; }
+}
+@media (max-width: 900px) {
+  .ezgraph-content .ezgraph-compare-body section[id] { scroll-margin-top: 280px; }
+}
+@media (max-width: 600px) {
+  .ezgraph-compare-layout { padding-inline: 18px; }
+}
 
 .ezgraph-license-ticker {
   /* The site header is 76px and the EZGraph nav is 64px tall at desktop. */
