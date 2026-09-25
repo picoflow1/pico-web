@@ -5,6 +5,7 @@ description: Walk every branch of RouterDecisionNode.onDecision(), from saved no
 permalink: /ezgraph/docs/tutorials/decision-hotel-graph/decision-routing/
 ezgraph: true
 ezgraphDocument: true
+templateEngineOverride: md
 ---
 
 # 5. The router's policy

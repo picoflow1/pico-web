@@ -5,6 +5,7 @@ description: Test DecisionHotelGraph with a 23-turn deterministic contract, a ha
 permalink: /ezgraph/docs/tutorials/decision-hotel-graph/testing/
 ezgraph: true
 ezgraphDocument: true
+templateEngineOverride: md
 ---
 
 # 10. Testing decision graphs

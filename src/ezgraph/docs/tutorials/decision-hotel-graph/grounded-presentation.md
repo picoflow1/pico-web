@@ -5,6 +5,7 @@ description: Let a chat model draft the hotel presentation, release it only afte
 permalink: /ezgraph/docs/tutorials/decision-hotel-graph/grounded-presentation/
 ezgraph: true
 ezgraphDocument: true
+templateEngineOverride: md
 ---
 
 # 8. Grounded presentation and booking

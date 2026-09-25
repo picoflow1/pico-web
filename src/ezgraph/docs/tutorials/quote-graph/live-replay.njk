@@ -31,5 +31,36 @@ npm run test2:quote-graph</code></pre>
 
 <p>The final turn locks the current calculated tier, creates a quote reference, sets <code>completed: true</code>, and leaves the accepted tier in <code>QuoteNode</code> state.</p>
 
+<h2 id="under-the-hood">Under the hood</h2>
+<p>The transcript shows what the customer saw. This table shows which nodes ran, which tools changed state or moved the conversation, and who wrote each reply. The replay records replies rather than tool calls, so the tool column is inferred from each reply and the node code. Turns 14 and 15 match the code's templates word for word.</p>
+<table>
+  <thead><tr><th>Turn</th><th>Customer</th><th>Nodes</th><th>Tool and result</th><th>Reply written by</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Hi, I'd like a quote…</td><td>DriverNode</td><td>—</td><td>model</td></tr>
+    <tr><td>2</td><td>Jamie Rivera, born April 12, 1993.</td><td>DriverNode</td><td>—</td><td>model</td></tr>
+    <tr><td>3</td><td>Licensed in Oregon, valid license, for about 10 years.</td><td>DriverNode → VehicleNode</td><td><code>capture_driver</code> → <code>go(VehicleNode)</code></td><td>model (VehicleNode)</td></tr>
+    <tr><td>4</td><td>It's a 2019 Toyota Camry.</td><td>VehicleNode</td><td><code>resolve_vehicle</code> → <code>stay()</code> with three trims</td><td>model</td></tr>
+    <tr><td>5</td><td>The SE trim.</td><td>VehicleNode</td><td><code>resolve_vehicle</code> with a trim → <code>stay()</code>, one vehicle resolved</td><td>model</td></tr>
+    <tr><td>6</td><td>I finance it and drive about 12,000 miles a year.</td><td>VehicleNode</td><td>—</td><td>model</td></tr>
+    <tr><td>7</td><td>In my driveway.</td><td>VehicleNode → HistoryNode</td><td><code>capture_vehicle_use</code> → <code>go(HistoryNode)</code> + stage message</td><td>model (HistoryNode)</td></tr>
+    <tr><td>8</td><td>I'm insured today and had no lapse in the past year.</td><td>HistoryNode</td><td>—</td><td>model</td></tr>
+    <tr><td>9</td><td>Just one speeding ticket in March 2026, nothing else.</td><td>HistoryNode → CoverageNode</td><td><code>capture_history</code> → <code>go(CoverageNode)</code> + stage message</td><td>model (CoverageNode)</td></tr>
+    <tr><td>10</td><td>Standard liability, please.</td><td>CoverageNode</td><td>—</td><td>model</td></tr>
+    <tr><td>11</td><td>Can I skip collision and comprehensive entirely?</td><td>CoverageNode</td><td>none needed; the rule is in the prompt and enforced in code</td><td>model</td></tr>
+    <tr><td>12</td><td>Fine, $500 deductibles for both…</td><td>CoverageNode</td><td>—</td><td>model</td></tr>
+    <tr><td>13</td><td>Start it on June 15.</td><td>CoverageNode → QuoteNode</td><td><code>select_coverage</code> → rating → <code>go(QuoteNode)</code> + stage message</td><td>model (QuoteNode)</td></tr>
+    <tr><td>14</td><td>What would it cost if both deductibles were $1000?</td><td>QuoteNode</td><td><code>adjust_quote</code> → rating → <code>direct(text)</code></td><td><strong>code</strong></td></tr>
+    <tr><td>15</td><td>Accept my selected option, please.</td><td>QuoteNode → end</td><td><code>accept_quote</code> → <code>finish(text)</code></td><td><strong>code</strong></td></tr>
+  </tbody>
+</table>
+<p>Four things are worth noticing before the lessons take the graph apart:</p>
+<ul>
+  <li><strong>Most turns call no tool.</strong> A stage's model keeps asking questions until it has everything its tool needs. State changes only when a handler accepts a complete, valid submission.</li>
+  <li><strong>A stage change happens inside one turn.</strong> On turns 3, 7, 9, and 13 one node saves its facts and returns <code>go()</code>, and the next node writes the reply. The customer never sees a “moving on” message from the old stage.</li>
+  <li><strong>Every price comes from code.</strong> The rating engine priced the tiers on turn 13, and the model presented them from JSON. On turn 14 the model only chose <code>adjust_quote</code>; the numbers and the wording came from code, with no second model call.</li>
+  <li><strong>Acceptance is a business event, not a sentence.</strong> Turn 15 completes because <code>accept_quote</code> found <code>selected</code> in the saved tiers. The confirmation, premium, start date, and reference number are all code-owned.</li>
+</ul>
+<p>Two small inconsistencies are visible too. The model called the middle tier “Selected” on turn 13, while the code's label on turn 14 is “Your selection”. And the confirmation on turn 15 reads “your selected coverage (Your selection)”. <a href="/ezgraph/docs/tutorials/quote-graph/revise-and-accept/">Lesson 9</a> explains both.</p>
+
 <h2 id="next">Next</h2>
-<p><a href="/ezgraph/docs/tutorials/quote-graph/graph-and-state/">2. Graph and state ownership</a> maps the nodes and durable channels behind the replay.</p>
+<p><a href="/ezgraph/docs/tutorials/quote-graph/graph-and-state/">2. Graph, state, and ownership</a> maps the nodes and durable values behind the replay.</p>

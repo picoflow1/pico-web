@@ -5,6 +5,7 @@ description: Choose Choice, Score, and Noul questions, write guidance a decision
 permalink: /ezgraph/docs/tutorials/decision-hotel-graph/questions-and-prompts/
 ezgraph: true
 ezgraphDocument: true
+templateEngineOverride: md
 ---
 
 # 4. Questions, prompts, and thresholds

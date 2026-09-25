@@ -5,6 +5,7 @@ description: Build a durable hotel search and booking graph with Jev decision no
 permalink: /ezgraph/docs/tutorials/decision-hotel-graph/
 ezgraph: true
 ezgraphDocument: true
+templateEngineOverride: md
 ---
 
 # DecisionHotelGraph tutorial

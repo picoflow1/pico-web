@@ -5,6 +5,7 @@ description: Follow one DecisionNode invocation from defineQuestions() through t
 permalink: /ezgraph/docs/tutorials/decision-hotel-graph/decision-node-anatomy/
 ezgraph: true
 ezgraphDocument: true
+templateEngineOverride: md
 ---
 
 # 3. Anatomy of a decision node

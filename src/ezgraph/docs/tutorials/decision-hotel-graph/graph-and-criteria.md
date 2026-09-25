@@ -5,6 +5,7 @@ description: Define DecisionHotelGraph's chat and decision models, its node-stat
 permalink: /ezgraph/docs/tutorials/decision-hotel-graph/graph-and-criteria/
 ezgraph: true
 ezgraphDocument: true
+templateEngineOverride: md
 ---
 
 # 2. Graph, state, and history spaces

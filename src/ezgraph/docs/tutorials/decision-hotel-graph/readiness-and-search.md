@@ -5,6 +5,7 @@ description: Put a semantic readiness judge in front of a search without letting
 permalink: /ezgraph/docs/tutorials/decision-hotel-graph/readiness-and-search/
 ezgraph: true
 ezgraphDocument: true
+templateEngineOverride: md
 ---
 
 # 7. Readiness and deterministic search

@@ -5,6 +5,7 @@ description: Build five small ConversationNode collectors that validate and own 
 permalink: /ezgraph/docs/tutorials/decision-hotel-graph/criteria-and-corrections/
 ezgraph: true
 ezgraphDocument: true
+templateEngineOverride: md
 ---
 
 # 6. Criteria collectors and corrections

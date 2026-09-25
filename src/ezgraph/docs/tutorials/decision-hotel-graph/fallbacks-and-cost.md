@@ -5,6 +5,7 @@ description: Decide which decision failures fall back and which fail the turn, c
 permalink: /ezgraph/docs/tutorials/decision-hotel-graph/fallbacks-and-cost/
 ezgraph: true
 ezgraphDocument: true
+templateEngineOverride: md
 ---
 
 # 9. Fallbacks, usage, and cost
