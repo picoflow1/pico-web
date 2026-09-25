@@ -1,0 +1,35 @@
+---
+layout: layouts/ezgraph.njk
+title: 1. A fifteen-turn live QuoteGraph replay
+description: A complete passing model-backed car-insurance quote with validation, trim disambiguation, deterministic pricing, revision, and acceptance.
+permalink: /ezgraph/docs/tutorials/quote-graph/live-replay/
+ezgraph: true
+ezgraphDocument: true
+---
+
+<h1>1. A fifteen-turn live QuoteGraph replay</h1>
+<p>Read this first. This is a complete passing provider-backed run with <code>QUOTE_GRAPH_CURRENT_DATE</code> frozen to <code>2027-06-01</code>. The model wording may vary; catalog resolution, coverage policy, calculated premiums, state transitions, and the final completed state are the durable contracts.</p>
+
+<h2 id="run-it-yourself">Run it yourself</h2>
+<pre><code class="language-bash">cd ezgraph-demo
+USE_ENV=1 KEEP_SESSION=1 npm run test2:quote-graph</code></pre>
+<p>The test sends all fifteen turns through one retained session, judges each response semantically, and inspects the final node-owned state. It runs only with configured provider credentials.</p>
+
+<h2 id="captured-live-transcript">Captured live transcript</h2>
+<div class="quote-replay">
+  <div class="quote-replay__header"><span class="quote-replay__dots" aria-hidden="true"><i></i><i></i><i></i></span><a href="https://github.com/picoflowio/ezgraph-demo/blob/main/test/quote-graph/quote-graph.scenario.json">test/quote-graph/quote-graph.scenario.json</a><span>15 turns · passing live E2E</span></div>
+  <ol class="quote-replay__list">
+  {%- for turn in replay.turns %}
+    <li class="quote-replay__turn{% if turn.completed %} quote-replay__turn--completed{% endif %}">
+      <p class="quote-replay__meta">{{ loop.index }} · {{ turn.stage }}{% if turn.completed %} · completed{% endif %}</p>
+      <div class="quote-replay__message quote-replay__message--you"><span class="quote-replay__who">You</span><div class="quote-replay__bubble">{{ turn.user | escape }}</div></div>
+      <div class="quote-replay__message quote-replay__message--bot"><span class="quote-replay__who">Bot</span><div class="quote-replay__bubble">{{ turn.bot | renderTranscriptMarkdown | safe }}</div></div>
+    </li>
+  {%- endfor %}
+  </ol>
+</div>
+
+<p>The final turn locks the current calculated tier, creates a quote reference, sets <code>completed: true</code>, and leaves the accepted tier in <code>QuoteNode</code> state.</p>
+
+<h2 id="next">Next</h2>
+<p><a href="/ezgraph/docs/tutorials/quote-graph/graph-and-state/">2. Graph and state ownership</a> maps the nodes and durable channels behind the replay.</p>

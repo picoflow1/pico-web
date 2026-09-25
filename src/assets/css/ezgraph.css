@@ -119,6 +119,186 @@
 .ezgraph-content .ezgraph-compare-body section[id] { scroll-margin-top: 195px; }
 .ezgraph-content .ezgraph-compare-body h1 { font-size: clamp(2rem, 4vw, 3.1rem); }
 
+/* Documentation keeps its own persistent navigation, separate from comparison pages. */
+.ezgraph-content.ezgraph-content--docs { overflow: visible; }
+.ezgraph-docs-layout {
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr);
+  gap: 28px;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+.ezgraph-docs-sidebar {
+  position: sticky;
+  top: 195px;
+  align-self: start;
+  max-height: calc(100dvh - 215px);
+  overflow-y: auto;
+  padding-block: 28px;
+  z-index: 2;
+}
+.ezgraph-content .ezgraph-docs-sidebar__title {
+  margin: 0 0 22px;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.ezgraph-docs-sidebar__group + .ezgraph-docs-sidebar__group {
+  margin-top: 26px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.ezgraph-content .ezgraph-docs-sidebar h2 {
+  margin: 0 0 10px;
+  color: var(--text-muted);
+  font: 700 0.72rem/1.5 var(--font);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.ezgraph-docs-sidebar__track + .ezgraph-docs-sidebar__track {
+  margin-top: 18px;
+}
+.ezgraph-content .ezgraph-docs-sidebar h3 {
+  margin: 0 0 5px;
+  padding-inline: 10px;
+  color: var(--text);
+  font: 650 0.78rem/1.4 var(--font);
+}
+.ezgraph-content .ezgraph-docs-sidebar ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ezgraph-content .ezgraph-docs-sidebar li { margin: 0; }
+.ezgraph-content .ezgraph-docs-sidebar a {
+  display: block;
+  padding: 7px 10px;
+  border-radius: 6px;
+  color: var(--text-dim);
+  font-size: 0.81rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.ezgraph-content .ezgraph-docs-sidebar a:hover,
+.ezgraph-content .ezgraph-docs-sidebar a[aria-current="page"] {
+  color: var(--text);
+  background: var(--surface-2);
+}
+.ezgraph-docs-body { min-width: 0; }
+.ezgraph-content .ezgraph-docs-body .ezgraph-document { padding-inline: 0; }
+.ezgraph-content .ezgraph-docs-body h2 { scroll-margin-top: 195px; }
+
+/* Model-backed tutorial replays mirror the main docs HotelFlow transcript. */
+.ezgraph-content .quote-replay {
+  margin: 32px 0;
+  overflow: hidden;
+  color: #e8eff4;
+  background: #101820;
+  border: 1px solid #263847;
+  border-radius: 18px;
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.28);
+}
+.ezgraph-content .quote-replay__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: #9cafbe;
+  background: #17222c;
+  border-bottom: 1px solid #263847;
+  font: 500 0.72rem/1.4 var(--mono);
+}
+.ezgraph-content .quote-replay__header a {
+  min-width: 0;
+  overflow: hidden;
+  color: #d8e8f4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ezgraph-content .quote-replay__header > span:last-child {
+  margin-left: auto;
+  white-space: nowrap;
+}
+.ezgraph-content .quote-replay__dots {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 5px;
+}
+.ezgraph-content .quote-replay__dots i {
+  width: 9px;
+  height: 9px;
+  background: #536a7c;
+  border-radius: 999px;
+}
+.ezgraph-content .quote-replay__dots i:first-child { background: #ee8c76; }
+.ezgraph-content .quote-replay__dots i:nth-child(2) { background: #ecc56f; }
+.ezgraph-content .quote-replay__dots i:last-child { background: #77c7a4; }
+.ezgraph-content .quote-replay__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ezgraph-content .quote-replay__turn {
+  margin: 0;
+  padding: 24px;
+  border-bottom: 1px solid #22323f;
+}
+.ezgraph-content .quote-replay__turn:last-child { border-bottom: 0; }
+.ezgraph-content .quote-replay__turn--completed {
+  background: linear-gradient(90deg, rgba(69, 182, 139, 0.1), transparent 55%);
+}
+.ezgraph-content .quote-replay__meta {
+  margin: 0 0 12px;
+  color: #91a9ba;
+  font: 700 0.7rem/1.4 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.ezgraph-content .quote-replay__message + .quote-replay__message { margin-top: 16px; }
+.ezgraph-content .quote-replay__who {
+  display: block;
+  margin-bottom: 4px;
+  font: 700 0.7rem/1.4 var(--mono);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.ezgraph-content .quote-replay__message--you .quote-replay__who { color: #78cbed; }
+.ezgraph-content .quote-replay__message--bot .quote-replay__who { color: #becbd5; }
+.ezgraph-content .quote-replay__bubble {
+  padding: 12px 16px;
+  border: 1px solid #314554;
+  border-radius: 13px;
+  line-height: 1.58;
+}
+.ezgraph-content .quote-replay__message--you .quote-replay__bubble {
+  max-width: 82%;
+  margin-left: auto;
+  color: #e8eff4;
+  background: rgba(58, 131, 169, 0.2);
+  border-color: rgba(92, 181, 222, 0.48);
+  font: 500 0.86rem/1.58 var(--mono);
+  white-space: pre-wrap;
+}
+.ezgraph-content .quote-replay__message--bot .quote-replay__bubble {
+  color: #e8eff4;
+  background: #18242e;
+}
+.ezgraph-content .quote-replay__message--bot .quote-replay__bubble > :first-child { margin-top: 0; }
+.ezgraph-content .quote-replay__message--bot .quote-replay__bubble > :last-child { margin-bottom: 0; }
+.ezgraph-content .quote-replay__message--bot .quote-replay__bubble p,
+.ezgraph-content .quote-replay__message--bot .quote-replay__bubble ul,
+.ezgraph-content .quote-replay__message--bot .quote-replay__bubble ol { margin: 0 0 12px; }
+.ezgraph-content .quote-replay__message--bot .quote-replay__bubble ul,
+.ezgraph-content .quote-replay__message--bot .quote-replay__bubble ol { padding-left: 22px; }
+
+@media (max-width: 600px) {
+  .ezgraph-content .quote-replay__header { gap: 8px; padding: 12px; }
+  .ezgraph-content .quote-replay__header > span:last-child { display: none; }
+  .ezgraph-content .quote-replay__turn { padding: 16px; }
+  .ezgraph-content .quote-replay__message--you .quote-replay__bubble { max-width: 100%; }
+}
+
 @media (max-width: 1100px) {
   .ezgraph-compare-layout { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .ezgraph-compare-sidebar {
@@ -128,6 +308,13 @@
     border-bottom: 1px solid var(--border);
   }
   .ezgraph-content .ezgraph-compare-body .wrap { padding-inline: 0; }
+  .ezgraph-docs-layout { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .ezgraph-docs-sidebar {
+    position: relative;
+    top: auto;
+    max-height: none;
+    border-bottom: 1px solid var(--border);
+  }
 }
 @media (max-width: 900px) {
   .ezgraph-content .ezgraph-compare-body section[id] { scroll-margin-top: 280px; }

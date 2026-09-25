@@ -1,0 +1,28 @@
+<aside class="ezgraph-docs-sidebar">
+  <nav aria-label="EZGraph documentation sections">
+    <p class="ezgraph-docs-sidebar__title">EZGraph docs</p>
+    {% for group in ezgraphDocsNav %}
+    <div class="ezgraph-docs-sidebar__group">
+      <h2>{{ group.label }}</h2>
+      {% if group.tracks %}
+        {% for track in group.tracks %}
+        <div class="ezgraph-docs-sidebar__track">
+          <h3>{{ track.title }}</h3>
+          <ul>
+            {% for item in track.items %}
+            <li><a href="{{ item.url }}"{% if page.url == item.url %} aria-current="page"{% endif %}>{{ item.title }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endfor %}
+      {% else %}
+      <ul>
+        {% for item in group.items %}
+        <li><a href="{{ item.url }}"{% if page.url == item.url or page.url.startsWith(item.url) %} aria-current="page"{% endif %}>{{ item.title }}</a></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </nav>
+</aside>

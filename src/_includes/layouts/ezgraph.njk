@@ -35,15 +35,24 @@
     </div>
   </section>
   <main id="main" class="ezgraph-main">
-    <div class="ezgraph-content{% if ezgraphCompare %} ezgraph-content--compare{% endif %}">
+    <div class="ezgraph-content{% if ezgraphCompare %} ezgraph-content--compare{% endif %}{% if ezgraphDocument or ezgraphDocs %} ezgraph-content--docs{% endif %}">
       {% if ezgraphCompare %}
       <div class="ezgraph-compare-layout">
         {% include "partials/ezgraph-compare-nav.njk" %}
         <div class="ezgraph-compare-body">
       {% endif %}
+      {% if ezgraphDocument or ezgraphDocs %}
+      <div class="ezgraph-docs-layout">
+        {% include "partials/ezgraph-docs-nav.njk" %}
+        <div class="ezgraph-docs-body">
+      {% endif %}
       {% if ezgraphDocument %}<article class="wrap ezgraph-document">{% endif %}
       {{ content | safe }}
       {% if ezgraphDocument %}</article>{% endif %}
+      {% if ezgraphDocument or ezgraphDocs %}
+        </div>
+      </div>
+      {% endif %}
       {% if ezgraphCompare %}
         </div>
       </div>
