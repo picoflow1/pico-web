@@ -16,7 +16,7 @@ Do not call a backend search solely because a model says the request sounds comp
 ## Review the saved snapshot
 
 `CriteriaReadinessDecisionNode` receives the normalized criteria and the deterministic issue
-list as decision evidence, together with the framework-supplied intake conversation. It asks two
+list as decision facts from `getDecisionFacts()`, together with the framework-supplied intake conversation. It asks two
 questions: an `outcome` choice (ready, one of the five criteria, or unclear) and a `faithful`
 Noul probability that the saved criteria reflect what the customer asked for. Code accepts
 “ready” only if deterministic validation has no issues and `faithful` reaches the application's

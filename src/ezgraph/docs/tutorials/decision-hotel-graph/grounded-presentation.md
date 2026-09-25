@@ -18,7 +18,7 @@ or booking.
 
 `PresentNode` receives the current `hotelFound` list in its prompt. The model drafts a
 presentation and submits it with the `publish_hotel_draft` tool, which saves the draft and
-returns `go(PresentationDecisionNode)`. The decision node's evidence is the draft plus the exact
+returns `go(PresentationDecisionNode)`. The decision node's `getDecisionFacts()` supplies the draft plus the exact
 saved hotels and criteria. It asks whether the draft is `grounded` (Noul) and scores
 `completeness` and `clarity` (Score, 0–2). Code releases the draft only when
 `grounded.noul >= 0.85` and both scores are at least 1.5 with confidence of at least 0.75.

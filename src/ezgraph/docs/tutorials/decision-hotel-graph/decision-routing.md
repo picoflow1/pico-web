@@ -48,7 +48,7 @@ The decision provider can return only one of those declared labels, and EZGraph 
 other answer before `onDecision()` runs. The node's code maps the answer to `go(...)`,
 `directTo(...)`, or `finish(...)`; it does not execute a provider-generated function name or
 route string. `getPrompt()` supplies the saved criteria and unresolved issues as shared
-guidance, and `getDecisionEvidence()` adds the same criteria as JSON evidence.
+guidance, and `getDecisionFacts()` adds the same criteria as JSON facts.
 
 ```ts
 if (route === "exit") {

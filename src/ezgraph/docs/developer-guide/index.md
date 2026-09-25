@@ -235,8 +235,8 @@ export class RouterDecisionNode extends DecisionNode<
     return `Route the latest hotel request. Saved criteria:\n${summarize(state)}`;
   }
 
-  // Optional JSON evidence, merged with the framework-owned request fields.
-  protected override getDecisionEvidence(state: HotelStateType) {
+  // Optional JSON facts, merged with the framework-owned request fields.
+  protected override getDecisionFacts(state: HotelStateType) {
     return { criteria: readCriteria(state) };
   }
 
@@ -275,14 +275,14 @@ Every call sends one JSON state and the prepared questions:
 
 ```ts
 {
-  ...getDecisionEvidence(state),   // your JSON-compatible evidence
+  ...getDecisionFacts(state),   // your JSON-compatible facts
   request: "newest human message in this node's history space",
   priorRequests: ["up to four earlier human messages"],
 }
 ```
 
-`request` and `priorRequests` are reserved. Evidence that tries to replace them
-throws. Messages marked `ezgraphInternal`, such as the `terminate_session`
+`request` and `priorRequests` are reserved. Facts that try to replace them
+throw. Messages marked `ezgraphInternal`, such as the `terminate_session`
 handoff, are excluded, while a real user message forwarded with
 `withMessage()` counts. Nodes that must judge the same conversation should
 share a history space, for example `[RouterDecisionNode, "hotel-intake"]`.
@@ -344,7 +344,7 @@ chat model. To use a different backend, implement `DecisionProviderAdapter`
   `maxRetries` times. For Jev these are 408, 429, 5xx, and connection or timeout errors.
 - Responses that fail validation are not retried: a wrong answer type, an
   unknown label, an out-of-range score, or probabilities that do not sum to 1.
-- Missing credentials, the missing package, invalid questions or evidence, and
+- Missing credentials, the missing package, invalid questions or facts, and
   401/403 are configuration errors. They throw and skip every fallback.
 - Caller cancellation aborts the attempt and skips the fallbacks.
 - Exceptions thrown by `onDecision()` or `onDecisionError()` propagate and are
@@ -377,7 +377,7 @@ Decision usage is tracked separately from chat-model `tokens` as
 observes is counted, including one rejected by validation.
 `SessionDocument.decisions` records provider, configured and actual model,
 attempts, duration, request ID, and outcome for each call. Prompts, questions,
-evidence, and answers are never written there.
+facts, and answers are never written there.
 
 ### Porting a PicoFlow `DecisionStep`
 
@@ -387,7 +387,7 @@ evidence, and answers are never written there.
 | `Flow.defineSteps()` | `graph.registerTurnNodes(...)` |
 | `Flow.configDecision()` | `GraphDefinition.decisionConfig` |
 | `.useDecision({...})` | `getDecisionConfig()` |
-| `getDecisionData()` | `getDecisionEvidence(state)` |
+| `getDecisionData()` | `getDecisionFacts(state)` |
 | `.useMemory("name")` | `historySpaces: [[X, "name"]]` |
 | `onDecision(answers, context)` | `onDecision(answers, context, state)` |
 | returning a string | `direct(content)` |
