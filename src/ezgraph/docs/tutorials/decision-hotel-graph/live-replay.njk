@@ -12,8 +12,8 @@ ezgraphDocument: true
 
 <h2 id="run-it-yourself">Run it yourself</h2>
 <pre><code class="language-bash">cd ezgraph-demo
-USE_ENV=1 KEEP_SESSION=1 npm run test2:decision-hotel-graph</code></pre>
-<p>The test sends all sixteen turns through one session, semantically judges every reply, and verifies the final durable booking state. It runs only with configured providers.</p>
+npm run test2:decision-hotel-graph</code></pre>
+<p>The script sets <code>USE_ENV=1 KEEP_SESSION=1</code>. The test sends all sixteen turns through one session, semantically judges every reply, and verifies the final durable booking state. It is skipped unless <code>TYPESAFE_API_KEY</code> (for Jev decisions) and <code>OPENAI_API_KEY</code> are set.</p>
 
 <h2 id="captured-live-transcript">Captured live transcript</h2>
 <div class="quote-replay">

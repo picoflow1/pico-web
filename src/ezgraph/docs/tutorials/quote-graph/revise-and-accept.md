@@ -23,14 +23,22 @@ no second model call and keeps `QuoteNode` active.
 ## Route backward with the real request
 
 If the customer asks to rework coverage rather than make a small adjustment, `revise_coverage`
-returns `go(CoverageNode).withMessage(this.graph.input(state))`. The coverage node receives the
-customer’s actual request and collects a new valid selection before another rating run.
+forwards the customer's latest message to the coverage stage:
+
+```ts
+return go(CoverageNode).withMessage(new HumanMessage(this.graph.input(state)));
+```
+
+`CoverageNode` receives the customer’s actual request in its intake history, not a synthetic
+instruction, and collects a new valid selection before another rating run.
 
 ## Finish from the current tier list
 
 `accept_quote` looks up the requested tier in `QuoteNode`’s saved `tiers` before it generates a
-reference and returns `finish(...)`. A name that was never presented, or was invalidated by a
-later revision, cannot be accepted.
+reference, saves `acceptedTier` and `referenceNumber`, and returns `finish(...)` with a
+code-rendered confirmation. A tier that is not in the current list cannot be accepted, and
+because `adjust_quote` replaces the saved tiers, acceptance always uses the latest calculated
+premium.
 
 ## Why it is written this way
 

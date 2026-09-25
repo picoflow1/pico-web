@@ -9,20 +9,20 @@ ezgraphDocs: true
 <section class="tight">
   <div class="wrap wrap-narrow">
     <span class="eyebrow">Tutorial</span>
-    <h1 style="font-size:clamp(2rem,4.4vw,3.1rem)">Build a guided chatbot in four files</h1>
+    <h1 style="font-size:clamp(2rem,4.4vw,3.1rem)">Build a guided chatbot in five files</h1>
     <p class="lede">
-      This small graph collects a traveller's city, saves it as durable node state, and moves
-      to a weather node. It uses the same contract as the larger hotel, support, invoice, and
-      quote examples: a tool handler saves facts, returns a direct response, or selects the
-      next node.
+      This small graph collects a traveller's city, saves it as durable node state, moves to a
+      weather node, and finishes with a code-owned forecast. It uses the same contract as the
+      larger quote, hotel, and expense examples in <code>ezgraph-demo</code>: a tool handler
+      saves facts, returns a direct response, or selects the next node.
     </p>
 
     <div class="callout tip">
       <span class="label">The current contract</span>
       <p>
         A conversational tool returns <code>go()</code>, <code>stay()</code>,
-        <code>direct()</code>, or <code>finish()</code>. There is no separate outcome builder,
-        routing method, or per-turn context object to maintain.
+        <code>direct()</code>, <code>directTo()</code>, or <code>finish()</code>. There is no
+        separate outcome builder, routing method, or per-turn context object to maintain.
       </p>
     </div>
   </div>
@@ -32,13 +32,24 @@ ezgraphDocs: true
   <div class="wrap wrap-narrow">
     <ol class="steps">
       <li>
-        <h3>Install</h3>
-        <div class="install"><span class="prompt">$</span><code>npm install @picoflow/ezgraph zod</code></div>
+        <h3>Install and configure TypeScript</h3>
+        <div class="install"><span class="prompt">$</span><code>npm install @picoflow/ezgraph zod @langchain/openai</code></div>
         <p style="margin-top:20px">
-          Enable decorators and import <code>reflect-metadata</code> once at the top of your
-          application entry point before node modules load.
+          Model-provider packages are optional peer dependencies; install the ones your graph
+          uses (<code>@langchain/openai</code>, <code>@langchain/anthropic</code>, or
+          <code>@langchain/google</code>). EZGraph needs Node.js 22.5 or later. Tool handlers use
+          a method decorator, so enable decorators and metadata emission:
         </p>
-        <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">main.ts</span></div><pre><code>import "reflect-metadata";</code></pre></div>
+        <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">tsconfig.json</span></div><pre><code>{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "strict": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  }
+}</code></pre></div>
       </li>
 
       <li>
@@ -46,7 +57,7 @@ ezgraphDocs: true
         <p>
           The registry says which node owns each durable value. The generated annotation is the
           LangGraph state passed to the compiled graph; the registry itself is not a second
-          runtime state object.
+          runtime state object. The first argument names the node a new conversation starts in.
         </p>
         <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">weather-graph.state.ts</span></div><pre><code>import { createGraphStateAnnotation, type NodeStateValue } from "@picoflow/ezgraph";
 import { CityNode } from "./nodes/city.node.js";
@@ -58,7 +69,7 @@ export type WeatherGraphNodes = {
 
 export const WeatherGraphState = createGraphStateAnnotation(
   CityNode.name,
-  () =&gt; ({} as WeatherGraphNodes),
+  () =&gt; ({}) as WeatherGraphNodes,
 );
 
 export type WeatherGraphStateType = typeof WeatherGraphState.State;</code></pre></div>
@@ -71,9 +82,10 @@ export type WeatherGraphStateType = typeof WeatherGraphState.State;</code></pre>
       <li>
         <h3>Write a node: validate, save, transition</h3>
         <p>
-          A normal node needs only the graph-state generic. Its class name selects its state
-          channel. A tool handler either keeps the model in this node or transitions directly
-          to another registered node.
+          A normal node needs only the graph-state generic. Its class name is its durable ID and
+          selects its state channel. <code>defineTool()</code> publishes the tool's schema;
+          <code>@Tool</code> binds the handler. Arguments that fail the schema go back to the
+          model as <code>{ accepted: false, error }</code> before the handler runs.
         </p>
         <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">nodes/city.node.ts</span></div><pre><code>import { z } from "zod";
 import {
@@ -85,17 +97,23 @@ import { WeatherNode } from "./weather.node.js";
 
 export class CityNode extends ConversationNode&lt;WeatherGraphStateType&gt; {
   getPrompt() {
-    return "Collect the city, then call capture_city.";
+    return "Ask which city the traveller is visiting, then call capture_city. If they want to stop, call terminate_session.";
   }
 
   defineTool(): readonly ToolDefinition[] {
-    return [{ name: "capture_city", description: "Save a city", schema: z.object({ city: z.string().min(2) }) }];
+    return [{
+      name: "capture_city",
+      description: "Save the traveller's city.",
+      schema: z.object({ city: z.string().min(2) }),
+    }];
   }
 
   @Tool("capture_city")
   async captureCity({ city }: { city: string }): Promise&lt;ToolResponse&gt; {
     const value = city.trim();
-    if (!value) return stay("Ask for a non-empty city.");
+    if (!/^[\p{L} .'-]+$/u.test(value)) {
+      return stay(JSON.stringify({ accepted: false, error: "Ask for a real city name." }));
+    }
 
     this.saveState({ city: value });
     return go(WeatherNode);
@@ -111,26 +129,119 @@ export class CityNode extends ConversationNode&lt;WeatherGraphStateType&gt; {
       </li>
 
       <li>
-        <h3>Register topology explicitly</h3>
+        <h3>Finish with code-owned content</h3>
         <p>
-          Register the nodes that may run in a conversational turn. The transition in
-          <code>go(WeatherNode)</code> selects the next node; no automatic outcome-router setup
-          is required.
+          <code>go(WeatherNode)</code> enters the next node in the same turn. That node reads the
+          city another node owns through <code>this.graph.graphState()</code>, saves its own
+          result, and completes the graph with <code>finish()</code>. The model never writes the
+          forecast text.
         </p>
-        <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">weather-graph.ts</span></div><pre><code>protected buildGraph() {
-  const graph = this.createStateGraph(WeatherGraphState);
-  graph.registerTurnNodes(CityNode, WeatherNode, TerminateSessionNode);
-  graph.addEdge(TerminateSessionNode, END);
-  return graph.compile();
+        <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">nodes/weather.node.ts</span></div><pre><code>import { z } from "zod";
+import {
+  ConversationNode, Tool, finish, stay,
+  type ToolDefinition, type ToolResponse,
+} from "@picoflow/ezgraph";
+import type { WeatherGraphStateType } from "../weather-graph.state.js";
+
+// Replace with your real weather source.
+const lookupForecast = (city: string) =&gt; `sunny and 24°C in ${city}`;
+
+export class WeatherNode extends ConversationNode&lt;WeatherGraphStateType&gt; {
+  getPrompt(state: WeatherGraphStateType) {
+    const city = state.nodes.CityNode?.city ?? "the saved city";
+    return `The traveller is visiting ${city}. Call get_forecast.`;
+  }
+
+  defineTool(): readonly ToolDefinition[] {
+    return [{
+      name: "get_forecast",
+      description: "Look up today's forecast for the saved city.",
+      schema: z.object({}),
+    }];
+  }
+
+  @Tool("get_forecast")
+  async getForecast(): Promise&lt;ToolResponse&gt; {
+    const city = this.graph.graphState().nodes.CityNode?.city;
+    if (!city) return stay(JSON.stringify({ accepted: false, error: "No city is saved." }));
+
+    const forecast = lookupForecast(city);
+    this.saveState({ forecast });
+    return finish(`Today's forecast: ${forecast}.`);
+  }
 }</code></pre></div>
+      </li>
+
+      <li>
+        <h3>Define the graph and register topology explicitly</h3>
+        <p>
+          The graph definition supplies the default model and the terminal node ID. Register the
+          nodes that may run in a conversational turn. The transition in
+          <code>go(WeatherNode)</code> selects the next node; no automatic outcome-router setup
+          is required. <code>ConversationNode</code> inherits a <code>terminate_session</code>
+          tool, so every graph that uses it must register <code>TerminateSessionNode</code> and
+          connect it to <code>END</code>; otherwise <code>compile()</code> fails.
+        </p>
+        <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">weather-graph.ts</span></div><pre><code>import { END } from "@langchain/langgraph";
+import {
+  BaseGraph, GRAPH_END_NODE, ModelCatalog, TerminateSessionNode,
+  type GraphDefinition, type LlmGateway,
+} from "@picoflow/ezgraph";
+import { CityNode } from "./nodes/city.node.js";
+import { WeatherNode } from "./nodes/weather.node.js";
+import { WeatherGraphState, type WeatherGraphStateType } from "./weather-graph.state.js";
+
+export class WeatherGraph extends BaseGraph&lt;WeatherGraphStateType&gt; {
+  static getGraphDefinition(): GraphDefinition {
+    return {
+      llmConfig: ModelCatalog.model("openai:gpt-4o", { retries: 2 }),
+      endNode: GRAPH_END_NODE,
+    };
+  }
+
+  constructor(llmGateway: LlmGateway) {
+    super(llmGateway, WeatherGraph.getGraphDefinition());
+  }
+
+  protected buildGraph() {
+    const graph = this.createStateGraph(WeatherGraphState);
+    graph.registerTurnNodes(CityNode, WeatherNode, TerminateSessionNode);
+    graph.addEdge(TerminateSessionNode, END);
+    return graph.compile();
+  }
+}</code></pre></div>
+      </li>
+
+      <li>
+        <h3>Run turns through the engine</h3>
+        <p>
+          Import <code>reflect-metadata</code> once at the top of your entry point.
+          <code>GraphEngine</code> owns the session document: each <code>run()</code> call is
+          one user turn, and the persisted <code>currentNode</code> tells the next turn where
+          to resume, even after a process restart. Set <code>OPENAI_API_KEY</code>; sessions use
+          an in-memory store unless <code>SESSION_STORE</code> selects SQLite, MongoDB, or
+          Cosmos DB.
+        </p>
+        <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">main.ts</span></div><pre><code>import "reflect-metadata";
+import { GraphEngine } from "@picoflow/ezgraph";
+import { WeatherGraph } from "./weather-graph.js";
+
+const engine = await GraphEngine.create({ graphs: [WeatherGraph] });
+
+const first = await engine.run({ graphName: "WeatherGraph", sessionId: "trip-1", userMessage: "Hi" });
+// first.body: { success: true, completed: false, message: "Which city …?" }
+
+const second = await engine.run({ graphName: "WeatherGraph", sessionId: "trip-1", userMessage: "Lisbon" });
+// second.body: { success: true, completed: true, message: "Today's forecast: sunny and 24°C in Lisbon." }</code></pre></div>
       </li>
 
       <li>
         <h3>Choose the right response</h3>
         <div class="table-wrap"><table><thead><tr><th>Return</th><th>Use it when</th></tr></thead><tbody>
-          <tr><td><code>stay("feedback")</code></td><td>Validation failed; keep collecting in the current node.</td></tr>
-          <tr><td><code>go(NextNode)</code></td><td>The current tool completed and the next stage should run now.</td></tr>
-          <tr><td><code>direct("...")</code></td><td>Code owns the exact customer-facing response, such as a policy decision or review table.</td></tr>
+          <tr><td><code>stay("feedback")</code></td><td>Validation failed; give the model corrective feedback and keep collecting in the current node.</td></tr>
+          <tr><td><code>go(NextNode)</code></td><td>The current tool completed and the next stage should run now, in the same turn.</td></tr>
+          <tr><td><code>direct("...")</code></td><td>Code owns the exact customer-facing response, such as a policy decision or review table; this node stays active.</td></tr>
+          <tr><td><code>directTo(NextNode, "...")</code></td><td>Code owns the response, and the next user turn should resume in another node.</td></tr>
           <tr><td><code>finish("...")</code></td><td>The conversation is complete.</td></tr>
         </tbody></table></div>
         <p>
@@ -144,12 +255,41 @@ export class CityNode extends ConversationNode&lt;WeatherGraphStateType&gt; {
       <li>
         <h3>Test locally, then opt into live evaluation</h3>
         <p>
-          Scripted tests should cover state, transitions, and deterministic policy without a
-          provider. The project convention is <code>USE_ENV=1</code> for live/provider tests;
-          use <code>KEEP_SESSION=1</code> when you want to inspect a live session afterward.
+          Scripted tests cover state, transitions, and deterministic policy without a provider.
+          <code>createTurnHarness()</code> drives real engine turns against an in-memory store,
+          and <code>scriptedGateway()</code> dictates each model reply:
         </p>
-        <div class="install"><span class="prompt">$</span><code>yarn test:weather-graph</code></div>
-        <div class="install"><span class="prompt">$</span><code>USE_ENV=1 yarn test2:weather-graph</code></div>
+        <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">test/weather-graph.spec.ts</span></div><pre><code>import "reflect-metadata";
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { createTurnHarness, scriptedGateway } from "@picoflow/ezgraph/testing";
+import { WeatherGraph } from "../src/weather-graph.js";
+import type { WeatherGraphStateType } from "../src/weather-graph.state.js";
+
+test("collects a city, then finishes with a code-owned forecast", async () =&gt; {
+  const gateway = scriptedGateway()
+    .text("Which city are you visiting?")
+    .callsTool("capture_city", { city: "Lisbon" })
+    .callsTool("get_forecast");
+  const harness = createTurnHarness&lt;WeatherGraphStateType&gt;({ graph: WeatherGraph, gateway });
+
+  const first = await harness.send("Hi");
+  assert.equal(first.currentNode, "CityNode");
+
+  const second = await harness.send("Lisbon");
+  assert.equal(second.completed, true);
+  assert.equal(second.response, "Today's forecast: sunny and 24°C in Lisbon.");
+  assert.equal(second.state?.nodes.CityNode?.city, "Lisbon");
+  assert.ok(gateway.drained);
+  await harness.close();
+});</code></pre></div>
+        <div class="install"><span class="prompt">$</span><code>node --import tsx --test test/weather-graph.spec.ts</code></div>
+        <p>
+          The demo projects keep provider-backed evaluations in separate, opt-in
+          <code>test2:*</code> scripts: <code>USE_ENV=1</code> enables the live provider and
+          configured session store, and <code>KEEP_SESSION=1</code> retains the session for
+          inspection afterward.
+        </p>
       </li>
     </ol>
   </div>

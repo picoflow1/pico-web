@@ -12,15 +12,22 @@ ezgraphDocument: true
 `DecisionHotelGraph` is a multi-turn Portland hotel search and booking application. It uses
 typed decision nodes for routing, criteria review, and presentation review while keeping
 criteria validation, hotel lookup, booking, and fallback rendering in application code. The
+decision nodes call TypeSafe's Jev model through EZGraph's `DecisionNode`; see the
+[developer guide](/ezgraph/docs/developer-guide/#decision-nodes-with-jev) for the API. The
 implementation lives in
 [ezgraph-demo](https://github.com/picoflowio/ezgraph-demo/tree/main/src/graphs/decision-hotel-graph).
 
 ## What this tutorial covers
 
 ```text
-RouterDecisionNode → criterion nodes → CriteriaReadinessDecisionNode → SearchHotelsNode
-      ↑                                                                  ↓
-      └──── revisions and no-match recovery ← PresentNode ← PresentationDecisionNode
+RouterDecisionNode ──set or revise──→ DateRangeNode | BudgetNode | RoomTypeNode | AmenityNode | DistanceNode
+criterion node ──capture or reroute_request──→ RouterDecisionNode
+RouterDecisionNode ──"search"──→ CriteriaReadinessDecisionNode ──ready──→ SearchHotelsNode
+SearchHotelsNode ──no matches (saved notice)──→ RouterDecisionNode
+SearchHotelsNode ──results──→ PresentNode ──publish_hotel_draft──→ PresentationDecisionNode
+PresentationDecisionNode ──reviewed draft or grounded fallback──→ PresentNode
+PresentNode ──revise_search──→ RouterDecisionNode
+PresentNode ──chosen_hotel──→ finish()
 ```
 
 The graph collects dates, budget, room type, amenities, and distance in separate owner nodes.
@@ -50,12 +57,13 @@ hotel search.
 ```bash
 cd ezgraph-demo
 npm run test:decision-hotel-graph
-USE_ENV=1 KEEP_SESSION=1 npm run test2:decision-hotel-graph
+npm run test2:decision-hotel-graph
 ```
 
-The deterministic suite covers routing, corrections, search, and fallbacks. The second command
-runs the credential-conditional semantic scenario; it is not a substitute for deterministic
-policy tests.
+The deterministic suite covers routing, corrections, search, and fallbacks with scripted model
+and decision replies. The second script sets `USE_ENV=1 KEEP_SESSION=1` and runs the semantic
+scenario live; it is skipped unless `TYPESAFE_API_KEY` and `OPENAI_API_KEY` are also set. It is
+not a substitute for deterministic policy tests.
 
 ## Next
 

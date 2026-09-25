@@ -17,24 +17,30 @@ conversation.
 ## One owner per normalized criterion
 
 `DateRangeNode`, `BudgetNode`, `RoomTypeNode`, `AmenityNode`, and `DistanceNode` each validate
-and save only their own normalized channel. `CriteriaHelper` reads those channels into a snapshot
-and knows which registered node owns each missing or invalid criterion.
+and save only their own normalized channel, with an `answered` flag. `CriteriaHelper` reads those
+channels into a snapshot, validates it, and maps each missing or invalid criterion to the node
+that owns it.
 
-For example, a budget node rejects an inverted minimum/maximum range in code and stays active;
-it does not save a malformed range for a later model call to interpret.
+For example, `BudgetNode` rejects a negative value or an inverted minimum/maximum range in code
+and returns `stay(...)`; it does not save a malformed range for a later model call to interpret.
+A valid capture saves the channel and returns `go(RouterDecisionNode)`, so the router picks the
+next step.
 
 ## Reroute an out-of-stage revision
 
-Each criterion node exposes a reroute path. If the user gives a date change while the current
-node owns amenities, that request goes back to `RouterDecisionNode`, which selects
-`DateRangeNode` and forwards the original message. Once the correction is saved, the graph
-returns to the appropriate next unresolved criterion or review state.
+Every criterion node handles a shared `reroute_request` tool, which `DateRangeNode` defines and
+the other collectors reuse through `@Tool("reroute_request")`. If the user gives a date change
+while `AmenityNode` is active, that node calls `reroute_request` and returns
+`go(RouterDecisionNode)`. The router reads the same latest request from the shared `hotel-intake`
+history, selects `DateRangeNode`, and forwards the original message. Once the correction is saved,
+the router runs again and returns to the next unresolved criterion or the review state.
 
 ## Why it is written this way
 
-The chat feels non-linear, but the data is not. A correction has a single authoritative owner;
-the helper can invalidate the right downstream conclusion rather than relying on a summary prompt
-to decide which previous answer changed.
+The chat feels non-linear, but the data is not. A correction has a single authoritative owner,
+and every later step re-reads the saved channels. Validation, readiness review, and search all
+work from the current snapshot, rather than a summary prompt deciding which previous answer
+changed.
 
 ## Next
 

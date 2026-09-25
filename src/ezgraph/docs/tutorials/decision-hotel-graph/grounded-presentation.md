@@ -16,18 +16,25 @@ or booking.
 
 ## Separate the draft from the release decision
 
-`PresentNode` receives the current `hotelFound` list, asks the model for a draft, and saves that
-draft. `PresentationDecisionNode` then evaluates the draft against the exact saved hotels and
-criteria. Code releases it only when grounding, completeness, and clarity thresholds pass.
+`PresentNode` receives the current `hotelFound` list in its prompt. The model drafts a
+presentation and submits it with the `publish_hotel_draft` tool, which saves the draft and
+returns `go(PresentationDecisionNode)`. The decision node's evidence is the draft plus the exact
+saved hotels and criteria. It asks whether the draft is `grounded` (Noul) and scores
+`completeness` and `clarity` (Score, 0–2). Code releases the draft only when
+`grounded.noul >= 0.85` and both scores are at least 1.5 with confidence of at least 0.75.
 
-If it does not pass—or the decision provider is unavailable—the graph returns a deterministic
-rendering of the saved search results to `PresentNode`.
+Either way, the node returns `directTo(PresentNode, text)`. The text is the accepted draft or
+`CriteriaHelper.renderHotelResults(hotels)`, a deterministic rendering of the saved results. The
+same rendering is the fallback when the decision provider is unavailable. The next customer turn
+resumes in `PresentNode`.
 
 ## Validate selection against the result list
 
-The booking tool accepts a name or a one-based number, but resolves it against the current
-`hotelFound` array. Unknown values return `stay(...)`; only a listed hotel creates a confirmation
-number and returns `finish(...)`.
+The `chosen_hotel` tool accepts a hotel name or a one-based number, but resolves it against the
+current `hotelFound` array. Names must match exactly, ignoring case. Unknown values return
+`stay(...)`; only a listed hotel saves `selectedHotel` and a confirmation number and returns
+`finish(...)`. A request to change criteria calls `revise_search`, which forwards the customer's
+message to `RouterDecisionNode`.
 
 ## Why it is written this way
 

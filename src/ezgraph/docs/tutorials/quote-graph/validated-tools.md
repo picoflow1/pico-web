@@ -15,9 +15,10 @@ Let the model collect customer language, but accept only facts the application h
 
 ## A schema is the tool interface, not the policy
 
-`DriverNode` exposes `capture_driver` with a Zod object schema. Its handler then uppercases and
-checks the state code, rejects a suspended licence, parses a real calendar date, calculates age,
-and checks that years licensed are plausible before saving anything.
+`DriverNode` exposes `capture_driver` with a Zod object schema. Its handler then uppercases the
+licence state and checks it against the U.S. state codes, rejects a suspended licence, parses a
+real calendar date, rejects a future birth date, requires an age from 16 to 100, and checks that
+years licensed are plausible for that age before saving anything.
 
 ```ts
 this.saveState({ driver });
@@ -32,7 +33,7 @@ precise corrective feedback while the durable cursor remains in `DriverNode`.
 `VehicleNode` deliberately uses two tools. `resolve_vehicle` searches the ratable catalog by
 year, make, model, and optional trim. It saves only `resolvedVehicleId` and stays in the node.
 `capture_vehicle_use` then refuses an ID other than that resolved catalog record before it saves
-ownership, mileage, and parking.
+ownership, mileage, and parking and moves to `HistoryNode`.
 
 This avoids a plausible-sounding vehicle becoming a rating input merely because a model emitted
 its name. When the catalog has several trims, the tool returns the candidates and asks the

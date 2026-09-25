@@ -12,8 +12,8 @@ ezgraphDocument: true
 
 <h2 id="run-it-yourself">Run it yourself</h2>
 <pre><code class="language-bash">cd ezgraph-demo
-USE_ENV=1 KEEP_SESSION=1 npm run test2:quote-graph</code></pre>
-<p>The test sends all fifteen turns through one retained session, judges each response semantically, and inspects the final node-owned state. It runs only with configured provider credentials.</p>
+npm run test2:quote-graph</code></pre>
+<p>The script sets <code>USE_ENV=1 KEEP_SESSION=1</code>. The test sends all fifteen turns through one retained session, judges each response semantically, and inspects the final node-owned state. Without <code>USE_ENV=1</code> it is skipped; with it, it needs working provider credentials.</p>
 
 <h2 id="captured-live-transcript">Captured live transcript</h2>
 <div class="quote-replay">

@@ -34,16 +34,23 @@ detail into a sensitive incident discussion or a tier explanation.
 
 ## Reset a stale quote
 
-The graph checks the restored session document before accepting the next turn:
+`QuoteGraph` overrides `onRestoreSessionDoc()`, which the engine calls with the persisted session
+document before the next turn runs:
 
 ```ts
-if (this.idleMs(sessionDoc) >= 30 * 60_000) return null;
-return sessionDoc;
+protected override async onRestoreSessionDoc(
+  sessionDoc: SessionDocument<QuoteGraphStateType>,
+): Promise<SessionDocument<QuoteGraphStateType> | null> {
+  if (this.idleMs(sessionDoc) >= readMs("QUOTE_GRAPH_IDLE_MS", DEFAULT_IDLE_MS)) {
+    return null;
+  }
+  return sessionDoc;
+}
 ```
 
-Returning `null` resets the session rather than resuming a quote whose inputs and pricing window
-are no longer valid. `QUOTE_GRAPH_IDLE_MS` may override the default for a deployment, but the
-policy remains graph-owned rather than prompt-owned.
+Returning `null` starts a new run rather than resuming a quote whose inputs and pricing window
+are no longer valid. The default idle window is 30 minutes; `QUOTE_GRAPH_IDLE_MS` may override it
+for a deployment, but the policy remains graph-owned rather than prompt-owned.
 
 ## Why it is written this way
 

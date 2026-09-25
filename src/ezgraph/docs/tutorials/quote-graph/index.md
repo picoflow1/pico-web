@@ -18,13 +18,17 @@ tier. The implementation lives in
 ## What this tutorial covers
 
 ```text
-DriverNode → VehicleNode → HistoryNode → CoverageNode → QuoteNode → TerminateSessionNode
-                                                        └── revise coverage ──┘
+DriverNode → VehicleNode → HistoryNode → CoverageNode → QuoteNode ──accept_quote──→ finish()
+                                              ↑              │
+                                              └── revise_coverage
+
+Any conversational node ──terminate_session──→ TerminateSessionNode → END
 ```
 
 Every conversational node owns the durable facts it validates. `CoverageNode` calls the
 deterministic rating engine and seeds `QuoteNode` with its result; the model never calculates
-a premium or invents an accepted tier.
+a premium or invents an accepted tier. Accepting a tier completes the graph directly with
+`finish(...)`; `TerminateSessionNode` handles only a customer's request to stop.
 
 | Node | Owns | Demonstrates |
 | --- | --- | --- |
@@ -56,12 +60,13 @@ a premium or invents an accepted tier.
 ```bash
 cd ezgraph-demo
 npm run test:quote-graph
-USE_ENV=1 KEEP_SESSION=1 npm run test2:quote-graph
+npm run test2:quote-graph
 ```
 
-The first command exercises deterministic unit coverage and skips the provider evaluation
-without `USE_ENV=1`. The second runs the fifteen-turn, provider-backed semantic scenario and
-can retain its session for inspection.
+The first command runs the deterministic suite with scripted model replies; the provider-backed
+E2E file it also matches is skipped without `USE_ENV=1`. The second script sets
+`USE_ENV=1 KEEP_SESSION=1`, runs the fifteen-turn semantic scenario against the configured
+model provider, and retains its session for inspection.
 
 ## Next
 

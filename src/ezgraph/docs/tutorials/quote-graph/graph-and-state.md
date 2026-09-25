@@ -17,8 +17,9 @@ state registry.
 
 ## Register the conversational topology
 
-`buildGraph()` names every node a tool response may enter. The only fixed edge is terminal
-completion; ordinary forward and backward movement comes from `go(TargetNode)`.
+`buildGraph()` names every node a tool response may enter. The only fixed edge connects
+`TerminateSessionNode` to `END`; ordinary forward and backward movement comes from
+`go(TargetNode)`, and acceptance completes the graph with `finish(...)`.
 
 ```ts
 const graph = this.createStateGraph(QuoteGraphState);
@@ -41,12 +42,17 @@ export type QuoteGraphNodes = {
   VehicleNode?: NodeStateValue<{ resolvedVehicleId?: string; vehicle?: VehicleUse }>;
   HistoryNode?: NodeStateValue<{ history?: InsuranceHistory }>;
   CoverageNode?: NodeStateValue<{ coverage?: CoverageSelection }>;
-  QuoteNode?: NodeStateValue<{ tiers?: QuoteTier[]; acceptedTier?: QuoteTierName }>;
+  QuoteNode?: NodeStateValue<{
+    tiers?: QuoteTier[];
+    acceptedTier?: QuoteTierName;
+    referenceNumber?: string;
+  }>;
 };
 ```
 
 `createGraphStateAnnotation(DriverNode.name, ...)` produces the LangGraph annotation from this
-map. It is not a second application-state shape to synchronize.
+map and makes `DriverNode` the entry node of a new session. It is not a second
+application-state shape to synchronize.
 
 ## Why it is written this way
 

@@ -16,9 +16,11 @@ evidence.
 
 ## Deterministic coverage first
 
-`test/quote-graph/quote-graph.spec.ts` exercises node tools, state writes, graph transitions,
-idle restoration, vehicle catalog behavior, rating rules, quote adjustment, and acceptance. It
-does not need a model provider to establish those contracts.
+`test/quote-graph/quote-graph.spec.ts` covers the rating engine's determinism, tier ordering,
+and lender rule; a scripted full quote through driver capture, trim disambiguation, vehicle use,
+history, coverage, adjustment, and acceptance; a rejected suspended licence; and the idle-window
+restore policy. Model replies come from a scripted gateway, so no provider is needed to
+establish those contracts.
 
 ## Then run the semantic scenario
 
@@ -28,12 +30,13 @@ coverage, tier presentation, a deductible what-if, and final acceptance. The E2E
 each input, response preview, semantic-judge result, and final persisted state check.
 
 ```bash
-npm run test:quote-graph
-USE_ENV=1 KEEP_SESSION=1 npm run test2:quote-graph
+npm run test:quote-graph   # deterministic; the E2E file is skipped
+npm run test2:quote-graph  # sets USE_ENV=1 KEEP_SESSION=1
 ```
 
-The live command is conditional on configured credentials. It is evidence only when it actually
-runs and completes; a skipped test is not a successful provider evaluation.
+The E2E test is skipped unless `USE_ENV=1` is set; with it set, it needs working provider
+credentials and uses the configured session store. It is evidence only when it actually runs and
+completes; a skipped test is not a successful provider evaluation.
 
 ## Next
 

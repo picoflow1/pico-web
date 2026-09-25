@@ -32,9 +32,12 @@ graph.registerTurnNodes(
 ## Use history spaces deliberately
 
 The router, collection nodes, and readiness review share `hotel-intake`. Presentation and its
-grounding review share `hotel-present`; completion gets `hotel-terminal`. This keeps the search
-criteria conversation available while preventing presentation wording from becoming intake
-context by accident.
+grounding review share `hotel-present`; `TerminateSessionNode`, which runs only when the customer
+asks to stop, gets `hotel-terminal`. A booking completes from `PresentNode` inside
+`hotel-present`. This keeps the search criteria conversation available while preventing
+presentation wording from becoming intake context by accident. Because decision nodes read
+`request` and `priorRequests` from their own history space, the router and readiness judge see
+the same intake conversation as the collectors.
 
 ## Why it is written this way
 

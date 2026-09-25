@@ -46,6 +46,7 @@ export default [
       { title: "State and ownership", url: `${guide}#state-belongs-to-the-node-that-owns-it` },
       { title: "Tool responses", url: `${guide}#return-one-direct-tool-response` },
       { title: "Topology", url: `${guide}#build-topology-explicitly` },
+      { title: "Decision nodes (Jev)", url: `${guide}#decision-nodes-with-jev` },
       { title: "Testing", url: `${guide}#test-in-two-tiers` },
       { title: "Migration checklist", url: `${guide}#migration-checklist` },
     ],
