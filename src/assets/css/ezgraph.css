@@ -1630,6 +1630,9 @@ footer {
 .ezgraph-content .ezgraph-document > h1:first-child { max-width: 18ch; }
 .ezgraph-content .ezgraph-document > h2 { margin-top: 2.2em; }
 .ezgraph-content .ezgraph-document > h3 { margin-top: 1.8em; }
+.ezgraph-content .ezgraph-document figure { margin: 28px 0; }
+.ezgraph-content .ezgraph-document figure img { display: block; width: 100%; height: auto; border-radius: 18px; }
+.ezgraph-content .ezgraph-document figcaption { margin-top: 10px; font-size: 0.88rem; color: var(--text-muted); }
 .ezgraph-content .ezgraph-document > hr {
   margin: 42px 0;
   border: 0;

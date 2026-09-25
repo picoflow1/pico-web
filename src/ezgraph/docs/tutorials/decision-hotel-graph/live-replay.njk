@@ -8,7 +8,7 @@ ezgraphDocument: true
 ---
 
 <h1>1. A sixteen-turn live DecisionHotelGraph replay</h1>
-<p>Read this first. This is a complete passing provider-backed run with <code>HOTEL_GRAPH_CURRENT_DATE</code> frozen to <code>2027-07-15</code>. It exercises both model conversation and typed decision providers. Model wording can vary; normalized criteria, decision boundaries, hotel results, and completion are the durable contracts.</p>
+<p>Read this first. This is a complete passing provider-backed run with <code>HOTEL_GRAPH_CURRENT_DATE</code> frozen to <code>2027-07-15</code>. It exercises a chat model (<code>gpt-4o</code>) and the Jev decision model together. Model wording can vary; normalized criteria, decision boundaries, hotel results, and completion are the durable contracts.</p>
 
 <h2 id="run-it-yourself">Run it yourself</h2>
 <pre><code class="language-bash">cd ezgraph-demo
@@ -31,5 +31,37 @@ npm run test2:decision-hotel-graph</code></pre>
 
 <p>The replay includes an invalid date, inverted budget, cross-node date correction, criteria review, empty search, budget recovery, grounded hotel results, and a validated booking.</p>
 
+<h2 id="under-the-hood">Under the hood</h2>
+<p>The transcript shows what the customer saw. This table shows the path through the graph that produced each reply, and how many Jev calls it made. <sup>J</sup> marks a decision node that called Jev. The paths are derived from each turn's response and the node code, since the replay records replies rather than raw decisions, and they add up to the 22 decision calls the final session recorded.</p>
+<table>
+  <thead><tr><th>Turn</th><th>Customer</th><th>Path through the graph</th><th>Jev calls</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Hi</td><td>Router<sup>J</sup> → <code>directTo(DateRangeNode)</code></td><td>1</td></tr>
+    <tr><td>2</td><td>February 30, 2027 through March 5, 2027</td><td>DateRangeNode (invalid date not saved; asks again)</td><td>0</td></tr>
+    <tr><td>3</td><td>August 1 through August 8, 2027</td><td>DateRangeNode saves → Router<sup>J</sup> → <code>directTo(BudgetNode)</code></td><td>1</td></tr>
+    <tr><td>4</td><td>minimum 800 and maximum 500 per night</td><td>BudgetNode (inverted range not saved; asks again)</td><td>0</td></tr>
+    <tr><td>5</td><td>maximum 700 per night, with no minimum</td><td>BudgetNode saves → Router<sup>J</sup> → <code>directTo(RoomTypeNode)</code></td><td>1</td></tr>
+    <tr><td>6</td><td>a suite</td><td>RoomTypeNode saves → Router<sup>J</sup> → <code>directTo(AmenityNode)</code></td><td>1</td></tr>
+    <tr><td>7</td><td>Actually change my dates to August 3 through August 9, 2027</td><td>AmenityNode <code>reroute_request</code> → Router<sup>J</sup> → DateRangeNode saves → Router<sup>J</sup> → <code>directTo(AmenityNode)</code></td><td>2</td></tr>
+    <tr><td>8</td><td>free wifi and free parking</td><td>AmenityNode saves → Router<sup>J</sup> → <code>directTo(DistanceNode)</code></td><td>1</td></tr>
+    <tr><td>9</td><td>distance does not matter</td><td>DistanceNode saves → Router<sup>J</sup> → summary; resumes at the router</td><td>1</td></tr>
+    <tr><td>10</td><td>show my criteria</td><td>Router<sup>J</sup> (review) → summary</td><td>1</td></tr>
+    <tr><td>11</td><td>search</td><td>Router<sup>J</sup> → Readiness<sup>J</sup> → SearchHotelsNode → PresentNode drafts → Presentation<sup>J</sup> accepts the draft</td><td>3</td></tr>
+    <tr><td>12</td><td>change maximum budget to 500 per night</td><td>PresentNode <code>revise_search</code> → Router<sup>J</sup> → BudgetNode saves → Router<sup>J</sup> → summary</td><td>2</td></tr>
+    <tr><td>13</td><td>search</td><td>Router<sup>J</sup> → Readiness<sup>J</sup> → SearchHotelsNode finds nothing → Router<sup>J</sup> shows the notice</td><td>3</td></tr>
+    <tr><td>14</td><td>change maximum budget to 750 per night</td><td>Router<sup>J</sup> → BudgetNode saves → Router<sup>J</sup> → summary</td><td>2</td></tr>
+    <tr><td>15</td><td>search</td><td>Router<sup>J</sup> → Readiness<sup>J</sup> → SearchHotelsNode → PresentNode drafts → Presentation<sup>J</sup>; the code-rendered list is shown</td><td>3</td></tr>
+    <tr><td>16</td><td>book hotel 1</td><td>PresentNode <code>chosen_hotel</code> → <code>finish()</code></td><td>0</td></tr>
+  </tbody>
+</table>
+<p>Four patterns account for almost everything:</p>
+<ul>
+  <li><strong>Every saved value sends the router back to Jev</strong> in the same turn, to choose the next question. That is the only call on turns 3, 5, 6, 8, and 9, and the second call on turns 7, 12, and 14.</li>
+  <li><strong>Invalid values never reach a decision node.</strong> Turns 2 and 4 stay inside a collector, whose model asks again after the handler returns <code>stay()</code> or after it declines to call the tool.</li>
+  <li><strong>A correction is one turn</strong> (turn 7), because the router can forward the customer's message to another collector.</li>
+  <li><strong>Every search costs three decision calls</strong>: the router, the readiness judge, and either the presentation judge or the router again for the no-match notice.</li>
+</ul>
+<p>The final session also recorded 30,693 decision tokens and 11,473 chat-model tokens. <a href="/ezgraph/docs/tutorials/decision-hotel-graph/fallbacks-and-cost/">Lesson 9</a> breaks the decision calls down by node.</p>
+
 <h2 id="next">Next</h2>
-<p><a href="/ezgraph/docs/tutorials/decision-hotel-graph/graph-and-criteria/">2. Graph and durable criteria</a> maps the nodes and state owners behind the replay.</p>
+<p><a href="/ezgraph/docs/tutorials/decision-hotel-graph/graph-and-criteria/">2. Graph, state, and history spaces</a> maps the nodes and state owners behind the replay.</p>
