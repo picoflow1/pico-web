@@ -35,12 +35,110 @@ export abstract class Step {
 | `onCrossing()` | `public onCrossing(langMessage: MessageTypes \| null \| undefined, _priorStep?: string): MessageTypes \| null` | Synthesises `HumanMessageEx(this, 'Start')` when there is no incoming message and history does not already end on this step | A stage must rewrite, replace, or suppress the crossing message |
 | `onResponse()` | `public async onResponse(llmResult: string \| object): Promise<LastResponseType>` | `JSON.stringify` for objects, otherwise the value unchanged | Free-form or structured output needs validation, rewriting, or routing |
 | `checkResponse()` | `public checkResponse(_llmResult: string \| object): boolean` | `false` | A bad response should be retried — return `true` to retry |
+| `onLlmBlocked()` | `public async onLlmBlocked(context: LlmBlockedContext): Promise<LlmBlockedResponse \| null>` | `null` — delegate to the Flow | The provider refuses or blocks a prompt or candidate and the Step can return a safe response or route |
+| `shouldRetryLlmError()` | `public shouldRetryLlmError(context: LlmAttemptErrorContext): boolean \| undefined` | `undefined` — delegate to the Flow, then framework default | A thrown invocation error should stop early or use another configured attempt |
+| `onLlmError()` | `public async onLlmError(context: LlmErrorContext): Promise<LlmErrorResponse \| null>` | `null` — delegate to the Flow | Exhausted or declined model work needs a final response, route, or one temporary alternate model |
 | `structOutputSchema()` | `public structOutputSchema(): object \| null` | `null` | The provider should use constrained structured output |
 | `isLogic()` | `public isLogic(): boolean` | `false` | Never directly — extend `LogicStep` instead |
 | `isEnd()` | `public isEnd(): boolean` | `flow.getSessionDoc().runStatus === 'completed'` | A specialised terminal step reports completion differently |
 
 `checkResponse()` has inverted semantics on purpose: `false` accepts, `true` asks the retry
-loop to run again. Keep it deterministic; it can be evaluated more than once per turn.
+loop to run again. It runs before tool dispatch, so a rejected candidate's tool calls are not
+executed. Keep it deterministic and side-effect free; it can be evaluated more than once per
+turn.
+
+### Model refusal, retry, and recovery hooks
+
+The three model-failure hooks have distinct jobs and precedence. They apply to ordinary
+chat-model `Step`s; [`DecisionStep`](/docs/reference/decision-step/) uses its separate
+`onDecisionError()` chain.
+
+#### onLlmBlocked()
+
+```ts
+public async onLlmBlocked(
+  context: LlmBlockedContext,
+): Promise<LlmBlockedResponse | null>;
+```
+
+Handles a provider refusal or safety block. The context includes `provider`, normalized
+`reason`, provider `rawReason`, `phase: "prompt" | "candidate"`, and optional safety ratings
+or provider details. Returning a string or normal Step transition handles the block. Returning
+`null` delegates to `Flow.onLlmBlocked()`; when both return `null`, PicoFlow propagates the
+block.
+
+Blocked responses do not enter ordinary invocation-error retry or `onLlmError()` recovery.
+Use this hook for an honest safe response or a bounded application route, not to disguise a
+provider refusal as a successful model answer.
+
+#### shouldRetryLlmError()
+
+```ts
+public shouldRetryLlmError(
+  context: LlmAttemptErrorContext,
+): boolean | undefined;
+```
+
+Runs only when the model invocation throws an ordinary error. The context contains Step ID,
+provider, model, original `Error`, one-based `attempt`, `maxAttempts`, and the request signal.
+
+- `true` uses the next configured attempt when one remains;
+- `false` stops immediately and proceeds to terminal recovery;
+- `undefined` delegates to `Flow.shouldRetryLlmError()`, then the framework's ordinary-error
+  default.
+
+The hook cannot extend the attempt budget or change the delay, model, or deadline.
+`retryAttempts` is the total model-call attempt budget, with a framework default of three.
+
+#### onLlmError()
+
+```ts
+public async onLlmError(
+  context: LlmErrorContext,
+): Promise<LlmErrorResponse | null>;
+```
+
+Runs once after retry is declined or the attempt budget cannot produce an accepted response.
+The Step's non-null result wins; `null` delegates to `Flow.onLlmError()`. When both return
+`null`, PicoFlow propagates the existing error.
+
+`context.kind` describes the terminal failure:
+
+| Kind | Meaning | Additional fields |
+| --- | --- | --- |
+| `invocation_error` | The provider invocation threw | original `error`; `stoppedBecause` is `retry_declined` or `attempts_exhausted` |
+| `empty_response` | The provider returned no usable content or tool call | `lastResponse`; attempts exhausted |
+| `response_rejected` | `checkResponse()` requested another candidate | `lastResponse`; attempts exhausted |
+
+The hook may return an ordinary final Step response, including routing or `finish(...)`.
+It may also return `retryWithModel(selection)` to continue the same Step temporarily with
+another registered model. The alternate model gets one attempt per model call; if it calls a
+tool, the follow-up model call remains on that alternate selection. The fallback keeps the
+current prompt, memory, tools, structured output contract, request signal, and completed tool
+history; it does not change the Step's configured model for later turns. A second model fallback
+in the same recovery sequence is rejected, and its selection may not include `retryAttempts`.
+
+```ts
+async onLlmError(context: LlmErrorContext) {
+  if (this.getState<boolean>('actionRecorded')) {
+    return directTo(ReviewStep, 'The action was recorded; review is pending.');
+  }
+  if (context.kind === 'invocation_error' && context.model === 'gpt-5.6-luna') {
+    return retryWithModel({
+      provider: 'openai',
+      name: 'gpt-5.1',
+      params: { reasoning: { effort: 'high' } },
+    });
+  }
+  return null;
+}
+```
+
+Cancellation bypasses all recovery output, including cancellation while an asynchronous hook
+is pending. Prompt construction, token accounting, tool handlers, `checkResponse()` exceptions,
+and `onResponse()` exceptions are outside these model-failure hooks. A tool may already have
+changed state or caused an external effect before a follow-up model call fails; recovery should
+read the saved effect or route to review, never blindly repeat it.
 
 ### run()
 

@@ -205,6 +205,40 @@ export default {
 					],
 				},
 				{
+					label: "DecisionHotelFlow \u2014 typed Jev decisions",
+					items: [
+						{ title: "Track overview", url: "/docs/tutorials/decision-hotel-flow/" },
+						{
+							title: "1. A sixteen-turn live replay",
+							url: "/docs/tutorials/decision-hotel-flow/live-replay/",
+						},
+						{
+							title: "2. Designing a decision-backed workflow",
+							url: "/docs/tutorials/decision-hotel-flow/multi-stage-design/",
+						},
+						{
+							title: "3. Anatomy of a DecisionStep",
+							url: "/docs/tutorials/decision-hotel-flow/decision-step-anatomy/",
+						},
+						{
+							title: "4. Typed routing and cross-step corrections",
+							url: "/docs/tutorials/decision-hotel-flow/routing-and-corrections/",
+						},
+						{
+							title: "5. Readiness and deterministic search",
+							url: "/docs/tutorials/decision-hotel-flow/readiness-and-search/",
+						},
+						{
+							title: "6. Grounded presentation and booking",
+							url: "/docs/tutorials/decision-hotel-flow/grounded-presentation/",
+						},
+						{
+							title: "7. Fallbacks and two-tier testing",
+							url: "/docs/tutorials/decision-hotel-flow/fallbacks-and-testing/",
+						},
+					],
+				},
+				{
 					label: "InvoiceFlow \u2014 one-shot extraction",
 					items: [
 						{ title: "Track overview", url: "/docs/tutorials/invoice-flow/" },
@@ -401,6 +435,7 @@ export default {
 					items: [
 						{ title: "Flow", url: "/docs/reference/" },
 						{ title: "Step", url: "/docs/reference/step/" },
+						{ title: "DecisionStep", url: "/docs/reference/decision-step/" },
 						{
 							title: "go() / stay() / direct()",
 							url: "/docs/reference/response-builders/",

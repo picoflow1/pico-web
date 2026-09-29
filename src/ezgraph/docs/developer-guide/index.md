@@ -387,7 +387,7 @@ facts, and answers are never written there.
 | `Flow.defineSteps()` | `graph.registerTurnNodes(...)` |
 | `Flow.configDecision()` | `GraphDefinition.decisionConfig` |
 | `.useDecision({...})` | `getDecisionConfig()` |
-| `getDecisionData()` | `getDecisionFacts(state)` |
+| `getDecisionFacts()` | `getDecisionFacts(state)` |
 | `.useMemory("name")` | `historySpaces: [[X, "name"]]` |
 | `onDecision(answers, context)` | `onDecision(answers, context, state)` |
 | returning a string | `direct(content)` |

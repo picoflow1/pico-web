@@ -1,0 +1,43 @@
+---
+title: 1. A sixteen-turn live replay
+eyebrow: DecisionHotelFlow tutorial
+lede: "Start with a recorded provider-backed journey through invalid values, a cross-step correction, typed routing, reviewed search results, an empty-result recovery, and a completed reservation."
+source: pico-demo/test/decision-hotel-flow/decision-hotel-flow.e2e-spec.ts, pico-demo/test/.tmp/decision-hotel-flow/live.json
+---
+
+<p>Read this first. It is a complete, passing run of the sixteen-turn live scenario with <code>HOTEL_FLOW_CURRENT_DATE</code> frozen to <code>2027-07-15</code>. The run used the real OpenAI chat provider and TypeSafe Jev decision provider. Wording and confirmation numbers may vary; saved state, routing, grounded results, and completion are the durable contracts.</p>
+
+<h2 id="run-it-yourself">Run it yourself</h2>
+<pre><code class="language-bash">cd pico-demo
+npm run test:decision-hotel-flow</code></pre>
+<p>The test sends every request through one session, semantically judges every response, and verifies the active step and final state. It is skipped unless <code>PICOFLOW_KEY</code>, <code>OPENAI_API_KEY</code>, and <code>TYPESAFE_API_KEY</code> are available. A skipped test is not live evidence.</p>
+
+<h2 id="captured-live-transcript">Captured live transcript</h2>
+<div class="quote-replay">
+  <div class="quote-replay__header"><span class="quote-replay__dots" aria-hidden="true"><i></i><i></i><i></i></span><a href="https://github.com/picoflowio/pico-demo/blob/main/test/decision-hotel-flow/decision-hotel-flow.scenario.json">test/decision-hotel-flow/decision-hotel-flow.scenario.json</a><span>16 turns · recorded e2e</span></div>
+  <ol class="quote-replay__list">
+  {%- for turn in replay.turns %}
+    <li class="quote-replay__turn{% if turn.completed %} quote-replay__turn--completed{% endif %}">
+      <p class="quote-replay__meta">{{ loop.index }} · {{ turn.stage }}{% if turn.completed %} · completed{% endif %}</p>
+      <div class="quote-replay__message quote-replay__message--you"><span class="quote-replay__who">You</span><div class="quote-replay__bubble">{{ turn.user | escape }}</div></div>
+      <div class="quote-replay__message quote-replay__message--bot"><span class="quote-replay__who">Bot</span><div class="quote-replay__bubble">{{ turn.bot | renderTranscriptMarkdown | safe }}</div></div>
+    </li>
+  {%- endfor %}
+  </ol>
+</div>
+
+<p>The successful replay recorded <strong>{{ replay.decisionUsage.calls }} decision calls</strong> and <strong>{{ replay.decisionUsage.totalTokens }} decision tokens</strong>, separately from {{ replay.llmUsage.totalTokens }} chat-model tokens. These are one run's observations, not a price or performance benchmark.</p>
+
+<h2 id="what-the-replay-proves">What the replay proves</h2>
+<table><thead><tr><th>Turns</th><th>Observed contract</th></tr></thead><tbody>
+<tr><td>1–6</td><td>The router selects criterion owners; invalid calendar and budget values remain with their owner.</td></tr>
+<tr><td>7</td><td>A date correction made while amenities are active reaches <code>DateRangeStep</code>, then returns to amenities in the same turn.</td></tr>
+<tr><td>9–11</td><td>The normalized record can be reviewed, then passes the decision gate before search and grounded presentation.</td></tr>
+<tr><td>12–15</td><td>A budget revision produces an empty result, remains recoverable, then produces a new reviewed result set.</td></tr>
+<tr><td>16</td><td>The selected hotel is resolved against saved results, an exact confirmation is returned, and the session completes.</td></tr>
+</tbody></table>
+
+<p>One successful replay does not establish general routing or judge accuracy. The deterministic contract in lesson 7 covers branches and outages; a labeled evaluation set is still required to calibrate production thresholds.</p>
+
+<h2 id="next">Next</h2>
+<p><a href="/docs/tutorials/decision-hotel-flow/multi-stage-design/">2. Designing a decision-backed workflow</a> maps the state and execution boundaries behind the replay.</p>

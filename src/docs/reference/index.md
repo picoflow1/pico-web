@@ -27,6 +27,11 @@ Nothing on the instance survives except what is written into the session documen
 | --- | --- | --- | --- |
 | `configModel()` | `protected abstract configModel(): ModelSelection` | Abstract — you must implement it | Always |
 | `configLlmCallPolicy()` | `protected configLlmCallPolicy(): LlmCallPolicy` | `{}` — no deadline | Model invocation attempts need a Flow-wide wall-clock budget |
+| `configDecision()` | `protected configDecision(): DecisionStepOptions` | `{}` — use DecisionStep defaults | Registered DecisionSteps need Flow-wide provider, model, timeout, or retry policy |
+| `onDecisionError()` | `public async onDecisionError(context: DecisionErrorContext): Promise<DecisionResponse \| null>` | `null` — propagate | A DecisionStep delegates terminal decision recovery to application-wide policy |
+| `onLlmBlocked()` | `public async onLlmBlocked(context: LlmBlockedContext): Promise<LlmBlockedResponse \| null>` | `null` — propagate | A Step delegates a provider refusal or safety block |
+| `shouldRetryLlmError()` | `public shouldRetryLlmError(context: LlmAttemptErrorContext): boolean \| undefined` | `undefined` — framework default | A Step delegates ordinary invocation-error retry policy |
+| `onLlmError()` | `public async onLlmError(context: LlmErrorContext): Promise<LlmErrorResponse \| null>` | `null` — propagate | A Step delegates terminal chat-model recovery |
 | `init()` | `public async init(): Promise<void>` | No operation | Deterministic per-instance setup is needed before steps are collected |
 | `defineSteps()` | `protected defineSteps(): Step[]` | `[new TerminateSessionStep(this).useMemory('temp')]` | The flow declares its own stages |
 | `initialStep()` | `protected initialStep(): StepClassType \| null` | `null` — the first step from `defineSteps()` starts the session | The initial cursor depends on runtime context |
@@ -71,6 +76,23 @@ Declares code-owned policy for each model invocation attempt independently from 
 parameters. `{ timeoutMs: 60_000 }` applies to every Step by default. A Step may override
 the same hook with another positive integer, or return `{ timeoutMs: null }` to remove the
 inherited deadline. The policy is not persisted in the session document.
+
+### Decision and chat-model failure policy
+
+`configDecision()` sets Flow-wide defaults for registered
+[`DecisionStep`s](/docs/reference/decision-step/). `onDecisionError()` runs only after the
+executing DecisionStep returns `null` from its own hook.
+
+The three chat-model hooks follow the same Step-first pattern:
+
+- `onLlmBlocked()` handles a provider refusal or safety block;
+- `shouldRetryLlmError()` decides whether a thrown invocation error may use the next
+  configured attempt; and
+- `onLlmError()` supplies final recovery after an early stop or exhausted attempts.
+
+Returning `null` from a recovery hook, or `undefined` from retry policy, delegates from the
+Step to these Flow hooks. See the [Step reference's model-failure section](/docs/reference/step/#model-refusal-retry-and-recovery-hooks)
+for contexts, precedence, cancellation, and alternate-model recovery.
 
 ### init()
 
@@ -316,6 +338,10 @@ or override them: `bootstrap`, `collectSteps`, `saveSession`, `tallyToken`, `set
 	<a class="card" href="/docs/reference/step/">
 		<span class="card__title">Step</span>
 		<span class="card__body">Every override hook, state helper, memory helper, and the plumbing you should leave alone.</span>
+	</a>
+	<a class="card" href="/docs/reference/decision-step/">
+		<span class="card__title">DecisionStep</span>
+		<span class="card__body">Typed Choice, Score, and Noul decisions; facts, conversation input, provider configuration, recovery, and usage.</span>
 	</a>
 	<a class="card" href="/docs/reference/response-builders/">
 		<span class="card__title">go() / stay() / direct()</span>

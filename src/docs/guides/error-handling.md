@@ -77,6 +77,13 @@ Transient downstream failures deserve a third treatment: retry inside the handle
 degrade to `stay(...)` with an honest message. Do not let a 503 from a pricing API destroy a
 twenty-turn booking conversation.
 
+Model invocation failures have their own bounded policy. Use
+`Step.shouldRetryLlmError()` to stop or continue the configured attempt budget,
+`Step.onLlmError()` for final recovery or one temporary alternate model, and
+`Step.onLlmBlocked()` for provider refusals and safety blocks. The Step runs before the
+same-named Flow hook. See the [Step reference](/docs/reference/step/#model-refusal-retry-and-recovery-hooks)
+for precedence, contexts, cancellation, and completed-tool safety.
+
 ## Completing through TerminateSessionStep
 
 For any user-facing workflow, complete through the terminal step:

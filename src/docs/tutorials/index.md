@@ -1,7 +1,7 @@
 ---
 title: Choose a track
 eyebrow: Tutorials
-lede: Six source-backed flow tracks and overviews, each grounded in a flow that actually ships in the demo application. Start with BasicFlow.
+lede: Seven source-backed flow tracks and overviews, each grounded in a flow that actually ships in the demo application. Start with BasicFlow.
 source: pico-demo/src/myflow
 ---
 
@@ -10,11 +10,11 @@ Every lesson on this site is derived from a real, running flow in
 code the demo NestJS application loads, and the transitions described are the ones
 the end-to-end tests assert against the persisted session document.
 
-There are six flows represented here. They overlap deliberately — each
+There are seven flows represented here. They overlap deliberately — each
 one is a complete workflow, not a fragment — but each was written to make a different
 set of framework features unavoidable.
 
-## The six flows
+## The seven flows
 
 <div class="cards cards--tracks">
 	<a class="card" href="/docs/tutorials/basic-flow/">
@@ -24,6 +24,10 @@ set of framework features unavoidable.
 	<a class="card" href="/docs/tutorials/hotel-flow/">
 		<span class="card__title"><span class="card__title-main">HotelFlow</span><span class="card__title-sub">multi-turn assistant</span></span>
 		<span class="card__body">A search, compare, and book workflow. Large prompt files, your own backend behind a tool, memory compaction, and answering without an LLM call.</span>
+	</a>
+	<a class="card" href="/docs/tutorials/decision-hotel-flow/">
+		<span class="card__title"><span class="card__title-main">DecisionHotelFlow</span><span class="card__title-sub">typed Jev decisions</span></span>
+		<span class="card__body">A routed hotel journey with three DecisionSteps for typed intent, readiness, and grounding decisions; deterministic validation, search, fallbacks, and booking remain in code.</span>
 	</a>
 	<a class="card" href="/docs/tutorials/invoice-flow/">
 		<span class="card__title"><span class="card__title-main">InvoiceFlow</span><span class="card__title-sub">one-shot extraction</span></span>
@@ -45,21 +49,22 @@ set of framework features unavoidable.
 
 ## What each track demonstrates
 
-| Feature | BasicFlow | HotelFlow | InvoiceFlow | SupportFlow | Home insurance | Employee benefits |
-| --- | --- | --- | --- | --- | --- | --- |
-| Zod tool definitions and `@Tool` handlers | yes | yes | yes | yes | yes | yes |
-| Multi-tool batching with `@Tools([...])` | yes | no | no | no | no | no |
-| MCP server behind a tool handler | yes | no | no | no | no | no |
-| `LogicStep` (no model call) | yes | no | no | yes | yes | yes |
-| Structured output via `structOutputSchema()` | yes | no | no | no | no | no |
-| Nested execution: `runStep()` / `runSteps()` | yes | no | no | no | no | no |
-| Memory compaction and summarisation | no | yes | no | yes | yes | yes |
-| `direct()` responses with no second model call | no | yes | yes | no | yes | yes |
-| Multimodal file uploads | no | no | yes | no | no | no |
-| Batch mode via `spawnSteps()` + `concurrentSteps()` | yes | no | yes | no | no | no |
-| Per-step model overrides | yes | yes | yes | yes | no | no |
-| Named memory namespaces | yes | yes | yes | yes | yes | yes |
-| Custom session restoration | no | no | no | yes | yes | yes |
+| Feature | BasicFlow | HotelFlow | Decision hotel | InvoiceFlow | SupportFlow | Home insurance | Employee benefits |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Zod tool definitions and `@Tool` handlers | yes | yes | yes | yes | yes | yes | yes |
+| `DecisionStep` with typed Jev questions | no | no | yes | no | no | no | no |
+| Multi-tool batching with `@Tools([...])` | yes | no | no | no | no | no | no |
+| MCP-backed application operation | yes | yes | yes | no | no | no | no |
+| `LogicStep` (no model call) | yes | no | yes | no | yes | yes | yes |
+| Structured output via `structOutputSchema()` | yes | no | no | no | no | no | no |
+| Nested execution: `runStep()` / `runSteps()` | yes | no | no | no | no | no | no |
+| Memory compaction and summarisation | no | yes | no | no | yes | yes | yes |
+| Exact responses with no second model call | no | yes | yes | yes | no | yes | yes |
+| Multimodal file uploads | no | no | no | yes | no | no | no |
+| Batch mode via `spawnSteps()` + `concurrentSteps()` | yes | no | no | yes | no | no | no |
+| Per-step model or decision overrides | yes | yes | no | yes | yes | no | no |
+| Named memory namespaces | yes | yes | yes | yes | yes | yes | yes |
+| Custom session restoration | no | no | no | no | yes | yes | yes |
 
 ## Which one first
 
@@ -75,7 +80,7 @@ address. No product would be shaped that way. It is shaped that way so that ever
 lesson has a step that isolates one framework idea, and so the end-to-end test can
 walk a single deterministic eight-turn path through all of it.
 
-<div class="callout callout--note"><span class="callout__title">Note</span><p>The demo application registers all six flows in one NestJS module and serves them from one endpoint, <code>POST /ai/run</code>. The <code>flowName</code> field in the request body selects which flow a session belongs to. A session is bound to exactly one flow for its lifetime.</p></div>
+<div class="callout callout--note"><span class="callout__title">Note</span><p>The demo application registers all seven tutorial flows in one NestJS module and serves them from one endpoint, <code>POST /ai/run</code>. The <code>flowName</code> field in the request body selects which flow a session belongs to. A session is bound to exactly one flow for its lifetime.</p></div>
 
 ## Running the code alongside the lessons
 

@@ -49,6 +49,13 @@ export default {
       linkLabel: "Explore the reservation flow",
     },
     {
+      tag: "Typed AI decisions",
+      title: "Hotel reservation with decision models",
+      body: "Route requests and review search readiness and generated results with typed Jev decisions, while deterministic code owns validation, pricing, fallbacks, and booking. Built as a complete tutorial application.",
+      link: "/docs/tutorials/decision-hotel-flow/",
+      linkLabel: "Explore the decision-backed flow",
+    },
+    {
       tag: "Support resolution",
       title: "Customer support that completes",
       body: "Verify the customer, inspect account data, execute approved actions with holds, and hand off to a human with a complete case record when needed.",
