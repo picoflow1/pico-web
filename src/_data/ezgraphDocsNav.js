@@ -51,6 +51,7 @@ export default [
       { title: "Node contract", url: `${guide}#the-node-contract` },
       { title: "State and ownership", url: `${guide}#state-belongs-to-the-node-that-owns-it` },
       { title: "Tool responses", url: `${guide}#return-one-direct-tool-response` },
+      { title: "Error handling", url: `${guide}#error-handling` },
       { title: "Topology", url: `${guide}#build-topology-explicitly` },
       { title: "Decision nodes (Jev)", url: `${guide}#decision-nodes-with-jev` },
       { title: "Testing", url: `${guide}#test-in-two-tiers` },
