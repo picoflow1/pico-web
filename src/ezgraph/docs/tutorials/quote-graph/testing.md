@@ -151,6 +151,11 @@ test("a valid driver is saved and the vehicle stage replies in the same turn", a
 
   assert.equal(turn.status, 200);
   assert.equal(turn.currentNode, "VehicleNode");
+  assert.equal(
+    gateway.calls[0]!.history[0]!.content,
+    "Jamie Rivera, born 1993-04-12, valid Oregon license, 10 years.",
+  );
+  assert.equal(turn.state?.histories.default, undefined);
   assert.equal(turn.state?.nodes.DriverNode?.driver?.licenseState, "OR");
   assert.match(gateway.calls[1]!.systemPrompt, /This stage has just started/);
   assert.ok(gateway.drained);
@@ -158,8 +163,10 @@ test("a valid driver is saved and the vehicle stage replies in the same turn", a
 });
 ```
 
-It checks things the direct-invoke test cannot. The driver is in the *persisted* document, with the
-state code uppercased by the handler. The second model call, `VehicleNode`'s, received the one-time
+It checks things the direct-invoke test cannot. The first model call received the original
+request in the initial node's mapped history, with no accidental `default` history.
+The driver is in the *persisted* document, with the state code uppercased by the handler.
+The second model call, `VehicleNode`'s, received the one-time
 entry cue from [lesson 4](/ezgraph/docs/tutorials/quote-graph/prompts-and-handoffs/). And
 `gateway.drained` proves no unexpected model call was made.
 

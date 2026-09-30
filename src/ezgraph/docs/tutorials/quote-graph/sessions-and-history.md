@@ -112,9 +112,21 @@ historySpaces: [
 | `quote-present` | Quote | "Present the quote tiers." | Tier explanations and what-ifs get a short, focused context instead of the whole intake. |
 | `quote-terminal` | TerminateSessionNode | the internal end-of-chat message | A brief goodbye with no earlier context. |
 
-Each node's agent loop reads only its own space and appends only to it. `prepareInput()` puts the
-customer's next message in the space of the node that will handle it. Splitting spaces
-therefore shortens every prompt after intake and keeps unrelated detail out of it.
+Each node's agent loop reads only its own space and appends only to it. Before appending
+input, `prepareInput()` resolves the node that will handle the turn:
+
+- A new session uses the state schema's initial `DriverNode` cursor, so the first
+  customer message goes directly into `quote-intake`.
+- A restored session uses its saved `currentNode`. A reply while `HistoryNode` is
+  active goes into `quote-incidents`; a reply while `QuoteNode` is active goes into
+  `quote-present`.
+- A session reset by the idle policy starts again at `DriverNode`, with the new
+  message in a fresh `quote-intake` history.
+
+An unmapped node uses `"default"`. There is no `initialHistorySpace` option: the
+initial node's mapping controls the first message, and registration order does
+not affect it. Splitting spaces shortens every prompt after intake and keeps
+unrelated detail out of it.
 
 The trade-off is that a stage cannot see what was said in another space. If the customer mentions
 "I had a fender-bender last spring" while giving their name, that sentence stays in

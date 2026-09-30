@@ -36,7 +36,7 @@ export type QuoteGraphNodes = {
 };
 
 export const QuoteGraphState = createGraphStateAnnotation(
-  DriverNode.name,
+  DriverNode.id(),
   () => ({} as QuoteGraphNodes),
 );
 
@@ -55,6 +55,51 @@ export class DriverNode extends ConversationNode<QuoteGraphStateType> {
 
 Use a local cast from the registry only where TypeScript needs the exact
 node-channel shape. The class does not carry a redundant second state generic.
+
+## Initial node and history routing
+
+The first argument to `createGraphStateAnnotation()` declares the initial
+`currentNode`. In the example above, a new session starts at `DriverNode`.
+Map that node to a named history in the graph definition:
+
+```ts
+static getGraphDefinition(): GraphDefinition {
+  return {
+    llmConfig: ModelCatalog.model("openai:gpt-5.4", { retries: 2 }),
+    endNode: GRAPH_END_NODE,
+    historySpaces: [
+      [DriverNode, "quote-intake"],
+      [VehicleNode, "quote-intake"],
+    ],
+  };
+}
+```
+
+Before invoking a node, `BaseGraph.prepareInput()` resolves the cursor, chooses
+its history space, and appends the customer's message there. The START branch
+created by `registerTurnNodes()` then enters that same node.
+
+| Session | Cursor used for input | History space |
+| --- | --- | --- |
+| New session | The state schema's initial `currentNode`, here `DriverNode.id()` | The initial node's mapping, here `"quote-intake"` |
+| Restored session | The saved `currentNode` | The saved node's mapping |
+| Session reset by `onRestoreSessionDoc()` returning `null` | The state schema's initial `currentNode` | The initial node's mapping |
+| Any selected node without a mapping | The cursor resolved above | `"default"` |
+
+Node registration order does not choose the initial cursor. Keep the initial
+node registered as a turn node, and supply a non-empty cursor default; preparing
+a first message without that default fails before model work begins.
+
+### Migrating an existing graph
+
+Remove `initialHistorySpace` from `GraphDefinition`. Keep the initial node's
+entry in `historySpaces`, and declare that node in `createGraphStateAnnotation()`.
+If other nodes previously relied on the initial history setting as a shared
+fallback, add explicit mappings for them too. Unmapped nodes now use `"default"`.
+Existing session documents keep their saved cursor and histories.
+
+For complete examples, see [QuoteGraph's history spaces](/ezgraph/docs/tutorials/quote-graph/sessions-and-history/#four-history-spaces)
+and [DecisionHotelGraph's history spaces](/ezgraph/docs/tutorials/decision-hotel-graph/graph-and-criteria/#history-spaces).
 
 ## State belongs to the node that owns it
 

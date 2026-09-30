@@ -41,7 +41,6 @@ export class DecisionHotelGraph extends BaseGraph<DecisionHotelGraphStateType> {
       },
       endNode: GRAPH_END_NODE,
       llmTimeoutMs: 60_000,
-      initialHistorySpace: "hotel-intake",
       historySpaces: [
         [RouterDecisionNode, "hotel-intake"],
         [DateRangeNode, "hotel-intake"],
@@ -65,8 +64,12 @@ export class DecisionHotelGraph extends BaseGraph<DecisionHotelGraphStateType> {
 | `llmConfig` | `openai:gpt-4o`, two retries, `temperature: 0` | Every `ConversationNode` and `TerminateSessionNode`. `PresentNode` adds `forceToolCalls` on top. |
 | `decisionConfig` | Jev (`typesafe` / `jev-latest`), 15-second attempts, two extra attempts | All three `DecisionNode`s. None overrides it with `getDecisionConfig()`. |
 | `llmTimeoutMs` | 60 seconds | Each chat-model request. Decision calls use `decisionConfig.timeoutMs` instead. |
-| `initialHistorySpace` | `hotel-intake` | A brand-new session's first message, before any node owns the turn |
 | `historySpaces` | three spaces | Which conversation each node reads and appends to |
+
+The state schema declares `RouterDecisionNode` as the initial `currentNode`. EZGraph
+resolves that cursor before appending the first user message, so the message
+uses its `"hotel-intake"` history mapping. Later turns use the persisted current
+node's mapping; unmapped nodes use `"default"`.
 
 The two model configurations never mix. A decision node that returned a non-empty
 `getLlmConfig()` would fail at compile time, and a conversational node never reads
@@ -199,6 +202,16 @@ probability.
 | `hotel-intake` | the router, the five collectors, the readiness judge | They are one conversation about criteria. The router and the readiness judge read `request` and `priorRequests` from this space, so they see exactly what the collectors saw. |
 | `hotel-present` | `PresentNode`, `PresentationDecisionNode` | Result presentation and booking. Hotel lists and booking talk stay out of the criteria conversation. |
 | `hotel-terminal` | `TerminateSessionNode` | A goodbye generated only when the customer asks to stop. |
+
+For a new session, `BaseGraph.prepareInput()` resolves the schema's initial
+`RouterDecisionNode` cursor before appending the first message. Its mapping puts
+that exact request in `hotel-intake`, so the router can classify it on its first
+decision call. No separate `initialHistorySpace` setting is needed.
+
+On later turns, the saved cursor chooses the space: an answer to `DateRangeNode`
+goes into `hotel-intake`, while a booking reply to `PresentNode` goes into
+`hotel-present`. Any node without an explicit mapping uses `"default"`.
+Changing the registration order does not change this routing.
 
 History spaces matter more in a graph with decision nodes than in a purely conversational one. A
 decision node's automatic input is "the newest human messages in *my* history space". Putting the

@@ -57,9 +57,15 @@ const graphInput = {
 };
 ```
 
-`prepareInput()` appends the customer's message to the history space of the persisted
-`currentNode`. `inputConsumed: false` and an empty `response` reset the per-turn fields. The
-START branch built by `registerTurnNodes()` then enters the node named by `currentNode`.
+`prepareInput()` first resolves `currentNode`: a restored session uses its saved cursor,
+while a new session uses the initial node declared by `createGraphStateAnnotation()`.
+It then looks up that node's `historySpaces` mapping and appends the customer's message
+there. For a new QuoteGraph session, the cursor is `DriverNode` and the space is
+`quote-intake`; an unmapped node would use `"default"`.
+
+`inputConsumed: false` and an empty `response` reset the per-turn fields. The START branch
+built by `registerTurnNodes()` then enters the node named by the resolved `currentNode`.
+The first message is already in that node's history before its model or decision call.
 
 ## Inside the node: the agent loop
 
@@ -77,7 +83,10 @@ Each round is one model call. What happens next depends on the reply:
 | --- | --- |
 | text, and no tool calls | stops; the text is the node's reply |
 | one or more tool calls | runs every call in order, adds a tool message for each, then stops if any handler returned something other than `stay()`, or starts another round |
-| nothing at all | nudges the model with an internal message and retries, twice by default, then calls `onEmptyModelResponse()` |
+| nothing at all, without a provider block | applies eligible empty-response nudges, twice by default, then calls `onLlmError()` if no usable response arrives |
+
+Provider blocks go directly to `onLlmBlocked()`. See the developer guide's
+[error-handling hooks](/ezgraph/docs/developer-guide/#error-handling) for the complete policy.
 
 A node gets eight rounds per invocation by default (`maxAgentRounds`). A model that keeps
 calling tools without finishing makes the loop throw, which fails the turn instead of

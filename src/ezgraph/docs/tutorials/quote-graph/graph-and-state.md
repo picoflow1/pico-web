@@ -36,7 +36,6 @@ export class QuoteGraph extends BaseGraph<QuoteGraphStateType> {
         reasoningEffort: "low",
       }),
       endNode: GRAPH_END_NODE,
-      initialHistorySpace: "quote-intake",
       historySpaces: [
         [DriverNode, "quote-intake"],
         [VehicleNode, "quote-intake"],
@@ -59,8 +58,12 @@ export class QuoteGraph extends BaseGraph<QuoteGraphStateType> {
 | --- | --- | --- |
 | `llmConfig` | `openai:gpt-5.4`, three retries, `reasoningEffort: "low"` | The default model for every node. `ModelCatalog.model()` checks the parameters against the model's catalog entry, so a parameter the model does not accept is a type error. |
 | `endNode` | `GRAPH_END_NODE` (`"end"`) | The `currentNode` value of a completed session |
-| `initialHistorySpace` | `quote-intake` | Where a new session's first message goes |
 | `historySpaces` | four spaces | Which conversation each node reads and appends to; see [lesson 7](/ezgraph/docs/tutorials/quote-graph/sessions-and-history/) |
+
+The state schema declares `DriverNode` as the initial `currentNode`. EZGraph
+resolves that cursor before appending the first user message, so the message
+uses its `"quote-intake"` history mapping. Later turns use the persisted current
+node's mapping; unmapped nodes use `"default"`.
 
 Everything else uses the framework defaults: eight model-and-tool rounds per node invocation, no
 per-request timeout, an internal `"Start"` message to seed an empty history, and two nudges
