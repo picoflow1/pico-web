@@ -10,7 +10,7 @@ templateEngineOverride: md
 
 # 3. Anatomy of a conversation turn
 
-A `ConversationNode` is a prompt, some tool definitions, and some handlers. Everything else, from
+A `LlmNode` is a prompt, some tool definitions, and some handlers. Everything else, from
 loading the session to saving it again, is framework code. This lesson follows turn 3 of the live
 replay through all of it. It is a good turn to follow because one message crosses a stage
 boundary: `DriverNode` saves the driver, and `VehicleNode` writes the reply.
@@ -36,7 +36,7 @@ for about 10 years."
 | 4 | `ConversationRunner` | Calls the model with `DriverNode`'s prompt, the intake history, and its tools |
 | 5 | `GraphNode.handleTool()` | Validates the `capture_driver` arguments against the Zod schema |
 | 6 | your handler | Checks business rules, calls `saveState({ driver })`, returns `go(VehicleNode)` |
-| 7 | `ConversationNode` | Turns `go()` into a LangGraph `Command` targeting `VehicleNode` |
+| 7 | `LlmNode` | Turns `go()` into a LangGraph `Command` targeting `VehicleNode` |
 | 8 | `GraphEngine` | Checkpoints the completed step |
 | 9 | `VehicleNode` | Runs in the same turn; its model writes the reply |
 | 10 | `GraphEngine` | Checkpoints again, saves the final state, releases the lease, and returns the reply |
@@ -69,7 +69,7 @@ The first message is already in that node's history before its model or decision
 
 ## Inside the node: the agent loop
 
-`ConversationNode.run()` hands the work to `ConversationRunner`, the one agent loop every
+`LlmNode.run()` hands the work to `ConversationRunner`, the one agent loop every
 conversational node shares. It passes:
 
 - the system prompt from `getPrompt(state)`;
@@ -134,7 +134,7 @@ response's feedback, or `"OK"` when there is none, and then stops, because `go()
 
 ## From builder to Command
 
-`ConversationNode` turns the handler's response into a LangGraph update:
+`LlmNode` turns the handler's response into a LangGraph update:
 
 | Response | `currentNode` becomes | `response` | Then |
 | --- | --- | --- | --- |

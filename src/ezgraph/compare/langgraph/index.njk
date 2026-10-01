@@ -33,7 +33,7 @@ ezgraphCompare: true
         <thead><tr><th>Concern</th><th>EZGraph supplies</th><th>A direct LangGraph team chooses</th></tr></thead>
         <tbody>
           <tr><td>Authoring</td><td>Node classes with prompts, tools, state writes, and outcomes; validated registration through <code>StateGraphExt</code>.</td><td>Node functions, state schemas, edges, and how to organize those responsibilities in application code.</td></tr>
-          <tr><td>Conversation handling</td><td>A reusable <code>ConversationNode</code> model/tool loop and response contracts.</td><td>How to compose model calls, tool handling, validation, and response policy, including available LangChain helpers.</td></tr>
+          <tr><td>Conversation handling</td><td>A reusable <code>LlmNode</code> model/tool loop and response contracts.</td><td>How to compose model calls, tool handling, validation, and response policy, including available LangChain helpers.</td></tr>
           <tr><td>Session lifecycle</td><td><code>GraphEngine</code> coordinates restore, invocation, progress persistence, and final saves through a session manager.</td><td>The invocation boundary and how graph execution connects to application sessions and storage.</td></tr>
           <tr><td>Execution</td><td>A class-based authoring layer that compiles to a LangGraph <code>StateGraph</code>.</td><td>Direct use of graph topology, channels, reducers, and execution controls.</td></tr>
         </tbody>

@@ -89,13 +89,13 @@ export type WeatherGraphStateType = typeof WeatherGraphState.State;</code></pre>
         </p>
         <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">nodes/city.node.ts</span></div><pre><code>import { z } from "zod";
 import {
-  ConversationNode, Tool, go, stay,
+  LlmNode, Tool, go, stay,
   type ToolDefinition, type ToolResponse,
 } from "@picoflow/ezgraph";
 import type { WeatherGraphStateType } from "../weather-graph.state.js";
 import { WeatherNode } from "./weather.node.js";
 
-export class CityNode extends ConversationNode&lt;WeatherGraphStateType&gt; {
+export class CityNode extends LlmNode&lt;WeatherGraphStateType&gt; {
   getPrompt() {
     return "Ask which city the traveller is visiting, then call capture_city. If they want to stop, call terminate_session.";
   }
@@ -138,7 +138,7 @@ export class CityNode extends ConversationNode&lt;WeatherGraphStateType&gt; {
         </p>
         <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">nodes/weather.node.ts</span></div><pre><code>import { z } from "zod";
 import {
-  ConversationNode, Tool, finish, stay,
+  LlmNode, Tool, finish, stay,
   type ToolDefinition, type ToolResponse,
 } from "@picoflow/ezgraph";
 import type { WeatherGraphStateType } from "../weather-graph.state.js";
@@ -146,7 +146,7 @@ import type { WeatherGraphStateType } from "../weather-graph.state.js";
 // Replace with your real weather source.
 const lookupForecast = (city: string) =&gt; `sunny and 24°C in ${city}`;
 
-export class WeatherNode extends ConversationNode&lt;WeatherGraphStateType&gt; {
+export class WeatherNode extends LlmNode&lt;WeatherGraphStateType&gt; {
   getPrompt(state: WeatherGraphStateType) {
     const city = state.nodes.CityNode?.city ?? "the saved city";
     return `The traveller is visiting ${city}. Call get_forecast.`;
@@ -178,7 +178,7 @@ export class WeatherNode extends ConversationNode&lt;WeatherGraphStateType&gt; {
           The graph definition supplies the default model and the terminal node ID. Register the
           nodes that may run in a conversational turn. The transition in
           <code>go(WeatherNode)</code> selects the next node; no automatic outcome-router setup
-          is required. <code>ConversationNode</code> inherits a <code>terminate_session</code>
+          is required. <code>LlmNode</code> inherits a <code>terminate_session</code>
           tool, so every graph that uses it must register <code>TerminateSessionNode</code> and
           connect it to <code>END</code>; otherwise <code>compile()</code> fails.
         </p>

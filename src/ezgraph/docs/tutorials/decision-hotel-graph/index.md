@@ -16,7 +16,7 @@ EZGraph port of PicoFlow's `DecisionHotelFlow`, and it is the track to read if y
 
 Three of its nodes are `DecisionNode`s backed by TypeSafe's
 [Jev](https://typesafe.ai/blog/introducing-system-one-models-and-jev), a non-generative model that
-answers typed questions with probabilities and never writes prose. Five `ConversationNode`s
+answers typed questions with probabilities and never writes prose. Five `LlmNode`s
 collect criteria with a chat model. One `GraphNode` searches and prices a local catalog without
 any model at all. Application code decides what every answer means.
 
@@ -49,14 +49,14 @@ Three loops shape the whole conversation:
 | Node | Kind | History space | Owns | What it demonstrates |
 | --- | --- | --- | --- | --- |
 | `RouterDecisionNode` | `DecisionNode` | `hotel-intake` | `notice`, `lastRoute`, `lastDecision` | Two choice questions, facts, a literal-search guard, forwarding a real request |
-| `DateRangeNode` | `ConversationNode` | `hotel-intake` | `answered`, `start`, `end` | Calendar validation, and defining the shared `reroute_request` tool |
-| `BudgetNode` | `ConversationNode` | `hotel-intake` | `answered`, `min`, `max` | Range validation with `null` meaning "no limit" |
-| `RoomTypeNode` | `ConversationNode` | `hotel-intake` | `answered`, `roomType` | A Zod enum as the whole validation |
-| `AmenityNode` | `ConversationNode` | `hotel-intake` | `answered`, `amenities` | Two capture tools, one for an explicit "no preference" |
-| `DistanceNode` | `ConversationNode` | `hotel-intake` | `answered`, `airport`, `cityCenter` | Optional limits and negative-value rejection |
+| `DateRangeNode` | `LlmNode` | `hotel-intake` | `answered`, `start`, `end` | Calendar validation, and defining the shared `reroute_request` tool |
+| `BudgetNode` | `LlmNode` | `hotel-intake` | `answered`, `min`, `max` | Range validation with `null` meaning "no limit" |
+| `RoomTypeNode` | `LlmNode` | `hotel-intake` | `answered`, `roomType` | A Zod enum as the whole validation |
+| `AmenityNode` | `LlmNode` | `hotel-intake` | `answered`, `amenities` | Two capture tools, one for an explicit "no preference" |
+| `DistanceNode` | `LlmNode` | `hotel-intake` | `answered`, `airport`, `cityCenter` | Optional limits and negative-value rejection |
 | `CriteriaReadinessDecisionNode` | `DecisionNode` | `hotel-intake` | `review`, `accepted` | A judge that cannot override deterministic validation |
 | `SearchHotelsNode` | `GraphNode` | none (no model) | nothing | A model-free node that seeds the next node's state |
-| `PresentNode` | `ConversationNode` | `hotel-present` | `hotelFound`, `criteria`, `criteriaReviewAccepted`, `draft`, `selectedHotel`, `confirmationNumber` | Forced tool calls, booking against a result list, a backward route |
+| `PresentNode` | `LlmNode` | `hotel-present` | `hotelFound`, `criteria`, `criteriaReviewAccepted`, `draft`, `selectedHotel`, `confirmationNumber` | Forced tool calls, booking against a result list, a backward route |
 | `PresentationDecisionNode` | `DecisionNode` | `hotel-present` | `review`, `accepted` | A grounding judge with a deterministic fallback rendering |
 | `TerminateSessionNode` | framework | `hotel-terminal` | nothing | Ending the conversation at the customer's request |
 

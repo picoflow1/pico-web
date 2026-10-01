@@ -306,7 +306,7 @@ ezgraphCompare: true
       <b>The <code>terminate_session</code> row is the contract argument in one line.</b> In
       LangGraph it is a schema, a <code>tool()</code> wrapper, an entry in all five
       <code>stageTools</code> lists, and a handler branch in all five tool nodes — seven sites,
-      and a sixth stage makes it nine. In EZGraph every <code>ConversationNode</code> inherits
+      and a sixth stage makes it nine. In EZGraph every <code>LlmNode</code> inherits
       the handler, <code>TerminateSessionNode</code> supplies the definition once,
       <code>quit()</code> routes through it, and <code>compile()</code> fails loudly if you
       forget to register it. Seven sites become zero, and the failure mode moves from

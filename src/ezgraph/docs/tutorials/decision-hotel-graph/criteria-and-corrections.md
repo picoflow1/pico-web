@@ -1,7 +1,7 @@
 ---
 layout: layouts/ezgraph.njk
 title: 6. Criteria collectors and corrections
-description: Build five small ConversationNode collectors that validate and own one criterion each, share one reroute tool, and let the router apply an out-of-order correction in a single turn.
+description: Build five small LlmNode collectors that validate and own one criterion each, share one reroute tool, and let the router apply an out-of-order correction in a single turn.
 permalink: /ezgraph/docs/tutorials/decision-hotel-graph/criteria-and-corrections/
 ezgraph: true
 ezgraphDocument: true
@@ -27,7 +27,7 @@ record.
 `DateRangeNode` in full:
 
 ```ts
-export class DateRangeNode extends ConversationNode<DecisionHotelGraphStateType> {
+export class DateRangeNode extends LlmNode<DecisionHotelGraphStateType> {
   getPrompt(): string {
     return fillHotelPrompt(hotelPrompts.dates, {
       CURRENT_DATE: CriteriaHelper.currentBusinessDate().toISOString().slice(0, 10),
@@ -116,7 +116,7 @@ registered once per graph, and `@Tool` selects a definition by name from that re
 `Tool 'reroute_request' is defined by both 'DateRangeNode' and '…'`.
 
 The same mechanism supplies `terminate_session`: `TerminateSessionNode` defines it, and every
-`ConversationNode` inherits a handler.
+`LlmNode` inherits a handler.
 
 <div class="callout"><span class="label">Where to define a shared tool</span><p>Defining the shared tool in one arbitrary collector works, but it hides a dependency: remove <code>DateRangeNode</code> and four other nodes lose their reroute tool. For a larger graph, define shared tools on a small base class or a dedicated node, so ownership is obvious.</p></div>
 

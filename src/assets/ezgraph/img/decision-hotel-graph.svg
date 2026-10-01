@@ -110,9 +110,9 @@
   <!-- legend -->
   <g font-family="Inter,Arial,sans-serif" font-size="13" fill="#d6e0e8">
     <rect x="44" y="694" width="16" height="16" rx="4" fill="url(#purple)"/><text x="68" y="707">DecisionNode (Jev)</text>
-    <rect x="214" y="694" width="16" height="16" rx="4" fill="url(#blue)"/><text x="238" y="707">ConversationNode</text>
+    <rect x="214" y="694" width="16" height="16" rx="4" fill="url(#blue)"/><text x="238" y="707">LlmNode</text>
     <rect x="378" y="694" width="16" height="16" rx="4" fill="#f4c866"/><text x="402" y="707">GraphNode, no model</text>
     <rect x="554" y="694" width="16" height="16" rx="4" fill="#4cbf9f"/><text x="578" y="707">graph completes</text>
-    <text x="44" y="738" fill="#9cafbe">Not drawn: any ConversationNode can call terminate_session → TerminateSessionNode (hotel-terminal) → END. Router “exit” completes with finish().</text>
+    <text x="44" y="738" fill="#9cafbe">Not drawn: any LlmNode can call terminate_session → TerminateSessionNode (hotel-terminal) → END. Router “exit” completes with finish().</text>
   </g>
 </svg>

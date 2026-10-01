@@ -92,7 +92,7 @@ moves, the backward move from `QuoteNode` to `CoverageNode`, and completion are 
 handler returns at run time.
 
 `compile()` validates every node before the graph can serve a turn. Each `@Tool` handler must
-match a tool some node defines, and no tool may be defined twice. `ConversationNode` inherits a
+match a tool some node defines, and no tool may be defined twice. `LlmNode` inherits a
 `terminate_session` handler, which is why `TerminateSessionNode`, the node that defines that tool,
 must be registered even though no forward edge leads to it.
 
@@ -176,7 +176,7 @@ export type QuoteGraphStateType = typeof QuoteGraphState.State;
 - `NodeStateValue<...>` adds framework metadata to each channel, such as the `model` a node used
   when it overrides the graph default.
 - `QuoteGraphNodeState<"VehicleNode">` strips that metadata for handler code. Nodes extend
-  `ConversationNode<QuoteGraphStateType>` with a single generic, so where a handler needs the exact
+  `LlmNode<QuoteGraphStateType>` with a single generic, so where a handler needs the exact
   channel type it casts once: `this.getState() as QuoteGraphNodeState<"VehicleNode">`.
 
 ## Who writes what
@@ -213,7 +213,7 @@ Domain types in the state file give every one of those readers the same vocabula
 
 - **One shared mutable "quote" object.** It makes every stage responsible for every field; keep one
   channel per stage.
-- **Forgetting `TerminateSessionNode`.** A graph with a `ConversationNode` fails to compile without
+- **Forgetting `TerminateSessionNode`.** A graph with a `LlmNode` fails to compile without
   it.
 - **Casting state on every line.** Cast once to `QuoteGraphNodeState<...>` at the top of a handler.
 - **Cross-node writes without a note.** Document every place a node writes another node's channel.

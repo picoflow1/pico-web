@@ -1,7 +1,7 @@
 ---
 layout: layouts/ezgraph.njk
 title: Developer guide | EZGraph
-description: Build durable conversational graph nodes with explicit state writes and direct tool responses.
+description: Build LLM nodes for batch extraction and multi-turn chat with explicit state writes, direct tool responses, and error recovery.
 permalink: /ezgraph/docs/developer-guide/
 ezgraph: true
 ezgraphDocument: true
@@ -9,7 +9,8 @@ ezgraphDocument: true
 
 # EZGraph developer guide
 
-EZGraph is a TypeScript layer for durable, multi-turn LangGraph applications.
+EZGraph is a TypeScript layer for durable LangGraph applications, including
+one-request extraction workflows and multi-turn chat.
 Each graph node owns its prompt, tools, state writes, and transition decision.
 LangGraph owns execution; EZGraph supplies the contracts that keep a conversation
 resumable and auditable.
@@ -43,10 +44,12 @@ export const QuoteGraphState = createGraphStateAnnotation(
 export type QuoteGraphStateType = typeof QuoteGraphState.State;
 ```
 
-Conversational nodes normally need only the graph state type.
+`LlmNode` runs the shared model/tool loop for both one-request workflows and
+multi-turn chat. It normally needs only the graph state type. A single request
+can include several model calls, tool results, and retries.
 
 ```ts
-export class DriverNode extends ConversationNode<QuoteGraphStateType> {
+export class DriverNode extends LlmNode<QuoteGraphStateType> {
   getPrompt() {
     return "Collect the driver's identity and licence details.";
   }
@@ -55,6 +58,33 @@ export class DriverNode extends ConversationNode<QuoteGraphStateType> {
 
 Use a local cast from the registry only where TypeScript needs the exact
 node-channel shape. The class does not carry a redundant second state generic.
+
+## Choose a node base class
+
+| Base class | Use it for | Execution policy |
+| --- | --- | --- |
+| `LlmNode` | Document extraction, batch model work, and interactive chat | The standard model/tool loop, response validation, LLM error hooks, history and token accounting, and response builders |
+| `GraphNode` | Deterministic work or custom execution | Implement `run()` and choose the required execution path |
+| `DecisionNode` | Typed classification and judging | The decision provider/runner and `onDecisionError()` policy |
+
+`ExtractExpenseNode` and `ExtractInvoiceNode` use `LlmNode` for one-request
+extraction. Their graphs set `requiresUserMessage: false` and
+`responseMode: "json"`; a successful capture tool returns `finish()`.
+An interactive node can return text to wait for another user message or
+`go(Target)` to enter the next stage immediately. The graph and the response
+choose the workflow's lifetime.
+
+The four LLM hooks belong to `LlmNode`. A custom `GraphNode` calling the gateway
+directly does not automatically receive them. `ConversationRunner` remains the
+name of the shared internal model/tool runner.
+
+### Rename existing imports and subclasses
+
+Replace `ConversationNode` with `LlmNode` and `ConversationNodeRunResult` with
+`LlmNodeRunResult`. Update imports, subclass declarations, and any source-level
+imports from `conversation-node.js` to `llm-node.js`. The old exports are removed;
+there is no compatibility alias. Node IDs, saved state, histories, and the four
+error-hook contracts are unchanged by the base-class rename.
 
 ## Initial node and history routing
 
@@ -172,7 +202,7 @@ return go(ReturnsNode);
 
 ## Error handling
 
-`ConversationNode` owns response validation and model-error policy. Its three
+`LlmNode` owns response validation and model-error policy. Its three
 error hooks also exist on `BaseGraph`, so a node can handle a failure locally or
 delegate it to a graph-wide default.
 
@@ -203,7 +233,7 @@ For example, a collector can reject partial output that hit a token cap:
 ```ts
 import { AIMessage } from "@langchain/core/messages";
 import {
-  ConversationNode,
+  LlmNode,
   direct,
   modelStopReason,
   type LlmBlockedContext,
@@ -213,7 +243,7 @@ import {
 } from "@picoflow/ezgraph";
 import type { QuoteGraphStateType } from "../quote-graph.state.js";
 
-export class DriverNode extends ConversationNode<QuoteGraphStateType> {
+export class DriverNode extends LlmNode<QuoteGraphStateType> {
   getPrompt(): string {
     return "Collect the driver's identity and licence details.";
   }
@@ -249,7 +279,7 @@ enters `onLlmError()` without a corrective nudge. Provider refusals bypass
 ### Set retry and graph-wide recovery policy
 
 `params.retries` counts **additional** retries: `retries: 2` allows three
-attempts for invocation errors or rejected candidates. `ConversationNode`'s
+attempts for invocation errors or rejected candidates. `LlmNode`'s
 runner supplies `retries: 0` to each gateway call and owns the retries itself,
 so SDK retries cannot hide failures from your hooks. Retried invocations and
 rejected candidates wait 500 ms between attempts.
@@ -261,7 +291,7 @@ one, and delegates every other case:
 ```ts
 import type { LlmAttemptErrorContext } from "@picoflow/ezgraph";
 
-// Inside a ConversationNode or BaseGraph subclass.
+// Inside a LlmNode or BaseGraph subclass.
 override shouldRetryLlmError(
   context: LlmAttemptErrorContext,
 ): boolean | undefined {
@@ -335,7 +365,7 @@ import {
   type LlmErrorResponse,
 } from "@picoflow/ezgraph";
 
-// Inside a ConversationNode or BaseGraph subclass.
+// Inside a LlmNode or BaseGraph subclass.
 override async onLlmError(
   context: LlmErrorContext,
 ): Promise<LlmErrorResponse | null> {
@@ -363,7 +393,7 @@ executes normally, so deterministic code should make durable side effects
 idempotent. Use saved node state to decide whether recovery should offer a
 fixed reply, hand off, or try another model.
 
-These hooks apply to `ConversationNode`'s shared loop. Plain `GraphNode` calls
+These hooks apply to `LlmNode`'s shared loop. Plain `GraphNode` calls
 retain their existing `onEmptyModelResponse()` behavior; direct gateway calls
 and typed `DecisionNode` validation use their own contracts.
 
@@ -389,7 +419,7 @@ protected buildGraph() {
 }
 ```
 
-`ConversationNode` inherits `terminate_session`. Every graph containing one
+`LlmNode` inherits `terminate_session`. Every graph containing one
 must register `TerminateSessionNode`, including one-shot file-extraction
 graphs, then connect it to `END`.
 
@@ -422,7 +452,7 @@ non-generative "System One" model reached through LangChain's
 probabilities; it never writes prose, calls tools, or picks a route string.
 
 Use a decision node for bounded judgments: intent routing, readiness checks,
-and draft review. Use a `ConversationNode` for language and tools.
+and draft review. Use a `LlmNode` for language and tools.
 
 ### Declare questions, then route in code
 
@@ -642,7 +672,7 @@ defaults (`typesafe`, `jev-latest`, 30 s, zero retries) are the same.
 The [DecisionHotelGraph tutorial](/ezgraph/docs/tutorials/decision-hotel-graph/)
 walks through a complete graph with three decision nodes. A router,
 a readiness judge, and a grounded-presentation judge sit between
-`ConversationNode` collectors, each with its own fallback.
+`LlmNode` collectors, each with its own fallback.
 
 ## File attachments
 
@@ -734,7 +764,7 @@ handled recovery, and completed handlers should execute only once.
 
 ## Migration checklist
 
-1. Replace `ConversationNode<State, LocalState, Context>` with `ConversationNode<State>`.
+1. Rename node imports and subclasses to `LlmNode<State>`; remove any older local-state and context generics.
 2. Move channel shapes into the graph's `*GraphNodes` registry.
 3. Replace `this.toolResult()` with `stay`, `go`, `direct`, `directTo`, or `finish`.
 4. Replace `turnState()` with `getState()` and `turnGraphState()` with `graph.graphState()`.

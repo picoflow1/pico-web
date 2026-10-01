@@ -75,7 +75,7 @@ if (needsApproval(refund)) return go(ApprovalNode).withState({ refund });
 return direct(renderApprovedRefund(refund));
 ```
 
-There is no turn-context object, context-creation hook, synthetic tool result, outcome builder, or automatic outcome-router configuration. A normal `ConversationNode<GraphState>` uses the graph-state generic only.
+There is no turn-context object, context-creation hook, synthetic tool result, outcome builder, or automatic outcome-router configuration. A normal `LlmNode<GraphState>` uses the graph-state generic only.
 
 | Return | Meaning |
 | --- | --- |

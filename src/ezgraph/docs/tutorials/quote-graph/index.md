@@ -15,7 +15,7 @@ catalogued vehicle, an insurance history, and coverage choices. It calculates th
 code, answers "what if" questions without a second model call, and completes only when the
 customer accepts a tier from the current quote.
 
-It is the track to read for the core EZGraph contract: `ConversationNode`s whose tool handlers
+It is the track to read for the core EZGraph contract: `LlmNode`s whose tool handlers
 validate input, write durable state, and return `go()`, `stay()`, `direct()`, or `finish()`. There
 are no decision nodes here; for those, read the
 [DecisionHotelGraph track](/ezgraph/docs/tutorials/decision-hotel-graph/).
@@ -76,7 +76,7 @@ modules are plain TypeScript that a unit test can call directly.
 
 | Feature | In QuoteGraph? |
 | --- | --- |
-| `ConversationNode` tools with Zod schemas and `@Tool` handlers | yes, all five stages |
+| `LlmNode` tools with Zod schemas and `@Tool` handlers | yes, all five stages |
 | `go()`, `stay()`, `direct()`, `finish()` | yes |
 | `withMessage()` stage instructions and a forwarded customer request | yes |
 | Writing another node's state with `graph.saveNodeState()` | yes, `CoverageNode` and `QuoteNode` |

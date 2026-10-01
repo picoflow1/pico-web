@@ -27,7 +27,7 @@ same saved list.
 ## PresentNode acts only through tools
 
 ```ts
-export class PresentNode extends ConversationNode<DecisionHotelGraphStateType> {
+export class PresentNode extends LlmNode<DecisionHotelGraphStateType> {
   getPrompt(state: DecisionHotelGraphStateType): string {
     return fillHotelPrompt(hotelPrompts.present, {
       HOTEL_FOUND_INFO: JSON.stringify(state.nodes.PresentNode?.hotelFound ?? []),

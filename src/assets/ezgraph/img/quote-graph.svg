@@ -101,7 +101,7 @@
 
   <!-- legend -->
   <g font-family="Inter,Arial,sans-serif" font-size="13" fill="#d6e0e8">
-    <rect x="44" y="706" width="16" height="16" rx="4" fill="url(#blue)"/><text x="68" y="719">ConversationNode</text>
+    <rect x="44" y="706" width="16" height="16" rx="4" fill="url(#blue)"/><text x="68" y="719">LlmNode</text>
     <rect x="210" y="706" width="16" height="16" rx="4" fill="#f4c866"/><text x="234" y="719">plain TypeScript, no model</text>
     <rect x="428" y="706" width="16" height="16" rx="4" fill="#4cbf9f"/><text x="452" y="719">graph completes</text>
     <text x="44" y="750" fill="#9cafbe">Not drawn: any node returns stay() on a rejected tool call and keeps collecting; terminate_session → TerminateSessionNode (quote-terminal) → END.</text>

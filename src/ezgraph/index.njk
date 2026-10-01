@@ -492,7 +492,7 @@ export type QuoteGraphStateType = typeof QuoteGraphState.State;</code></pre>
                 <span class="file">nodes/driver.node.ts</span>
                 <span class="note good">handler + decision</span>
               </div>
-<pre class="sm"><code>export class DriverNode extends ConversationNode&lt;QuoteGraphStateType&gt; {
+<pre class="sm"><code>export class DriverNode extends LlmNode&lt;QuoteGraphStateType&gt; {
   @Tool("capture_driver")
   async captureDriver(input: DriverInput): Promise&lt;ToolResponse&gt; {
     // ...the same 25 lines of deterministic driver validation...

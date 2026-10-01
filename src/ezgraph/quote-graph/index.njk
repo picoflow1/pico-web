@@ -50,7 +50,7 @@ export const QuoteGraphState = createGraphStateAnnotation(
     <li>
       <h3>A collection node validates, saves, and moves on</h3>
       <p>The driver node validates model input in code. A rejection remains in the same node; an accepted driver is immediately persisted and transitions to vehicle collection.</p>
-      <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">nodes/driver.node.ts</span></div><pre><code>export class DriverNode extends ConversationNode&lt;QuoteGraphStateType&gt; {
+      <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">nodes/driver.node.ts</span></div><pre><code>export class DriverNode extends LlmNode&lt;QuoteGraphStateType&gt; {
   @Tool("capture_driver")
   async captureDriver(input: DriverInput): Promise&lt;ToolResponse&gt; {
     const driver = validateDriver(input); // deterministic domain validation

@@ -61,7 +61,7 @@ export class DecisionHotelGraph extends BaseGraph<DecisionHotelGraphStateType> {
 
 | Field | Value | Who uses it |
 | --- | --- | --- |
-| `llmConfig` | `openai:gpt-4o`, two retries, `temperature: 0` | Every `ConversationNode` and `TerminateSessionNode`. `PresentNode` adds `forceToolCalls` on top. |
+| `llmConfig` | `openai:gpt-4o`, two retries, `temperature: 0` | Every `LlmNode` and `TerminateSessionNode`. `PresentNode` adds `forceToolCalls` on top. |
 | `decisionConfig` | Jev (`typesafe` / `jev-latest`), 15-second attempts, two extra attempts | All three `DecisionNode`s. None overrides it with `getDecisionConfig()`. |
 | `llmTimeoutMs` | 60 seconds | Each chat-model request. Decision calls use `decisionConfig.timeoutMs` instead. |
 | `historySpaces` | three spaces | Which conversation each node reads and appends to |
@@ -164,7 +164,7 @@ export const DecisionHotelGraphState = createGraphStateAnnotation(
 
 The first argument makes `RouterDecisionNode` the entry node of every new session. The decision
 nodes appear in the registry like any other node: a `DecisionNode` has a state channel,
-`saveState()`, and `graph.saveNodeState()` exactly as a `ConversationNode` does.
+`saveState()`, and `graph.saveNodeState()` exactly as a `LlmNode` does.
 
 ### `answered` separates "no preference" from "not asked"
 
