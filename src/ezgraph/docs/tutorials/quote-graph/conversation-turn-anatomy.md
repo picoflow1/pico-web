@@ -33,7 +33,7 @@ for about 10 years."
 | 1 | `GraphEngine` | Takes the session's turn lease, loads the document, and runs `onRestoreSessionDoc()` |
 | 2 | `BaseGraph.prepareInput()` | Appends the message to the history space of the current node, `quote-intake` |
 | 3 | START branch | Reads `currentNode: "DriverNode"` and enters `DriverNode` |
-| 4 | `ConversationRunner` | Calls the model with `DriverNode`'s prompt, the intake history, and its tools |
+| 4 | `LlmRunner` | Calls the model with `DriverNode`'s prompt, the intake history, and its tools |
 | 5 | `GraphNode.handleTool()` | Validates the `capture_driver` arguments against the Zod schema |
 | 6 | your handler | Checks business rules, calls `saveState({ driver })`, returns `go(VehicleNode)` |
 | 7 | `LlmNode` | Turns `go()` into a LangGraph `Command` targeting `VehicleNode` |
@@ -69,15 +69,19 @@ The first message is already in that node's history before its model or decision
 
 ## Inside the node: the agent loop
 
-`LlmNode.run()` hands the work to `ConversationRunner`, the one agent loop every
-conversational node shares. It passes:
+`LlmNode.run()` calls the protected `runLlm()` method, which runs the shared
+`LlmRunner` model/tool loop. The same loop supports single-request workflows
+and multi-turn conversations. It passes:
 
 - the system prompt from `getPrompt(state)`;
 - this node's history space, including the new message;
 - the tools this node handles with `@Tool`, with `terminate_session` sorted last;
 - the model configuration: the graph default, merged with the node's `getLlmConfig()`.
 
-Each round is one model call. What happens next depends on the reply:
+A round obtains a model candidate and processes its reply. Invocation-error
+and candidate-rejection retries happen within a round; a tool follow-up or an
+eligible empty-response nudge starts another round. What happens next depends
+on the reply:
 
 | The model returns | The loop |
 | --- | --- |
@@ -90,8 +94,26 @@ Provider blocks go directly to `onLlmBlocked()`. See the developer guide's
 
 A node gets eight rounds per invocation by default (`maxAgentRounds`). A model that keeps
 calling tools without finishing makes the loop throw, which fails the turn instead of
-spending money forever. If the history space is empty when a node starts, the runner seeds it
+spending money forever. The round limit works alongside `params.retries`; retries can add
+model calls within a round. If the history space is empty when a node starts, the runner seeds it
 with an internal `"Start"` message, because some providers reject a request with no messages.
+
+An application can return `retryWithModel(ModelCatalog.model(...))` from a node
+or graph `onLlmError()` hook to continue the same node with a temporary model.
+The helper validates that selection immediately. Each alternate call receives
+one attempt, and tool follow-up continues on the alternate. Existing tool
+results stay in the history; completed handlers are not replayed. A newly
+requested tool still executes its handler, so external effects need the usual
+idempotency checks.
+
+The next user turn uses the configured model again. If the alternate fails,
+`onLlmError()` can return a fixed reply or normal transition; requesting a second
+alternate in the same recovery sequence is rejected. Blocks use
+`onLlmBlocked()`, and cancellation stops the turn. See
+[temporary model recovery](/ezgraph/docs/developer-guide/#recover-with-one-temporary-alternate-model)
+for a complete example and
+[API renames](/ezgraph/docs/developer-guide/#rename-existing-imports-and-subclasses)
+when updating an existing application.
 
 On turn 3, round one returns a single `capture_driver` call.
 

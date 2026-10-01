@@ -75,16 +75,58 @@ An interactive node can return text to wait for another user message or
 choose the workflow's lifetime.
 
 The four LLM hooks belong to `LlmNode`. A custom `GraphNode` calling the gateway
-directly does not automatically receive them. `ConversationRunner` remains the
-name of the shared internal model/tool runner.
+directly does not automatically receive them.
+
+### LlmRunner and custom execution
+
+`LlmRunner` is the public shared model/tool runner used by `LlmNode` for both
+single-request workflows and multi-turn chat. The execution roles are:
+
+| API | Owns |
+| --- | --- |
+| `LlmNode` | The application prompt, tools, response validation, and model-error policy |
+| `LlmRunner` | Model/tool sequencing, retries, temporary alternate models, cancellation checks, cleanup, and usage accumulation |
+| `LlmGateway` | Provider-neutral inference calls and provider integration |
+
+Import `LlmRunner` and `LlmRunResult` from `@picoflow/ezgraph` when composing the
+loop directly. `LlmRunner.run()` accepts a prompt, history, tools, model config,
+tool executor, and optional lifecycle and call policy. Its `LlmRunResult`
+includes messages, token usage, and the response or selected tool response.
+`LlmNodeRunResult` names that same result for specialized LLM nodes.
+
+A custom `GraphNode` can call `this.runLlm(state, context)` to use the shared
+loop. Its default behavior retains `onEmptyModelResponse()`; `LlmNode` wires
+the four LLM hooks through `llmLifecycle()`. A direct `LlmRunner.run()` call
+needs an explicit `LlmLifecycle` to opt into those hooks.
+
+`LlmPolicy` describes the graph's per-call timeout, empty-history seed, and
+empty-response recovery settings. `BaseGraph.llmPolicy` exposes the resolved
+policy, and `DEFAULT_LLM_POLICY` supplies the framework defaults. Set these
+through `llmTimeoutMs`, `emptyHistorySeed`, and `emptyResponseRecovery` in the
+graph definition.
 
 ### Rename existing imports and subclasses
 
-Replace `ConversationNode` with `LlmNode` and `ConversationNodeRunResult` with
-`LlmNodeRunResult`. Update imports, subclass declarations, and any source-level
-imports from `conversation-node.js` to `llm-node.js`. The old exports are removed;
-there is no compatibility alias. Node IDs, saved state, histories, and the four
-error-hook contracts are unchanged by the base-class rename.
+Update package imports, subclass declarations, and protected overrides together:
+
+| Previous name | Current name |
+| --- | --- |
+| `ConversationNode` | `LlmNode` |
+| `ConversationNodeRunResult` | `LlmNodeRunResult` |
+| `ConversationRunner` | `LlmRunner` |
+| `ConversationRunResult` | `LlmRunResult` |
+| `ConversationPolicy` | `LlmPolicy` |
+| `DEFAULT_CONVERSATION_POLICY` | `DEFAULT_LLM_POLICY` |
+| `ConversationLlmLifecycle` | `LlmLifecycle` |
+| `runConversation()` | `runLlm()` |
+| `conversationLlmLifecycle()` | `llmLifecycle()` |
+| `conversationPolicy` | `llmPolicy` |
+
+For source-level imports, change `conversation-node.js` to `llm-node.js` and
+`conversation-runner.js` to `llm-runner.js`. Applications importing from
+`@picoflow/ezgraph` only need the new exported names. The old names have no
+compatibility aliases. These API renames do not change node IDs, saved state,
+histories, or the error-hook contracts, and require no session-data migration.
 
 ## Initial node and history routing
 
@@ -411,39 +453,68 @@ cancellation policy.
 
 ### Recover with one temporary alternate model
 
-`onLlmError()` can return `retryWithModel()` with a validated EZGraph model
-configuration. For example, a node using `openai:gpt-5.4` can try an alternate
-provider after terminal invocation failure:
+Return `retryWithModel()` from `LlmNode.onLlmError()` or
+`BaseGraph.onLlmError()` to continue the active node with another model after
+terminal failure. The helper validates the selected model and parameters
+immediately; `LlmRunner` also validates manually constructed recovery results
+before calling the gateway. Use EZGraph's `ModelCatalog.model(...)` configuration
+format, and configure credentials for both providers.
+
+This node tries an alternate provider after an invocation error, exhausted
+empty responses, or rejected candidates on its primary model. If the alternate
+also fails, it returns a fixed reply:
 
 ```ts
 import {
+  LlmNode,
   ModelCatalog,
+  direct,
   retryWithModel,
+  type GraphState,
   type LlmErrorContext,
   type LlmErrorResponse,
 } from "@picoflow/ezgraph";
 
-// Inside a LlmNode or BaseGraph subclass.
-override async onLlmError(
-  context: LlmErrorContext,
-): Promise<LlmErrorResponse | null> {
-  if (context.kind === "invocation_error"
-      && context.model === "openai:gpt-5.4") {
-    return retryWithModel(ModelCatalog.model(
-      "anthropic:claude-sonnet-4-5",
-      { retries: 0 },
-    ));
+export class FallbackSupportNode extends LlmNode<GraphState> {
+  getPrompt(): string {
+    return "Help the customer with their request.";
   }
-  return null;
+
+  override getLlmConfig() {
+    return ModelCatalog.model("openai:gpt-5.4", { retries: 2 });
+  }
+
+  override async onLlmError(
+    context: LlmErrorContext,
+  ): Promise<LlmErrorResponse | null> {
+    if (context.model === "openai:gpt-5.4") {
+      return retryWithModel(ModelCatalog.model(
+        "anthropic:claude-sonnet-4-5",
+        { retries: 0 },
+      ));
+    }
+    return direct("The service is unavailable. Please try again later.");
+  }
 }
 ```
 
+To limit fallback to invocation errors, also check
+`context.kind === "invocation_error"`. Return `null` to offer an unhandled
+failure to the graph instead of returning a fixed reply.
+
 The alternate remains active through tool follow-up and receives one attempt
 per model call, regardless of its configured `params.retries`. It uses the
-existing prompt, tools, conversation history, and call timeout. It does not
-change the node's configured model for later turns. A second alternate in the
-same recovery sequence is rejected, and `onLlmBlocked()` cannot select an
-alternate model.
+existing prompt, tools, conversation history, request signal, and per-call
+timeout. Its failure context identifies the alternate provider and model,
+with `maxAttempts: 1`; an empty alternate response gets no corrective nudge.
+The hook can return an ordinary response or transition, or return `null` to
+delegate. A second `retryWithModel()` in the same recovery sequence is rejected.
+
+The selection is temporary: it is not saved as the node's configured model,
+and a later user turn starts with the usual graph/node model selection.
+Provider blocks continue through `onLlmBlocked()`, which cannot request an
+alternate model. Cancellation propagates without starting another recovery or
+returning fallback content.
 
 Completed tool effects and their feedback remain in place during recovery;
 EZGraph does not rerun those handlers. A newly generated tool call still
@@ -820,20 +891,30 @@ precedence, retry counts, blocked responses, and cancellation. Also test failure
 after a successful tool: the durable state and tool feedback should survive
 handled recovery, and completed handlers should execute only once.
 
+For temporary model recovery, assert the gateway's recorded model sequence:
+primary, alternate, alternate for a tool follow-up, then primary on a new turn.
+Verify that alternate calls receive `params.retries: 0`, completed tools are
+not replayed, and an alternate failure can return a fixed reply. Include
+fallback after an empty or rejected primary candidate and cancellation during
+the alternate call. These are deterministic checks; they do not verify a live
+provider's availability or answer quality.
+
 ## Migration checklist
 
 1. Rename node imports and subclasses to `LlmNode<State>`; remove any older local-state and context generics.
-2. Move channel shapes into the graph's `*GraphNodes` registry.
-3. Replace `this.toolResult()` with `stay`, `go`, `direct`, `directTo`, or `finish`.
-4. Replace `turnState()` with `getState()` and `turnGraphState()` with `graph.graphState()`.
-5. Replace deferred `withState` effects with `saveState()` or `graph.saveNodeState()`.
-6. Remove `createContext`, `nextStep`, outcome builders, and `configAutoRoute()`.
-7. Port PicoFlow `DecisionStep` classes to `DecisionNode` using the
+2. Rename `ConversationRunner` imports to `LlmRunner` and custom `runConversation()` overrides to `runLlm()`; update the result, policy, and lifecycle names in the [API rename table](#rename-existing-imports-and-subclasses).
+3. Move channel shapes into the graph's `*GraphNodes` registry.
+4. Replace `this.toolResult()` with `stay`, `go`, `direct`, `directTo`, or `finish`.
+5. Replace `turnState()` with `getState()` and `turnGraphState()` with `graph.graphState()`.
+6. Replace deferred `withState` effects with `saveState()` or `graph.saveNodeState()`.
+7. Remove `createContext`, `nextStep`, outcome builders, and `configAutoRoute()`.
+8. Port PicoFlow `DecisionStep` classes to `DecisionNode` using the
    [mapping table](#porting-a-picoflow-decisionstep), and register
    `decisionProviders` on the engine.
-8. Add conversational error policy through the [error handling hooks](#error-handling).
+9. Add conversational error policy through the [error handling hooks](#error-handling),
+   and choose when to use [one temporary alternate model](#recover-with-one-temporary-alternate-model).
    Keep typed decision failures under `onDecisionError()`.
-9. Test the entry, correction, transition, restore, completion, and
+10. Test the entry, correction, transition, restore, completion, and
    model- and decision-fallback paths.
 
 See the [QuoteGraph walkthrough](/ezgraph/quote-graph/) for a complete guided
