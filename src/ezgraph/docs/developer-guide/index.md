@@ -19,9 +19,6 @@ The current API has one rule worth remembering:
 
 > A tool handler writes durable state itself, then returns `go`, `stay`, `direct`, `directTo`, or `finish`.
 
-There is no deferred tool-result builder, `nextStep()`, `createContext()`,
-`turnState()`, or automatic outcome routing.
-
 ## The node contract
 
 Define graph-owned state once. The node registry is the durable schema: every
@@ -105,29 +102,6 @@ policy, and `DEFAULT_LLM_POLICY` supplies the framework defaults. Set these
 through `llmTimeoutMs`, `emptyHistorySeed`, and `emptyResponseRecovery` in the
 graph definition.
 
-### Rename existing imports and subclasses
-
-Update package imports, subclass declarations, and protected overrides together:
-
-| Previous name | Current name |
-| --- | --- |
-| `ConversationNode` | `LlmNode` |
-| `ConversationNodeRunResult` | `LlmNodeRunResult` |
-| `ConversationRunner` | `LlmRunner` |
-| `ConversationRunResult` | `LlmRunResult` |
-| `ConversationPolicy` | `LlmPolicy` |
-| `DEFAULT_CONVERSATION_POLICY` | `DEFAULT_LLM_POLICY` |
-| `ConversationLlmLifecycle` | `LlmLifecycle` |
-| `runConversation()` | `runLlm()` |
-| `conversationLlmLifecycle()` | `llmLifecycle()` |
-| `conversationPolicy` | `llmPolicy` |
-
-For source-level imports, change `conversation-node.js` to `llm-node.js` and
-`conversation-runner.js` to `llm-runner.js`. Applications importing from
-`@picoflow/ezgraph` only need the new exported names. The old names have no
-compatibility aliases. These API renames do not change node IDs, saved state,
-histories, or the error-hook contracts, and require no session-data migration.
-
 ## Initial node and history routing
 
 The first argument to `createGraphStateAnnotation()` declares the initial
@@ -161,14 +135,6 @@ created by `registerTurnNodes()` then enters that same node.
 Node registration order does not choose the initial cursor. Keep the initial
 node registered as a turn node, and supply a non-empty cursor default; preparing
 a first message without that default fails before model work begins.
-
-### Migrating an existing graph
-
-Remove `initialHistorySpace` from `GraphDefinition`. Keep the initial node's
-entry in `historySpaces`, and declare that node in `createGraphStateAnnotation()`.
-If other nodes previously relied on the initial history setting as a shared
-fallback, add explicit mappings for them too. Unmapped nodes now use `"default"`.
-Existing session documents keep their saved cursor and histories.
 
 For complete examples, see [QuoteGraph's history spaces](/ezgraph/docs/tutorials/quote-graph/sessions-and-history/#four-history-spaces)
 and [DecisionHotelGraph's history spaces](/ezgraph/docs/tutorials/decision-hotel-graph/graph-and-criteria/#history-spaces).
@@ -221,9 +187,8 @@ in a join node to update shared context.
 `createGraphStateAnnotation()` declares the context channel. Custom
 `Annotation.Root()` schemas can import `GraphContextChannel` from
 `@picoflow/ezgraph` and declare `context: new GraphContextChannel()`.
-Outside execution, inspect the session
-returned by `GraphEngine.getSession()`; older documents without context restore
-with `{}`. The addition preserves document version 16 and graph schema versions.
+Outside execution, inspect saved context in the session returned by
+`GraphEngine.getSession()`.
 
 In QuoteGraph, coverage calculation and quote adjustment write rating timestamps.
 Acceptance reads that shared metadata and saves an acceptance timestamp. Business
@@ -528,9 +493,8 @@ and typed `DecisionNode` validation use their own contracts.
 
 ## Build topology explicitly
 
-Register conversational entry points, then declare only genuine fixed worker
-edges. Tool responses select conversational handoffs; there is no
-`configAutoRoute()` call.
+Register conversational entry points, then declare fixed worker edges.
+Tool responses select conversational handoffs.
 
 ```ts
 protected buildGraph() {
@@ -898,24 +862,6 @@ not replayed, and an alternate failure can return a fixed reply. Include
 fallback after an empty or rejected primary candidate and cancellation during
 the alternate call. These are deterministic checks; they do not verify a live
 provider's availability or answer quality.
-
-## Migration checklist
-
-1. Rename node imports and subclasses to `LlmNode<State>`; remove any older local-state and context generics.
-2. Rename `ConversationRunner` imports to `LlmRunner` and custom `runConversation()` overrides to `runLlm()`; update the result, policy, and lifecycle names in the [API rename table](#rename-existing-imports-and-subclasses).
-3. Move channel shapes into the graph's `*GraphNodes` registry.
-4. Replace `this.toolResult()` with `stay`, `go`, `direct`, `directTo`, or `finish`.
-5. Replace `turnState()` with `getState()` and `turnGraphState()` with `graph.graphState()`.
-6. Replace deferred `withState` effects with `saveState()` or `graph.saveNodeState()`.
-7. Remove `createContext`, `nextStep`, outcome builders, and `configAutoRoute()`.
-8. Port PicoFlow `DecisionStep` classes to `DecisionNode` using the
-   [mapping table](#porting-a-picoflow-decisionstep), and register
-   `decisionProviders` on the engine.
-9. Add conversational error policy through the [error handling hooks](#error-handling),
-   and choose when to use [one temporary alternate model](#recover-with-one-temporary-alternate-model).
-   Keep typed decision failures under `onDecisionError()`.
-10. Test the entry, correction, transition, restore, completion, and
-   model- and decision-fallback paths.
 
 See the [QuoteGraph walkthrough](/ezgraph/quote-graph/) for a complete guided
 application, the [DecisionHotelGraph tutorial](/ezgraph/docs/tutorials/decision-hotel-graph/)

@@ -124,8 +124,8 @@ input, `prepareInput()` resolves the node that will handle the turn:
 - A session reset by the idle policy starts again at `DriverNode`, with the new
   message in a fresh `quote-intake` history.
 
-An unmapped node uses `"default"`. There is no `initialHistorySpace` option: the
-initial node's mapping controls the first message, and registration order does
+An unmapped node uses `"default"`. The initial node's mapping controls the first
+message, and registration order does
 not affect it. Splitting spaces shortens every prompt after intake and keeps
 unrelated detail out of it.
 

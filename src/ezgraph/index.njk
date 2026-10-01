@@ -1243,8 +1243,8 @@ const result = await engine.run({
         <summary>What happens to my existing LangGraph app?</summary>
         <div class="answer">
           <p>
-            The <a href="/ezgraph/docs/developer-guide/">developer guide</a> has the current
-            migration checklist. Per-stage fields become typed node-state channels; each node
+            The <a href="/ezgraph/docs/developer-guide/">developer guide</a> covers the current
+            node and tool contracts. Per-stage fields become typed node-state channels; each node
             function becomes a class with <code>getPrompt()</code>, <code>defineTool()</code>,
             and decorated handlers; the hand-rolled model↔tool loop gets <em>deleted</em>; and
             stage flags plus conditional edges become explicit

@@ -50,7 +50,6 @@ export default [
       { title: "Overview", url: guide },
       { title: "Node contract", url: `${guide}#the-node-contract` },
       { title: "LlmRunner and custom execution", url: `${guide}#llmrunner-and-custom-execution` },
-      { title: "API renames", url: `${guide}#rename-existing-imports-and-subclasses` },
       { title: "State and ownership", url: `${guide}#state-belongs-to-the-node-that-owns-it` },
       { title: "Tool responses", url: `${guide}#return-one-direct-tool-response` },
       { title: "Error handling", url: `${guide}#error-handling` },
@@ -58,7 +57,6 @@ export default [
       { title: "Topology", url: `${guide}#build-topology-explicitly` },
       { title: "Decision nodes (Jev)", url: `${guide}#decision-nodes-with-jev` },
       { title: "Testing", url: `${guide}#test-in-two-tiers` },
-      { title: "Migration checklist", url: `${guide}#migration-checklist` },
     ],
   },
   {

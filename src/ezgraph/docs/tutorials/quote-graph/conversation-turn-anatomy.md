@@ -111,9 +111,7 @@ The next user turn uses the configured model again. If the alternate fails,
 alternate in the same recovery sequence is rejected. Blocks use
 `onLlmBlocked()`, and cancellation stops the turn. See
 [temporary model recovery](/ezgraph/docs/developer-guide/#recover-with-one-temporary-alternate-model)
-for a complete example and
-[API renames](/ezgraph/docs/developer-guide/#rename-existing-imports-and-subclasses)
-when updating an existing application.
+for a complete example.
 
 On turn 3, round one returns a single `capture_driver` call.
 

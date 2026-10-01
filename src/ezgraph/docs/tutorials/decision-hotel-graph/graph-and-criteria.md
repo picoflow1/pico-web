@@ -206,7 +206,7 @@ probability.
 For a new session, `BaseGraph.prepareInput()` resolves the schema's initial
 `RouterDecisionNode` cursor before appending the first message. Its mapping puts
 that exact request in `hotel-intake`, so the router can classify it on its first
-decision call. No separate `initialHistorySpace` setting is needed.
+decision call.
 
 On later turns, the saved cursor chooses the space: an answer to `DateRangeNode`
 goes into `hotel-intake`, while a booking reply to `PresentNode` goes into
