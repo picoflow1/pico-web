@@ -1,7 +1,7 @@
 ---
 layout: layouts/ezgraph.njk
 title: 7. Time, sessions, and history spaces
-description: Pin QuoteGraph's business clock for reproducible tests, expire idle quote sessions with onRestoreSessionDoc(), and give each stage the conversation history it needs.
+description: Pin QuoteGraph's business clock, expire idle sessions, choose history spaces, and persist shared runtime context.
 permalink: /ezgraph/docs/tutorials/quote-graph/sessions-and-history/
 ezgraph: true
 ezgraphDocument: true
@@ -12,8 +12,8 @@ templateEngineOverride: md
 
 A quote depends on time: the driver's age, which incidents fall inside five years, which start
 dates are allowed, and whether a rate from yesterday is still valid. It also spans many turns, so
-it matters what each stage remembers. This lesson covers the three mechanisms QuoteGraph uses for
-both: a single business clock, an idle-session policy, and four history spaces.
+it matters what each stage remembers. This lesson covers a single business clock, an
+idle-session policy, four history spaces, and shared runtime context.
 
 ## The goal
 
@@ -21,6 +21,7 @@ both: a single business clock, an idle-session policy, and four history spaces.
 - Expire a stale session from graph code, before the next turn runs.
 - Give each stage the conversation it needs, and no more.
 - Know which facts live in history and which in node state.
+- Persist runtime metadata shared by coverage calculation and quote acceptance.
 
 ## One clock
 
@@ -134,6 +135,44 @@ The trade-off is that a stage cannot see what was said in another space. If the 
 because it asks every customer anyway. When a stage genuinely needs earlier words, forward them
 with `withMessage()`, as `revise_coverage` does in
 [lesson 9](/ezgraph/docs/tutorials/quote-graph/revise-and-accept/).
+
+## Shared runtime context
+
+QuoteGraph stores cross-stage runtime metadata in `graph.context`. After a valid
+coverage selection, `CoverageNode` records when it calculated the quote:
+
+```ts
+this.graph.saveContext({
+  rating: {
+    calculatedAt: now.toISOString(),
+    businessDate: now.toISOString().slice(0, 10),
+  },
+});
+```
+
+`QuoteNode.adjustQuote()` replaces the `rating` branch after recalculation.
+`QuoteNode.acceptQuote()` reads it across the stage boundary and records the
+acceptance event:
+
+```ts
+this.graph.saveContext({
+  acceptance: {
+    acceptedAt: quoteNow().toISOString(),
+    rating: this.graph.getContext().rating ?? null,
+  },
+});
+```
+
+The completed session preserves both branches under `graph.context`. An unrelated
+branch such as `request` is preserved when either branch is written. The getter
+returns a read-only snapshot, and saves become durable with the successful node's
+checkpoint. Resumed turns reload this context alongside node state and histories.
+An idle-session reset starts with a fresh `{}`.
+
+Driver details, selected coverage, premiums, and the accepted tier continue to
+live in their existing node channels. Runtime context is a separate JSON record
+and is not automatically included in model prompts. See the developer guide's
+[context contract](/ezgraph/docs/developer-guide/#graph-wide-runtime-context).
 
 ## History is context; state is the record
 
