@@ -90,7 +90,7 @@ on the reply:
 | nothing at all, without a provider block | applies eligible empty-response nudges, twice by default, then calls `onLlmError()` if no usable response arrives |
 
 Provider blocks go directly to `onLlmBlocked()`. See the developer guide's
-[error-handling hooks](/ezgraph/docs/developer-guide/#error-handling) for the complete policy.
+[error-handling hooks](/ezgraph/docs/developer-guide/models-and-error-handling/#error-handling) for the complete policy.
 
 A node gets eight rounds per invocation by default (`maxAgentRounds`). A model that keeps
 calling tools without finishing makes the loop throw, which fails the turn instead of
@@ -110,7 +110,7 @@ The next user turn uses the configured model again. If the alternate fails,
 `onLlmError()` can return a fixed reply or normal transition; requesting a second
 alternate in the same recovery sequence is rejected. Blocks use
 `onLlmBlocked()`, and cancellation stops the turn. See
-[temporary model recovery](/ezgraph/docs/developer-guide/#recover-with-one-temporary-alternate-model)
+[temporary model recovery](/ezgraph/docs/developer-guide/models-and-error-handling/#recover-with-one-temporary-alternate-model)
 for a complete example.
 
 On turn 3, round one returns a single `capture_driver` call.

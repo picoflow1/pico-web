@@ -172,7 +172,7 @@ An idle-session reset starts with a fresh `{}`.
 Driver details, selected coverage, premiums, and the accepted tier continue to
 live in their existing node channels. Runtime context is a separate JSON record
 and is not automatically included in model prompts. See the developer guide's
-[context contract](/ezgraph/docs/developer-guide/#graph-wide-runtime-context).
+[context contract](/ezgraph/docs/developer-guide/state-context-and-history/#graph-wide-runtime-context).
 
 ## History is context; state is the record
 

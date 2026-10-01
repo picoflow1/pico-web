@@ -18,7 +18,7 @@
       {% else %}
       <ul>
         {% for item in group.items %}
-        <li><a href="{{ item.url }}"{% if page.url == item.url or page.url.startsWith(item.url) %} aria-current="page"{% endif %}>{{ item.title }}</a></li>
+        <li><a href="{{ item.url }}"{% if page.url == item.url %} aria-current="page"{% endif %}>{{ item.title }}</a></li>
         {% endfor %}
       </ul>
       {% endif %}

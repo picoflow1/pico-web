@@ -1,0 +1,81 @@
+<!-- ============================== ENTERPRISE ============================== -->
+<section id="enterprise">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">For the enterprise</span>
+      <h2>No account. No key. No control plane.</h2>
+      <p>
+        EZGraph is a library, not a platform. There is nothing to sign up for, no licence key
+        to install, no telemetry endpoint, and no vendor observability cloud in the critical
+        path. That is a deliberate architectural position, not a pricing tier.
+      </p>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>Everything can stay inside your firewall</h3>
+        <ul class="checks">
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>No LangSmith requirement.</b> No EZGraph cloud, no mandatory tracing vendor.</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>Your database.</b> SQLite, self-managed MongoDB, Cosmos DB, or an in-memory store — or implement <code>SessionDocumentContainer</code> for your own.</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>Your models.</b> OpenAI, Azure OpenAI, Anthropic, Google — or an in-network endpoint via a custom provider adapter.</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>Your audit trail.</b> The session document is the operational record: histories, node state, token totals, warnings, errors, and which model actually answered.</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>Credentials never enter a cache key.</b> Provider config is excluded from the model cache identifier by construction.</span>
+          </li>
+        </ul>
+        <div class="callout warn" style="margin-bottom:0">
+          <p>
+            <b>Said precisely, because you will check:</b> EZGraph itself needs no key. You
+            still bring your own model credentials — or point it at a self-hosted endpoint, in
+            which case no data leaves your network. Choosing a hosted model or database
+            obviously sends data to that provider; that is your choice, not a framework
+            requirement.
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>The commercial runtime licence, in plain terms</h3>
+        <p>
+          Production use is permitted with <b>no runtime fee</b>. The public package ships
+          minified runtime code and TypeScript declarations; an active support subscription
+          includes a private source and debug package.
+        </p>
+        <div class="table-wrap" style="margin-bottom:18px">
+          <table style="min-width:0">
+            <tbody>
+              <tr><td>Commercial SaaS built on it</td><td><span class="badge ok">allowed</span></td></tr>
+              <tr><td>Internal enterprise production</td><td><span class="badge ok">allowed</span></td></tr>
+              <tr><td>Client and consulting work</td><td><span class="badge ok">allowed</span></td></tr>
+              <tr><td>Keeping your app code closed</td><td><span class="badge ok">allowed</span></td></tr>
+              <tr><td>Using the published runtime in production</td><td><span class="badge ok">allowed</span></td></tr>
+              <tr><td>Paying a runtime licence fee</td><td><span class="badge ok">not required</span></td></tr>
+              <tr><td>Private source/debug package with active support</td><td><span class="badge ok">included</span></td></tr>
+              <tr><td>Repackaging it as a rival agent SDK</td><td><span class="badge warn">not allowed</span></td></tr>
+              <tr><td>Reselling it as a hosted competing service</td><td><span class="badge warn">not allowed</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin-bottom:0">
+          In one sentence: <b>build and run your application with it — just do not repackage
+          it as a competing library, framework, or hosted service.</b>
+          <a href="/ezgraph/license/">Read the licence</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+

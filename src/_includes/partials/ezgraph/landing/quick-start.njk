@@ -1,0 +1,60 @@
+<!-- ============================== QUICK START ============================== -->
+<section class="band" id="start">
+  <div class="wrap wrap-narrow">
+    <div class="section-head center">
+      <span class="eyebrow">Quick start</span>
+      <h2>Three minutes to a running graph</h2>
+      <p>Install the published <a href="https://www.npmjs.com/package/@picoflow/ezgraph"><code>@picoflow/ezgraph</code> npm package</a>,
+        then follow the <a href="/ezgraph/tutorial/">tutorial</a> to build a real two-stage
+        conversation end to end.</p>
+    </div>
+
+    <div class="install" style="margin-bottom:14px">
+      <span class="prompt">$</span>
+      <code>npm install @picoflow/ezgraph</code>
+    </div>
+    <div class="install" style="margin-bottom:26px">
+      <span class="prompt">$</span>
+      <code>npm install @langchain/openai   # or @langchain/anthropic, @langchain/google</code>
+    </div>
+
+    <div class="code">
+      <div class="code-head">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="file">main.ts</span>
+      </div>
+<pre><code>import "reflect-metadata";          // once, at the very top of your entry point
+import { GraphEngine } from "@picoflow/ezgraph";
+import { WeatherGraph } from "./weather-graph.js";
+
+const engine = await GraphEngine.create({ graphs: [WeatherGraph] });
+
+const result = await engine.run({
+  graphName: "WeatherGraph",
+  sessionId: "demo-1",
+  userMessage: "hi",
+});
+
+// { status: 200, body: { success: true, completed: false,
+//                        message: "Which city would you like the weather for?" } }
+// Persisted: currentNode = "CollectNode"</code></pre>
+    </div>
+
+    <div class="callout tip">
+      <span class="label">Two setup gotchas, up front</span>
+      <p>
+        Tool handlers use a method decorator, so your <code>tsconfig.json</code> needs
+        <code>experimentalDecorators</code> and <code>emitDecoratorMetadata</code>. And
+        <code>reflect-metadata</code> must be imported <b>once, before any node module loads</b>
+        — without it, <code>@Tool</code> metadata isn't collected and your nodes will look like
+        they have no tools. Both are covered in
+        <a href="/ezgraph/docs/developer-guide/state-context-and-history/">the state and history guide</a>.
+      </p>
+    </div>
+
+    <div class="btn-row" style="justify-content:center;margin-top:30px">
+      <a class="btn btn-primary" href="/ezgraph/tutorial/">Start the tutorial</a>
+      <a class="btn btn-ghost" href="/ezgraph/docs/developer-guide/">Full developer guide</a>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,138 @@
+<!-- ============================== PROOF ============================== -->
+<section id="proof">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">The proof</span>
+      <h2>One chatbot. Built twice. Measured.</h2>
+      <p>
+        Marketing claims are cheap, so we built the same product both ways and counted.
+        <b>Sequoia Auto Insurance</b> — a five-stage guided quoting chatbot with 8 tools,
+        3 isolated history channels, real slot validation, backward transitions, and idle
+        expiry — implemented once on EZGraph (<code>quote-graph</code>) and once directly on
+        LangGraph with no EZGraph import (<code>quote-langgraph</code>).
+      </p>
+    </div>
+
+    <div class="metric-hero reveal">
+      <div>
+        <div class="big-stat grad-text">51.9%</div>
+        <p class="big-stat-label">
+          less framework-facing code for <strong>identical behavior</strong>
+        </p>
+        <p class="big-stat-sub">617 vs 1,283 normalized executable lines</p>
+      </div>
+      <div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Scope</th>
+                <th class="num">EZGraph</th>
+                <th class="num">LangGraph</th>
+                <th class="num">Δ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Framework-facing graph code</strong></td>
+                <td class="num">617</td>
+                <td class="num">1,283</td>
+                <td class="num win">−51.9%</td>
+              </tr>
+              <tr>
+                <td>Shared domain backend</td>
+                <td class="num">287</td>
+                <td class="num">287</td>
+                <td class="num zero">identical</td>
+              </tr>
+              <tr>
+                <td>NestJS controller</td>
+                <td class="num">47</td>
+                <td class="num">74</td>
+                <td class="num win">−36.5%</td>
+              </tr>
+              <tr>
+                <td>Raw lines, nothing removed</td>
+                <td class="num">924</td>
+                <td class="num">1,588</td>
+                <td class="num win">−41.8%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-note">
+          The rating engine, prompts, vehicle catalog, and clock helpers are the same in both
+          and measure <b>287 lines each</b> — which is how we know the delta is framework cost
+          and not a difference in what the two products do.
+        </p>
+      </div>
+    </div>
+
+    <div class="stat-strip reveal">
+      <div class="stat">
+        <span class="n">0</span>
+        <span class="l">hand-written reducers<br><span class="dim">LangGraph: 17 channels</span></span>
+      </div>
+      <div class="stat">
+        <span class="n">0</span>
+        <span class="l">lines of session store<br><span class="dim">LangGraph: 177</span></span>
+      </div>
+      <div class="stat">
+        <span class="n">0</span>
+        <span class="l">manual arg-parse blocks<br><span class="dim">LangGraph: 8</span></span>
+      </div>
+      <div class="stat">
+        <span class="n dim">5 <span style="color:var(--text-faint);font-weight:500">vs</span> 14</span>
+        <span class="l">edit sites to add a stage<br><span class="dim">lower is more modular</span></span>
+      </div>
+    </div>
+
+    <h3 class="mt-40" style="font-size:1.3rem">Where the 666 lines went</h3>
+    <p class="dim" style="max-width:70ch">
+      The additive source rows prove the headline. The repetition rows show <em>which</em>
+      application work disappears without pretending that the same code can be added twice.
+    </p>
+
+    <div class="table-wrap reveal">
+      <table>
+        <thead>
+          <tr>
+            <th>Concern</th>
+            <th class="num">LangGraph</th>
+            <th class="num">EZGraph</th>
+            <th class="num">Delta</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><b>Source artifacts — additive normalized lines</b></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+          <tr><td>Main graph and all stage implementations</td><td class="num">980</td><td class="num">551</td><td class="num win">−429</td></tr>
+          <tr><td>State definition and reducers</td><td class="num">83</td><td class="num">66</td><td class="num win">−17</td></tr>
+          <tr><td>Session store — 3 backends + serialize/hydrate</td><td class="num">177</td><td class="num">0</td><td class="num win">−177</td></tr>
+          <tr><td>Standalone domain type module</td><td class="num">43</td><td class="num">0 <span class="dim">types live with node state</span></td><td class="num win">−43</td></tr>
+          <tr class="total"><td><strong>Framework-facing graph code</strong></td><td class="num"><strong>1,283</strong></td><td class="num"><strong>617</strong></td><td class="num win"><strong>−666</strong></td></tr>
+          <tr><td><b>Repetition counts — not additive line buckets</b></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+          <tr><td>Manual <code>Schema.parse(call.args)</code> blocks</td><td class="num">8</td><td class="num">0</td><td class="num win">−8</td></tr>
+          <tr><td>Tool-name dispatch comparisons</td><td class="num">14</td><td class="num">0</td><td class="num win">−14</td></tr>
+          <tr><td>Explicit <code>route:</code> state writes</td><td class="num">16</td><td class="num">0</td><td class="num win">−16</td></tr>
+          <tr><td>Termination handling sites in graph code</td><td class="num">7</td><td class="num">0 <span class="dim">built-in node</span></td><td class="num win">−7</td></tr>
+          <tr><td>Reducer helpers / channels</td><td class="num">2 × 17</td><td class="num">0</td><td class="num win">framework-owned</td></tr>
+          <tr><td>Domain tool declarations</td><td class="num">8</td><td class="num">8</td><td class="num zero">same product scope</td></tr>
+          <tr><td>Explicit response sites</td><td class="num">route/branch updates</td><td class="num">5 <code>go</code>, 8 <code>stay</code>, 1 <code>direct</code>, 1 <code>finish</code></td><td class="num zero">visible contract</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="verdict reveal">
+      <b>The count is intentionally narrow.</b> It covers the current graph application code,
+      excludes EZGraph itself, and excludes the matching domain backend. The direct graph's
+      single implementation owns the repeated agent loop, dispatch, persistence boundary, and
+      routing; EZGraph keeps the application-specific part in a graph definition and five nodes.
+    </div>
+
+    <div class="btn-row mt-32">
+      <a class="btn btn-primary" href="/ezgraph/compare/langgraph/quotegraph-case-study/">Full benchmark, side-by-side code &amp; method</a>
+      <a class="btn btn-ghost" href="/ezgraph/docs/langgraph-pain-points/">Read the raw analysis</a>
+    </div>
+  </div>
+</section>
+

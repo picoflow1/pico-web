@@ -48,6 +48,7 @@
       {% endif %}
       {% if ezgraphDocument %}<article class="wrap ezgraph-document">{% endif %}
       {{ content | safe }}
+      {% if ezgraphGuide %}{% include "partials/ezgraph-guide-pagination.njk" %}{% endif %}
       {% if ezgraphDocument %}</article>{% endif %}
       {% if ezgraphDocument or ezgraphDocs %}
         </div>

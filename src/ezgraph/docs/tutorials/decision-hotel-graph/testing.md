@@ -267,5 +267,5 @@ prompts, behave like the fakes assume.
 ## Next
 
 Return to the [DecisionHotelGraph overview](/ezgraph/docs/tutorials/decision-hotel-graph/), read the
-[developer guide's decision-node reference](/ezgraph/docs/developer-guide/#decision-nodes-with-jev),
+[developer guide's decision-node reference](/ezgraph/docs/developer-guide/decision-nodes/#decision-nodes-with-jev),
 or see the same boundaries in [QuoteGraph](/ezgraph/docs/tutorials/quote-graph/).

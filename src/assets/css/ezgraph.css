@@ -187,7 +187,31 @@
 }
 .ezgraph-docs-body { min-width: 0; }
 .ezgraph-content .ezgraph-docs-body .ezgraph-document { padding-inline: 0; }
-.ezgraph-content .ezgraph-docs-body h2 { scroll-margin-top: 195px; }
+.ezgraph-content .ezgraph-docs-body table {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.ezgraph-content .ezgraph-docs-body p > code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.ezgraph-content .ezgraph-docs-body :is(h2, h3, a[id]) { scroll-margin-top: 195px; }
+.ezgraph-content .ezgraph-docs-body a[id] { display: block; }
+.ezgraph-guide-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.ezgraph-guide-pagination a {
+  flex: 1 1 240px;
+  overflow-wrap: anywhere;
+}
 
 /* Model-backed tutorial replays mirror the main docs HotelFlow transcript. */
 .ezgraph-content .quote-replay {
@@ -318,6 +342,7 @@
 }
 @media (max-width: 900px) {
   .ezgraph-content .ezgraph-compare-body section[id] { scroll-margin-top: 280px; }
+  .ezgraph-content .ezgraph-docs-body :is(h2, h3, a[id]) { scroll-margin-top: 280px; }
 }
 @media (max-width: 600px) {
   .ezgraph-compare-layout { padding-inline: 18px; }

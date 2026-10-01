@@ -1,4 +1,4 @@
-const guide = "/ezgraph/docs/developer-guide/";
+import guidePages from "./ezgraphGuidePages.js";
 
 export default [
   {
@@ -46,18 +46,7 @@ export default [
   },
   {
     label: "Developer guide",
-    items: [
-      { title: "Overview", url: guide },
-      { title: "Node contract", url: `${guide}#the-node-contract` },
-      { title: "LlmRunner and custom execution", url: `${guide}#llmrunner-and-custom-execution` },
-      { title: "State and ownership", url: `${guide}#state-belongs-to-the-node-that-owns-it` },
-      { title: "Tool responses", url: `${guide}#return-one-direct-tool-response` },
-      { title: "Error handling", url: `${guide}#error-handling` },
-      { title: "Temporary model recovery", url: `${guide}#recover-with-one-temporary-alternate-model` },
-      { title: "Topology", url: `${guide}#build-topology-explicitly` },
-      { title: "Decision nodes (Jev)", url: `${guide}#decision-nodes-with-jev` },
-      { title: "Testing", url: `${guide}#test-in-two-tiers` },
-    ],
+    items: guidePages,
   },
   {
     label: "Architecture",

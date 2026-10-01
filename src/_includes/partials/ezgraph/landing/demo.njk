@@ -1,0 +1,103 @@
+<!-- ============================== DEMO ============================== -->
+<section class="band" id="demo">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">The demo</span>
+      <h2>A running reference app, not a snippet</h2>
+      <p>
+        <a href="https://github.com/picoflowio/ezgraph-demo"><code>ezgraph-demo</code></a>
+        is a real NestJS + Fastify service with Swagger, three graphs, and both sides of the
+        benchmark. Clone it and the whole comparison on this site is reproducible on your
+        machine. The <a href="/ezgraph/quote-graph/">QuoteGraph walkthrough</a> is the reading
+        guide.
+      </p>
+    </div>
+
+    <div class="grid grid-3" style="margin-bottom:30px">
+      <div class="card">
+        <div class="ico">Q</div>
+        <h3><code>QuoteGraph</code></h3>
+        <p>
+          The five-stage insurance quoting chatbot on EZGraph. Slot validation, a deterministic
+          rating engine, three history channels, per-node model override, backward transitions,
+          idle expiry.
+        </p>
+      </div>
+      <div class="card">
+        <div class="ico">L</div>
+        <h3><code>QuoteLanggraph</code></h3>
+        <p>
+          The identical product written directly on LangGraph, importing no EZGraph code. This
+          is the control group — read it and judge the comparison yourself.
+        </p>
+      </div>
+      <div class="card">
+        <div class="ico">E</div>
+        <h3><code>ExpenseGraph</code></h3>
+        <p>
+          A JSON-mode graph that extracts structured expense data from an uploaded receipt —
+          showing provider file uploads, cleanup ownership, and validated JSON output.
+        </p>
+      </div>
+    </div>
+
+    <div class="split">
+      <figure style="margin:0">
+        <div class="code">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="file">try it</span>
+          </div>
+<pre><code data-lang="shell"># One HTTP call per turn. The SESSION_ID header carries the conversation.
+curl -s localhost:8000/ai/run \
+  -H 'content-type: application/json' \
+  -H 'SESSION_ID: demo-1' \
+  -d '{"graphName":"QuoteGraph","message":"I need car insurance"}'
+
+# =&gt; { "success": true, "completed": false,
+#      "message": "Happy to help. Can I start with your full name..." }
+#
+# Send the next message with the same SESSION_ID days later,
+# from a different pod. It resumes at exactly the right stage.</code></pre>
+        </div>
+      </figure>
+      <figure style="margin:0">
+        <div class="code">
+          <div class="code-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="file">wiring it to your framework</span>
+            <span class="note good">the whole adapter</span>
+          </div>
+<pre><code>@Post("run")
+async run(
+  @Res() reply: FastifyReply,
+  @Body() body: ApiRunBodyDto,
+  @Headers("SESSION_ID") sessionId?: string,
+) {
+  const result = await this.graphEngine.run({
+    graphName: body?.graphName,
+    userMessage: body?.message,
+    sessionId,
+  });
+
+  if (result.session) reply.header("SESSION_ID", result.session);
+  return reply.status(result.status).send(result.body);
+}</code></pre>
+        </div>
+        <figcaption><code>run()</code> returns <code>{ status, body, session }</code> — HTTP
+          shaped, with no HTTP dependency in the framework. Express, Fastify and NestJS are all
+          pass-throughs.</figcaption>
+      </figure>
+    </div>
+
+    <div class="install" style="margin-top:28px">
+      <span class="prompt">$</span>
+      <code>git clone https://github.com/picoflowio/ezgraph-demo.git</code>
+    </div>
+    <div class="btn-row" style="margin-top:18px">
+      <a class="btn btn-primary" href="/ezgraph/quote-graph/">Walk QuoteGraph</a>
+      <a class="btn btn-ghost" href="https://github.com/picoflowio/ezgraph-demo" target="_blank" rel="noopener">Open the repo</a>
+    </div>
+  </div>
+</section>
+

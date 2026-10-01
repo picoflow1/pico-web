@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import docsNav from "../src/_data/docsNav.js";
+import ezgraphDocsNav from "../src/_data/ezgraphDocsNav.js";
 
 const siteDirectory = path.resolve("_site");
 const problems = [];
@@ -98,6 +99,33 @@ for (const tab of docsNav.tabs) {
   }
 }
 
+const ezgraphNavUrls = new Set();
+const linkedEzgraphPages = new Map();
+
+async function checkEzgraphDestination(url, source) {
+  const targetFile = urlToFile(url);
+  if (!existsSync(targetFile)) {
+    fail(`${source}: EZGraph link points at a page that was not built → ${url}`);
+    return;
+  }
+  const fragment = url.split("#")[1];
+  if (!fragment) return;
+  if (!linkedEzgraphPages.has(targetFile)) {
+    const html = await readFile(targetFile, "utf8");
+    linkedEzgraphPages.set(targetFile, new Set([...html.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1])));
+  }
+  if (!linkedEzgraphPages.get(targetFile).has(decodeURIComponent(fragment))) {
+    fail(`${source}: EZGraph link points at a missing heading → ${url}`);
+  }
+}
+
+for (const group of ezgraphDocsNav) {
+  for (const item of group.items ?? group.tracks.flatMap((track) => track.items)) {
+    ezgraphNavUrls.add(item.url);
+    await checkEzgraphDestination(item.url, `EZGraph navigation (${item.title})`);
+  }
+}
+
 const htmlFiles = await collectHtmlFiles(siteDirectory);
 const internalHref = /href="(\/[^"#][^"]*)"/g;
 const legacyDocsHref = /href="\/(get-started|concepts|tutorials|guides|reference|resources)(?:\/|\")/;
@@ -137,6 +165,16 @@ for (const file of htmlFiles) {
   for (const match of html.matchAll(internalHref)) {
     const url = match[1];
     if (!existsSync(urlToFile(url))) fail(`${relativeFile}: dead internal link → ${url}`);
+  }
+
+  for (const match of html.matchAll(/href="(\/ezgraph\/[^"\s]*|#[^"\s]+)"/g)) {
+    const url = match[1];
+    if (url.startsWith("/ezgraph/")) {
+      await checkEzgraphDestination(url, relativeFile);
+    } else if (relativeFile.startsWith(`ezgraph${path.sep}`)) {
+      const pageUrl = `/${relativeFile.split(path.sep).join("/").replace(/index\.html$/, "")}`;
+      await checkEzgraphDestination(pageUrl + url, relativeFile);
+    }
   }
 
   if (relativeFile.startsWith(`docs${path.sep}`) && legacyDocsHref.test(html)) {
@@ -182,7 +220,7 @@ try {
   fail(`docs/search-index.json: could not parse generated search index (${error.message}).`);
 }
 
-console.log(`Checked ${htmlFiles.length} HTML pages and ${navUrls.size} docs navigation entries.`);
+console.log(`Checked ${htmlFiles.length} HTML pages, ${navUrls.size} docs navigation entries, and ${ezgraphNavUrls.size} EZGraph navigation entries and their headings.`);
 for (const warning of warnings) console.log(`  warn  ${warning}`);
 if (problems.length) {
   console.error(`\n${problems.length} problem(s):`);

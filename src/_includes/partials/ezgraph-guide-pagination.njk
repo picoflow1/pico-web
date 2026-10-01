@@ -1,0 +1,14 @@
+<nav class="ezgraph-guide-pagination" aria-label="Developer guide pages">
+  {% for item in ezgraphGuidePages %}
+    {% if page.url == item.url %}
+      {% if not loop.first %}
+        {% set previous = ezgraphGuidePages[loop.index0 - 1] %}
+        <a rel="prev" href="{{ previous.url }}">Previous: {{ previous.title }}</a>
+      {% endif %}
+      {% if not loop.last %}
+        {% set next = ezgraphGuidePages[loop.index0 + 1] %}
+        <a rel="next" href="{{ next.url }}">Next: {{ next.title }}</a>
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+</nav>

@@ -1,0 +1,129 @@
+<!-- ============================== PAIN ============================== -->
+<section id="pain" class="band">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">The problem</span>
+      <h2>You didn't set out to build a session store</h2>
+      <p>
+        You set out to build a chatbot that collects a driver, a vehicle, and a coverage
+        selection, then quotes a price — reliably, for months, at 3 a.m. Here is what
+        LangGraph hands back to you instead. Every item below is documented by LangGraph's
+        own docs, its v1 feedback thread, or a public production postmortem.
+      </p>
+    </div>
+
+    <div class="grid grid-3">
+
+      <article class="card pain reveal">
+        <div class="ico">01</div>
+        <h3>A schema change silently kills live threads</h3>
+        <p>
+          Checkpointers store framework snapshots as an opaque blob. Add one field to your
+          state and every checkpoint written before that change deserializes into a shape
+          your code no longer expects — successful writes, failed reads, no migration error.
+        </p>
+        <span class="cite">
+          One team lost ~200 agent runs over three weeks to exactly this. Another watched
+          checkpoint tables reach 40&nbsp;GB in six weeks with no retention policy.
+          <a href="https://pub.towardsai.net/langgraph-checkpointing-is-not-free-a-production-postmortem-398bc86861f4" target="_blank" rel="noopener">postmortem</a>,
+          <a href="https://dev.to/elenarevicheva/langgraph-checkpointing-three-production-rewrites-to-stop-losing-state-231b" target="_blank" rel="noopener">three rewrites</a>
+          <b class="fix">EZGraph: versioned session document + ordered migrations, applied before your code sees it.</b>
+        </span>
+      </article>
+
+      <article class="card pain reveal">
+        <div class="ico">02</div>
+        <h3>Nothing stops two turns on one conversation</h3>
+        <p>
+          A user double-taps send. Two pods load the same checkpoint and both write. LangGraph
+          does not arbitrate this — and <code>PostgresSaver</code>'s instance-level lock is a
+          throughput bottleneck, not a correctness guarantee.
+        </p>
+        <span class="cite">
+          Reported as silent lost updates, forked checkpoints, and cross-thread
+          contamination under concurrency.
+          <a href="https://github.com/langchain-ai/langgraphjs/issues/2040" target="_blank" rel="noopener">langgraphjs#2040</a>,
+          <a href="https://azguards.com/ai-engineering/mitigating-checkpoint-collisions-write-skew-in-langgraph/" target="_blank" rel="noopener">write-skew</a>
+          <b class="fix">EZGraph: exclusive turn lease + compare-and-swap. Second turn gets 409. Zero app code.</b>
+        </span>
+      </article>
+
+      <article class="card pain reveal">
+        <div class="ico">03</div>
+        <h3>"Wait for the user" has no first-class form</h3>
+        <p>
+          The core move of a guided conversation. <code>interrupt()</code> re-runs the node
+          from the top on resume, so the obvious "loop until the answer validates" pattern is
+          quietly wrong — LangGraph's own docs warn it causes exponential re-execution.
+        </p>
+        <span class="cite">
+          The documented workaround is to rebuild a state machine around the primitive:
+          one interrupt per node, error in state, conditional edge back.
+          <a href="https://docs.langchain.com/oss/python/langgraph/interrupts" target="_blank" rel="noopener">interrupts doc</a>
+          <b class="fix">EZGraph: <code>stay()</code>. The wait is a persisted string. Nothing re-executes.</b>
+        </span>
+      </article>
+
+      <article class="card pain reveal">
+        <div class="ico">04</div>
+        <h3>The model↔tool loop gets rewritten per stage</h3>
+        <p>
+          Bind tools, call the model, execute <em>every</em> call in the batch, append one
+          <code>ToolMessage</code> each, bound the iterations. <code>create_agent</code> covers
+          one ReAct loop — not five gated stages with per-stage tool sets. So you hand-roll,
+          five times, and the copies drift.
+        </p>
+        <span class="cite">
+          In our own benchmark the hand-rolled version quietly regressed: it can only
+          service one tool call per pass, so a real multi-tool batch drops a
+          <code>ToolMessage</code> — which providers reject.
+          <b class="fix">EZGraph: one <code>LlmRunner</code>, full batch semantics, round cap. 0 app lines.</b>
+        </span>
+      </article>
+
+      <article class="card pain reveal">
+        <div class="ico">05</div>
+        <h3>Bad tool arguments become exceptions, not conversation</h3>
+        <p>
+          The model sends malformed JSON or a field that fails your schema. The right product
+          behavior is to tell the model exactly what was wrong and let it fix itself. The
+          default behavior is a stack trace and a 500.
+        </p>
+        <span class="cite">
+          Measured in our benchmark: 8 hand-written <code>try</code>/<code>catch</code> parse
+          blocks and 14 tool-name dispatch checks — one more copy for every tool you add.
+          <b class="fix">EZGraph: returns <code>{ accepted: false, error }</code> to the model and keeps going. A schema violation becomes a follow-up question.</b>
+        </span>
+      </article>
+
+      <article class="card pain reveal">
+        <div class="ico">06</div>
+        <h3>Every team invents its own convention</h3>
+        <p>
+          The cost that compounds. Because state shape, persistence, waiting, routing, and
+          tool dispatch are all left to the application, two teams solving the same problem
+          ship two unrecognizable codebases. Onboarding starts from zero each time.
+        </p>
+        <span class="cite">
+          LangGraph's v1 thread is full of this: "the first node in my graphs is always an
+          <code>init_graph</code> node that just sets everything up."
+          <a href="https://github.com/langchain-ai/langgraph/issues/4973" target="_blank" rel="noopener">langgraph#4973</a>
+          <b class="fix">EZGraph: five members per node, same order, every graph, every team.</b>
+        </span>
+      </article>
+
+    </div>
+
+    <div class="callout tip mt-40">
+      <span class="label">To be clear</span>
+      <p>
+        None of this means LangGraph is bad — it means LangGraph is <em>low-level</em>, which
+        is exactly what it says on the tin. EZGraph does not replace it. Your graph still
+        compiles to a real <code>StateGraph</code> and runs on the LangGraph engine. The
+        choice here isn't between two runtimes; it's between <b>writing the application layer
+        yourself</b> and <b>adopting one</b>.
+      </p>
+    </div>
+  </div>
+</section>
+
