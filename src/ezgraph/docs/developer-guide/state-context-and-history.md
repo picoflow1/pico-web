@@ -145,8 +145,10 @@ when deterministic policy needs data owned by another node. Do not mutate a
 node instance or a session document directly.
 
 With conditional fan-out, save parent-owned input before returning
-`go(Child1Node, Child2Node)`. Each worker reads explicitly selected facts from
-`getPrompt(state)` and saves accepted output in `onResponse()`. Its model history
+`go(Child1Node, Child2Node)`. Each worker supplies explicitly selected facts
+through `getPrompt(state)` or constructs a task message in
+[`onEnter()`](/ezgraph/docs/developer-guide/nodes-and-execution/#prepare-input-with-onenter),
+then saves accepted output in `onResponse()`. Its model history
 is ephemeral, not a copy of a named conversation history. The parent remains
 the durable conversation cursor until the joined conversational stage responds.
 See [execution ownership](/ezgraph/docs/developer-guide/nodes-and-execution/#execution-ownership)

@@ -19,6 +19,12 @@ nested, sequential, and parallel execution. Its three
 error hooks also exist on `BaseGraph`, so a node can handle a failure locally or
 delegate it to a graph-wide default.
 
+Input preparation happens first through the node-only
+[`onEnter()` hook](/ezgraph/docs/developer-guide/nodes-and-execution/#prepare-input-with-onenter).
+It runs once on agent-loop entry; retries and temporary alternate-model
+recovery reuse its prepared input. An entry-hook error propagates directly
+without invoking model-error recovery.
+
 | Hook | Called for | Return value |
 | --- | --- | --- |
 | `checkResponse(candidate)` | A non-empty, unblocked model candidate, before text acceptance or tool dispatch. The candidate is the raw `AIMessage`. | `true` rejects and retries; `false` accepts. This hook is node-only. |

@@ -1,7 +1,7 @@
 ---
 layout: layouts/ezgraph.njk
 title: Nodes and execution | EZGraph
-description: Use one LlmNode contract for conversation, nested calls, and parallel work, with shared response and error hooks.
+description: Use one LlmNode contract for conversation, batch input, nested calls, and parallel work, with shared entry, response, and error hooks.
 permalink: /ezgraph/docs/developer-guide/nodes-and-execution/
 ezgraph: true
 ezgraphDocument: true
@@ -57,7 +57,7 @@ Keep the corresponding channel in the graph's durable state registry.
 
 | Base class | Use it for | Execution policy |
 | --- | --- | --- |
-| `LlmNode` | Document extraction, interactive chat, nested calls, and sequential or parallel model work | The shared model/tool loop, `onResponse()`, candidate validation, LLM error hooks, invocation ownership, and token accounting |
+| `LlmNode` | Document extraction, interactive chat, nested calls, and sequential or parallel model work | The shared model/tool loop, `onEnter()`, `onResponse()`, candidate validation, LLM error hooks, invocation ownership, and token accounting |
 | `GraphNode` | Deterministic work or custom execution | Implement `run()` and choose the required execution path |
 | `DecisionNode` | Typed classification and judging | The decision provider/runner and `onDecisionError()` policy |
 
@@ -68,8 +68,95 @@ An interactive node can return text to wait for another user message or
 `go(Target)` to enter the next stage immediately. The graph and the response
 choose the workflow's lifetime.
 
-The four LLM hooks belong to `LlmNode`. A custom `GraphNode` calling the gateway
-directly does not automatically receive them.
+Managed LLM lifecycle hooks belong to `LlmNode`. A custom `GraphNode` calling
+the gateway directly does not automatically receive them.
+
+## Prepare input with onEnter
+
+The protected synchronous `onEnter(langMessage, priorNode?)` hook runs once
+when a `LlmNode` enters its agent loop, before the first model call and before
+the empty-history seed. This includes the first node in a batch graph and
+internal, nested, and parallel execution. A later invocation calls it again,
+including a new user turn on the same node. Model/tool rounds, retries, and
+temporary alternate-model recovery reuse the prepared input.
+
+The default preserves the incoming message:
+
+```ts
+protected onEnter(
+  langMessage: MessageTypes | null | undefined,
+  _priorNode?: string,
+): MessageTypes | null | undefined {
+  return langMessage;
+}
+```
+
+Import `MessageTypes` from `@picoflow/ezgraph`; it aliases LangChain's
+`BaseMessage`. `langMessage` is the trailing incoming human message, including
+a forwarded `withMessage()` input, or `undefined` when none is present. The
+hook does not search earlier history for an old human request. Internal nodes
+receive `undefined` because they do not read conversation history.
+
+`priorNode` is the known nested caller's node ID. Ordinary graph entry leaves
+it undefined: the durable `currentNode` cursor may already identify the
+destination and does not reliably identify the source node.
+
+Return a message to supply or replace the current input, or return
+`null`/`undefined` to omit it. Earlier history remains intact. Conversational
+execution records the prepared input once, without duplicating a passed-through
+message; internal execution keeps it ephemeral. If history is empty after the
+hook, `emptyHistorySeed` still applies: `"Start"` by default, or `null` for a
+system-only call. A thrown entry-hook error propagates as an application error,
+outside ordinary model recovery.
+
+For a one-turn batch, keep the rows in node state and construct a user message
+on entry:
+
+```ts
+import { HumanMessage } from "@langchain/core/messages";
+import {
+  LlmNode,
+  createGraphStateAnnotation,
+  finish,
+  type MessageTypes,
+  type NodeStateValue,
+} from "@picoflow/ezgraph";
+
+type BatchData = {
+  rows?: { id: string; amount: number }[];
+  result?: string;
+};
+type BatchNodes = { BatchNode?: NodeStateValue<BatchData> };
+const BatchState = createGraphStateAnnotation<string, BatchNodes>("BatchNode", () => ({}));
+type BatchGraphStateType = typeof BatchState.State;
+
+export class BatchNode extends LlmNode<BatchGraphStateType, BatchData> {
+  getPrompt(): string {
+    return "Process each supplied row and return JSON results.";
+  }
+
+  protected override onEnter(
+    langMessage: MessageTypes | null | undefined,
+    _priorNode?: string,
+  ): MessageTypes | null | undefined {
+    const rows = this.getState().rows;
+    return rows === undefined ? langMessage : new HumanMessage(JSON.stringify(rows));
+  }
+
+  protected override onResponse(result: string) {
+    this.saveState({ result });
+    return finish(result);
+  }
+}
+```
+
+Populate `nodes.BatchNode.rows` before invoking the graph. The hook supplies
+the batch even without an external user message; an engine-managed graph that
+accepts such input sets `requiresUserMessage: false`. This example owns
+conversational completion through `finish()`. For an internal worker, save the
+result in `onResponse()` and return nothing; its graph or caller owns
+continuation. Keep request data in invocation-scoped state or graph context,
+because node instances are shared across sessions.
 
 ## Handle accepted output with onResponse
 
@@ -111,7 +198,7 @@ joke and publishes only its local-state update and token usage.
 ## Execution ownership
 
 Scheduling reuses the node's prompt, application-tool definitions,
-`getLlmConfig()`, `onResponse()`, and LLM error hooks. Ownership determines which
+`getLlmConfig()`, `onEnter()`, `onResponse()`, and LLM error hooks. Ownership determines which
 effects it may publish:
 
 | Placement | How it is selected | Owns |
@@ -124,9 +211,10 @@ effects it may publish:
 In a fixed-entry graph, an unmarked `LlmNode` owns conversation; use `workers()`
 for nodes that should perform internal work instead.
 
-Internal LLM history is ephemeral and starts empty; the runner applies the
-graph's crossing-message policy. Add required business facts to `getPrompt(state)`
-explicitly. The worker's model calls do not automatically receive the customer's
+Internal LLM history is ephemeral and starts empty. Supply required business
+facts explicitly through `onEnter()` or `getPrompt(state)`. If the entry hook
+leaves history empty, the runner applies the graph's empty-history seed policy.
+The worker's model calls do not automatically receive the customer's
 named conversation history. Workers cannot write graph context, another node's
 channel, or conversational history.
 They cannot change `currentNode`, return a user reply, or complete the session.
@@ -177,7 +265,7 @@ execution placement, including nested and parallel work. The responsibilities ar
 
 | API | Owns |
 | --- | --- |
-| `LlmNode` | The application prompt, tools, accepted-output handling, local state, validation, and model-error policy |
+| `LlmNode` | The application prompt, tools, entry-input preparation, accepted-output handling, local state, validation, and model-error policy |
 | `LlmRunner` | Model/tool sequencing, retries, temporary alternate models, cancellation checks, cleanup, and usage accumulation |
 | `LlmGateway` | Provider-neutral inference calls and provider integration |
 | Graph or nested caller | Conversation ownership, scheduling, fan-out, joins, and publication of child results |
@@ -195,7 +283,7 @@ executes destinations and barrier edges.
 
 A custom `GraphNode` can call `this.runLlm(state, context)` to use the shared
 loop. Its default behavior retains `onEmptyModelResponse()`; `LlmNode` wires
-the four LLM hooks through `llmLifecycle()`. A direct `LlmRunner.run()` call
+its entry, validation, and model-error hooks through `llmLifecycle()`. A direct `LlmRunner.run()` call
 needs an explicit `LlmLifecycle` to opt into those hooks.
 
 `LlmPolicy` describes the graph's per-call timeout, empty-history seed, and

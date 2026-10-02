@@ -13,7 +13,7 @@ ezgraphGuide: true
 EZGraph is a TypeScript layer for durable LangGraph applications, including
 one-request extraction workflows, multi-turn chat, and internal model work.
 Use the same `LlmNode` for conversation, nested calls, and sequential or parallel
-workers. Each node owns its prompt, tools, configuration, response/error hooks,
+workers. Each node owns its prompt, tools, configuration, entry/response/error hooks,
 and local state; its graph or caller owns execution and continuation.
 LangGraph owns execution; EZGraph supplies the contracts that keep a conversation
 resumable and auditable.
@@ -31,12 +31,13 @@ Read the guide by topic. Start with [Nodes and execution](/ezgraph/docs/develope
 
 ## Nodes and execution
 
-Use one LlmNode contract for conversation, nested calls, and parallel work, with shared response and error hooks.
+Use one LlmNode contract for conversation, batch input, nested calls, and parallel work, with shared entry, response, and error hooks.
 
 [Read this topic →](/ezgraph/docs/developer-guide/nodes-and-execution/)
 
 - <a id="the-node-contract" href="/ezgraph/docs/developer-guide/nodes-and-execution/#the-node-contract">The node contract</a>
 - <a id="choose-a-node-base-class" href="/ezgraph/docs/developer-guide/nodes-and-execution/#choose-a-node-base-class">Choose a node base class</a>
+- <a id="prepare-input-with-onenter" href="/ezgraph/docs/developer-guide/nodes-and-execution/#prepare-input-with-onenter">Prepare input with onEnter</a>
 - <a id="handle-accepted-output-with-onresponse" href="/ezgraph/docs/developer-guide/nodes-and-execution/#handle-accepted-output-with-onresponse">Handle accepted output with onResponse</a>
 - <a id="execution-ownership" href="/ezgraph/docs/developer-guide/nodes-and-execution/#execution-ownership">Execution ownership</a>
 - <a id="nested-calls" href="/ezgraph/docs/developer-guide/nodes-and-execution/#nested-calls">Nested calls</a>

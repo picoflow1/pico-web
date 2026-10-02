@@ -113,6 +113,16 @@ provider's availability or answer quality.
 ## Verify internal work and fan-out
 
 Test the same `LlmNode` capability in conversational and internal execution.
+For `onEnter()`, inspect the gateway's recorded history: supplied batch input
+should precede the first model call, replace only the current input, and appear
+once. Verify pass-through without duplication, empty-history seeding when no
+message is supplied, and that tool rounds and retries do not call entry again.
+A new invocation should call it again. Include a graph with no external user
+message and an internal worker whose batch message remains ephemeral.
+For nested calls, assert the known caller ID; ordinary graph entry leaves
+`priorNode` undefined. Entry-hook failures should propagate without model
+recovery, and concurrent invocations must keep their input isolated.
+
 Script accepted text, `taskResult()` output, blocked responses, and exhausted
 model errors. Assert that `onResponse()` saves the expected local state in both
 placements and that the same node-to-graph error-hook precedence applies.
