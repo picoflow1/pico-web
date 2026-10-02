@@ -91,8 +91,10 @@ Writes are cloned; reads are detached, deeply frozen snapshots.
 A successful node outcome publishes staged context to the next node and the
 normal session checkpoint. If the node throws, its staged changes are discarded;
 previously completed checkpoints retain theirs. Concurrent sessions are isolated.
-A parallel superstep permits one context writer; consolidate workers' node state
-in a join node to update shared context.
+A parallel superstep permits one context writer. Internal `LlmNode` workers
+may read graph context but cannot write it, even when they execute sequentially
+or in a nested call. Consolidate their local output in a conversation-owning or
+deterministic join node before updating shared context.
 
 `createGraphStateAnnotation()` declares the context channel. Custom
 `Annotation.Root()` schemas can import `GraphContextChannel` from
@@ -110,7 +112,9 @@ included in prompts only when application code explicitly adds it. See the
 
 Inside an active node invocation, `saveState()` stages a patch to the current
 node channel. EZGraph materializes that channel and LangGraph's node reducer
-replaces it atomically. Use `graph.saveNodeState()` for another node's channel.
+replaces it atomically. A conversational or deterministic owner can use
+`graph.saveNodeState()` for another node's channel. An internal `LlmNode` may
+write only its own channel and token usage.
 
 ```ts
 @Tool("capture_driver")
@@ -139,3 +143,11 @@ return go(PresentNode).withMessage(
 `graph.graphState()` exposes the invocation's materialized graph state. Use it
 when deterministic policy needs data owned by another node. Do not mutate a
 node instance or a session document directly.
+
+With conditional fan-out, save parent-owned input before returning
+`go(Child1Node, Child2Node)`. Each worker reads explicitly selected facts from
+`getPrompt(state)` and saves accepted output in `onResponse()`. Its model history
+is ephemeral, not a copy of a named conversation history. The parent remains
+the durable conversation cursor until the joined conversational stage responds.
+See [execution ownership](/ezgraph/docs/developer-guide/nodes-and-execution/#execution-ownership)
+and [fan-out and join](/ezgraph/docs/developer-guide/topology/#conditional-fan-out-and-join).

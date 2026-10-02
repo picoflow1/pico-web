@@ -31,8 +31,10 @@
       <div class="concept reveal">
         <dt>A node is a stage</dt>
         <dd>
-          A class with a prompt, some tools, and a decision. It does <b>not</b> own
-          persistence, message plumbing, or routing tables. Nodes are constructed once, shared
+          One <code>LlmNode</code> class owns a prompt, tools, model configuration,
+          <code>onResponse()</code>, error hooks, and local state. Use that same class for
+          conversation, nested calls, or parallel work; its graph or caller owns scheduling.
+          It does <b>not</b> own persistence plumbing or routing tables. Nodes are constructed once, shared
           across sessions, and frozen — so a per-turn value stored on <code>this</code> throws
           immediately instead of leaking across customers.
         </dd>
@@ -41,9 +43,10 @@
         <dt>A tool response is the decision</dt>
         <dd>
           <code>stay()</code>, <code>go(Next)</code>, <code>direct(text)</code>, or
-          <code>finish(text)</code>. Nodes save their durable facts before returning the
-          response. The response then controls collection, transition, direct presentation, or
-          completion without a separate context/hook lifecycle.
+          <code>finish(text)</code>. <code>go(Child1, Child2)</code> starts concurrent work,
+          and an explicit join waits for both. Internal workers can return
+          <code>taskResult(value)</code> for <code>onResponse()</code> to save. Nodes write
+          the state they own before returning; the outcome controls what happens next.
         </dd>
       </div>
       <div class="concept reveal">
@@ -108,7 +111,7 @@
           </li>
           <li>
             <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span><b>5.</b> Point the upstream <code>advance()</code> at it</span>
+            <span><b>5.</b> Point the upstream <code>go(DiscountsNode)</code> at it</span>
           </li>
         </ul>
         <div class="verdict" style="margin-top:20px">
@@ -120,4 +123,3 @@
     </div>
   </div>
 </section>
-

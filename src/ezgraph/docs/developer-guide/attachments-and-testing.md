@@ -15,7 +15,8 @@ Handle temporary file attachments and verify graphs with deterministic tests and
 ## File attachments
 
 `ToolResponse` supports model-visible attachment messages and cleanup. A file
-tool can remain in the same agent loop without reviving the old result type.
+tool can remain in the same conversational agent loop while the model analyzes
+the attachment and submits its result.
 
 ```ts
 return stay(JSON.stringify({ attached: true, fileName: name, fileId: upload.fileId }))
@@ -108,6 +109,34 @@ not replayed, and an alternate failure can return a fixed reply. Include
 fallback after an empty or rejected primary candidate and cancellation during
 the alternate call. These are deterministic checks; they do not verify a live
 provider's availability or answer quality.
+
+## Verify internal work and fan-out
+
+Test the same `LlmNode` capability in conversational and internal execution.
+Script accepted text, `taskResult()` output, blocked responses, and exhausted
+model errors. Assert that `onResponse()` saves the expected local state in both
+placements and that the same node-to-graph error-hook precedence applies.
+Internal results must contain only the worker's node update and token usage;
+conversation history, reply, completion, and cursor remain owned by the caller.
+
+For [conditional fan-out](/ezgraph/docs/developer-guide/topology/#conditional-fan-out-and-join),
+verify the full scheduling boundary:
+
+- Successful movie recording saves parent input and starts each child once.
+- Ordinary replies, invalid movie arguments, and termination start neither child.
+- Delay the workers by different amounts; assert that their calls overlap and
+  the join runs once only after both local outputs are available.
+- Keep the parent as `currentNode` during worker execution, then assert that
+  the joined conversational stage becomes the next turn owner.
+- Account for the parent, both children, and the join exactly once. Worker text
+  must not leak into conversation history or the user reply.
+- An unrecovered child failure must not run the joined conversational stage.
+  Also verify that internal workers cannot return routing or completion effects.
+
+For nested execution, publish the returned child update in the caller's result
+and verify that its state and usage survive. These checks exercise the actual
+node loop and LangGraph scheduling with scripted model output; they are not
+evidence of live-provider semantics or long-running transport behavior.
 
 See the [QuoteGraph walkthrough](/ezgraph/quote-graph/) for a complete guided
 application, the [DecisionHotelGraph tutorial](/ezgraph/docs/tutorials/decision-hotel-graph/)

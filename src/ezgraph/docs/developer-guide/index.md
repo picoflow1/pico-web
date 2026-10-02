@@ -11,25 +11,35 @@ ezgraphGuide: true
 # EZGraph developer guide
 
 EZGraph is a TypeScript layer for durable LangGraph applications, including
-one-request extraction workflows and multi-turn chat.
-Each graph node owns its prompt, tools, state writes, and transition decision.
+one-request extraction workflows, multi-turn chat, and internal model work.
+Use the same `LlmNode` for conversation, nested calls, and sequential or parallel
+workers. Each node owns its prompt, tools, configuration, response/error hooks,
+and local state; its graph or caller owns execution and continuation.
 LangGraph owns execution; EZGraph supplies the contracts that keep a conversation
 resumable and auditable.
 
-The current API has one rule worth remembering:
+The node contract has one rule worth remembering:
 
-> A tool handler writes durable state itself, then returns `go`, `stay`, `direct`, `directTo`, or `finish`.
+> A node saves the state it owns, then returns an outcome permitted by its execution placement.
+
+Conversational handlers select replies, transitions, or completion. Internal
+workers save accepted output in `onResponse()` and leave continuation to their
+caller. `go(Child1Node, Child2Node)` selects concurrent branches; an explicit
+array-source edge joins them before the next conversational stage.
 
 Read the guide by topic. Start with [Nodes and execution](/ezgraph/docs/developer-guide/nodes-and-execution/), or use [the first-graph tutorial](/ezgraph/tutorial/) for a small complete example.
 
 ## Nodes and execution
 
-Choose node base classes, define the node contract, and use LlmRunner for custom execution.
+Use one LlmNode contract for conversation, nested calls, and parallel work, with shared response and error hooks.
 
 [Read this topic →](/ezgraph/docs/developer-guide/nodes-and-execution/)
 
 - <a id="the-node-contract" href="/ezgraph/docs/developer-guide/nodes-and-execution/#the-node-contract">The node contract</a>
 - <a id="choose-a-node-base-class" href="/ezgraph/docs/developer-guide/nodes-and-execution/#choose-a-node-base-class">Choose a node base class</a>
+- <a id="handle-accepted-output-with-onresponse" href="/ezgraph/docs/developer-guide/nodes-and-execution/#handle-accepted-output-with-onresponse">Handle accepted output with onResponse</a>
+- <a id="execution-ownership" href="/ezgraph/docs/developer-guide/nodes-and-execution/#execution-ownership">Execution ownership</a>
+- <a id="nested-calls" href="/ezgraph/docs/developer-guide/nodes-and-execution/#nested-calls">Nested calls</a>
 - <a id="llmrunner-and-custom-execution" href="/ezgraph/docs/developer-guide/nodes-and-execution/#llmrunner-and-custom-execution">LlmRunner and custom execution</a>
 
 ## State, context, and history
@@ -44,11 +54,13 @@ Choose the initial node, route history, and manage durable node state and graph 
 
 ## Tool responses and transitions
 
-Return go, stay, direct, directTo, or finish and pass state or messages to the next node.
+Choose conversational responses, conditional fan-out, or typed task output, and attach explicit state, messages, and usage.
 
 [Read this topic →](/ezgraph/docs/developer-guide/tool-responses/)
 
 - <a id="return-one-direct-tool-response" href="/ezgraph/docs/developer-guide/tool-responses/#return-one-direct-tool-response">Return one direct tool response</a>
+- <a id="fan-out-response-effects" href="/ezgraph/docs/developer-guide/tool-responses/#fan-out-response-effects">Fan-out response effects</a>
+- <a id="typed-task-output" href="/ezgraph/docs/developer-guide/tool-responses/#typed-task-output">Typed task output</a>
 
 ## Models, retries, and error handling
 
@@ -64,11 +76,13 @@ Validate model candidates, configure retries, handle blocked responses, and reco
 
 ## Graph topology and deterministic policy
 
-Build graph edges explicitly and keep validation, authorization, and commit decisions in code.
+Register conversation ownership, schedule internal LLM work, and use conditional fan-out with an explicit join.
 
 [Read this topic →](/ezgraph/docs/developer-guide/topology/)
 
 - <a id="build-topology-explicitly" href="/ezgraph/docs/developer-guide/topology/#build-topology-explicitly">Build topology explicitly</a>
+- <a id="conditional-fan-out-and-join" href="/ezgraph/docs/developer-guide/topology/#conditional-fan-out-and-join">Conditional fan-out and join</a>
+- <a id="sequential-and-fixed-entry-workers" href="/ezgraph/docs/developer-guide/topology/#sequential-and-fixed-entry-workers">Sequential and fixed-entry workers</a>
 - <a id="keep-policy-deterministic" href="/ezgraph/docs/developer-guide/topology/#keep-policy-deterministic">Keep policy deterministic</a>
 
 ## Decision nodes
@@ -93,3 +107,4 @@ Handle temporary file attachments and verify graphs with deterministic tests and
 
 - <a id="file-attachments" href="/ezgraph/docs/developer-guide/attachments-and-testing/#file-attachments">File attachments</a>
 - <a id="test-in-two-tiers" href="/ezgraph/docs/developer-guide/attachments-and-testing/#test-in-two-tiers">Test in two tiers</a>
+- <a id="verify-internal-work-and-fan-out" href="/ezgraph/docs/developer-guide/attachments-and-testing/#verify-internal-work-and-fan-out">Verify internal work and fan-out</a>

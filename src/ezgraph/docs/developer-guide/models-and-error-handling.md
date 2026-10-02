@@ -14,7 +14,8 @@ Validate model candidates, configure retries, handle blocked responses, and reco
 
 ## Error handling
 
-`LlmNode` owns response validation and model-error policy. Its three
+`LlmNode` owns response validation and model-error policy in conversational,
+nested, sequential, and parallel execution. Its three
 error hooks also exist on `BaseGraph`, so a node can handle a failure locally or
 delegate it to a graph-wide default.
 
@@ -152,8 +153,25 @@ All error contexts include `nodeId`, `provider`, `model`, and the caller's
 
 Recovery can return a string or `direct()`, `directTo()`, `go()`, or `finish()`.
 These use the same routing, target-state, and completion contracts as ordinary
-node responses. `stay()`, tool feedback, and cleanup are tool-only and cannot
+conversational node responses. `taskResult(value)` recovers with typed,
+code-owned output and delivers it to `onResponse()`.
+`stay()`, tool feedback, attachments, and cleanup are tool-only and cannot
 be returned by an error hook.
+
+Internal recovery obeys the same ownership rules as normal worker output:
+return fixed text, `direct()`, or `taskResult()`, not conversational routing or
+completion. For example, a worker's `onLlmError()` can return a domain-specific
+fallback for its output handler to save:
+
+```ts
+return taskResult({ summary: "Analysis unavailable", confidence: 0 });
+```
+
+The same node-first, graph-on-delegation precedence applies inside nested calls
+and parallel branches. Recovery supplies accepted output to `onResponse()`;
+it does not give a worker permission to change `currentNode`, graph context,
+conversation history, or another node's state. Cancellation and unrecovered
+failures still propagate to the caller.
 
 Cancellation is checked before, between, and after hooks, as well as during
 retry delays. A canceled turn cannot return fallback content. A thrown hook
@@ -234,6 +252,6 @@ executes normally, so deterministic code should make durable side effects
 idempotent. Use saved node state to decide whether recovery should offer a
 fixed reply, hand off, or try another model.
 
-These hooks apply to `LlmNode`'s shared loop. Plain `GraphNode` calls
-retain their existing `onEmptyModelResponse()` behavior; direct gateway calls
+These hooks apply to `LlmNode`'s shared loop in every execution placement.
+Plain `GraphNode.runLlm()` calls use `onEmptyModelResponse()`; direct gateway calls
 and typed `DecisionNode` validation use their own contracts.

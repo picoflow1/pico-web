@@ -18,13 +18,20 @@ ezgraphDocs: true
     </p>
 
     <div class="callout tip">
-      <span class="label">The current contract</span>
+      <span class="label">The node contract</span>
       <p>
         A conversational tool returns <code>go()</code>, <code>stay()</code>,
         <code>direct()</code>, <code>directTo()</code>, or <code>finish()</code>. There is no
         separate outcome builder, routing method, or per-turn context object to maintain.
       </p>
     </div>
+    <p>
+      The same <code>LlmNode</code> also handles internal model work: save accepted output in
+      <code>onResponse()</code> and let the graph or nested caller own continuation.
+      For concurrent branches, return <code>go(Child1Node, Child2Node)</code> and declare a
+      join that waits for both. See <a href="/ezgraph/docs/developer-guide/nodes-and-execution/#execution-ownership">execution ownership</a>
+      and <a href="/ezgraph/docs/developer-guide/topology/#conditional-fan-out-and-join">fan-out and join</a>.
+    </p>
   </div>
 </section>
 
@@ -178,9 +185,10 @@ export class WeatherNode extends LlmNode&lt;WeatherGraphStateType&gt; {
           The graph definition supplies the default model and the terminal node ID. Register the
           nodes that may run in a conversational turn. The transition in
           <code>go(WeatherNode)</code> selects the next node; no automatic outcome-router setup
-          is required. <code>LlmNode</code> inherits a <code>terminate_session</code>
-          tool, so every graph that uses it must register <code>TerminateSessionNode</code> and
-          connect it to <code>END</code>; otherwise <code>compile()</code> fails.
+          is required. Conversational <code>LlmNode</code>s inherit a
+          <code>terminate_session</code> tool, so this graph must register
+          <code>TerminateSessionNode</code> and connect it to <code>END</code>;
+          otherwise <code>compile()</code> fails. Internal workers do not offer that tool.
         </p>
         <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">weather-graph.ts</span></div><pre><code>import { END } from "@langchain/langgraph";
 import {
