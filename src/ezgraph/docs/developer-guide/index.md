@@ -24,7 +24,7 @@ The node contract has one rule worth remembering:
 
 Conversational handlers select replies, transitions, or completion. Internal
 workers save accepted output in `onResponse()` and leave continuation to their
-caller. `go(Child1Node, Child2Node)` selects concurrent branches; an explicit
+caller. `fanout(Child1Node, Child2Node)` selects concurrent branches; an explicit
 array-source edge joins them before the next conversational stage.
 
 Read the guide by topic. Start with [Nodes and execution](/ezgraph/docs/developer-guide/nodes-and-execution/), or use [the first-graph tutorial](/ezgraph/tutorial/) for a small complete example.

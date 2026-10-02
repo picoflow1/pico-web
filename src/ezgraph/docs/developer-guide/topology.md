@@ -41,14 +41,14 @@ workers do not offer that tool.
 
 ## Conditional fan-out and join
 
-Return `go(Child1Node, Child2Node)` only when the parent has accepted and saved
+Return `fanout(Child1Node, Child2Node)` only when the parent has accepted and saved
 the input. In DemoGraph, the movie-recording tool is that boundary:
 
 ```ts
 @Tool("recordMovieIdea")
 async recordMovieIdea(submitted: MovieIdea): Promise<ToolResponse> {
   this.saveState({ movieIdea: submitted });
-  return go(Child1Node, Child2Node);
+  return fanout(Child1Node, Child2Node);
 }
 ```
 
@@ -86,7 +86,7 @@ the next turn owner. If a child fails without recovery, DOB does not run.
 
 Do not add unconditional child edges out of the conversational parent. Static
 edges run independently of a command's destinations, including when the parent
-returns an ordinary reply or routes to termination. Conditional `go()` keeps
+returns an ordinary reply or routes to termination. Conditional `fanout()` keeps
 rejected movie arguments, ordinary replies, and termination out of the fan-out.
 See [response effects](/ezgraph/docs/developer-guide/tool-responses/#fan-out-response-effects)
 for multi-target builder rules.

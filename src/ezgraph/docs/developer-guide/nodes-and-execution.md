@@ -185,7 +185,7 @@ export class Child1Node extends LlmNode<
 ```
 
 Returning nothing leaves the accepted output intact. Returning a string or
-`direct()` replaces it. In conversational execution, `go()`, `directTo()`, and
+`direct()` replaces it. In conversational execution, `go()`, `fanout()`, `directTo()`, and
 `finish()` can select a next stage or completion. A `taskResult(value)` passes
 typed data to this hook; its parameter is `string | Output` when a third generic
 is supplied. `stay()`, tool feedback, attachments, and cleanup belong to tool
@@ -221,7 +221,7 @@ They cannot change `currentNode`, return a user reply, or complete the session.
 
 Internal tools may return `stay()`, `direct()`, or `taskResult()`.
 `direct()` supplies accepted task content without publishing a conversational
-reply. `go()`, `directTo()`, `finish()`, and `terminate_session` are not internal
+reply. `go()`, `fanout()`, `directTo()`, `finish()`, and `terminate_session` are not internal
 worker outcomes. `terminate_session` is not offered to an internal worker;
 an internal-only graph does not need its provider.
 

@@ -157,7 +157,7 @@ All error contexts include `nodeId`, `provider`, `model`, and the caller's
 | `LlmErrorContext` | `error`, `attemptsMade`, `maxAttempts`, `kind`, and `stoppedBecause`. `kind` is `invocation_error`, `empty_response`, or `response_rejected`; the latter two retain `lastResponse`. Invocation errors stop because retries were declined or attempts were exhausted. |
 | `LlmBlockedContext` | Normalized `reason`, provider `rawReason`, `phase` (`prompt` or `candidate`), and optional `safetyRatings` and `providerDetails`. |
 
-Recovery can return a string or `direct()`, `directTo()`, `go()`, or `finish()`.
+Recovery can return a string or `direct()`, `directTo()`, `go()`, `fanout()`, or `finish()`.
 These use the same routing, target-state, and completion contracts as ordinary
 conversational node responses. `taskResult(value)` recovers with typed,
 code-owned output and delivers it to `onResponse()`.

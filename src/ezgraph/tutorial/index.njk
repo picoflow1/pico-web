@@ -28,7 +28,7 @@ ezgraphDocs: true
     <p>
       The same <code>LlmNode</code> also handles internal model work: save accepted output in
       <code>onResponse()</code> and let the graph or nested caller own continuation.
-      For concurrent branches, return <code>go(Child1Node, Child2Node)</code> and declare a
+      For concurrent branches, return <code>fanout(Child1Node, Child2Node)</code> and declare a
       join that waits for both. See <a href="/ezgraph/docs/developer-guide/nodes-and-execution/#execution-ownership">execution ownership</a>
       and <a href="/ezgraph/docs/developer-guide/topology/#conditional-fan-out-and-join">fan-out and join</a>.
     </p>

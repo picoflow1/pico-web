@@ -19,7 +19,7 @@ The graph or caller determines which outcomes the executing node may publish.
 | --- | --- |
 | `stay(feedback)` | Keep this node active and give the model corrective tool feedback. The agent loop continues. |
 | `go(Target)` | Save the target as the durable resume node and enter it in the same graph invocation. |
-| `go(Child1, Child2, ...)` | Schedule multiple registered nodes concurrently without choosing a child as the conversation cursor. |
+| `fanout(Child1, Child2, ...)` | Schedule two or more distinct registered nodes concurrently without choosing a child as the conversation cursor. |
 | `direct(content)` | Stop model work and return code-owned content while keeping this node active. |
 | `directTo(Target, content)` | Return code-owned content and save the target as the next user-turn node without running it now. |
 | `finish(content)` | Stop model work and complete the graph with code-owned content. |
@@ -54,13 +54,16 @@ return go(ReturnsNode);
 ## Fan-out response effects
 
 ```ts
+import { fanout } from "@picoflow/ezgraph";
+
 this.saveState({ movieIdea: submitted });
-return go(Child1Node, Child2Node);
+return fanout(Child1Node, Child2Node);
 ```
 
-Multi-target `go()` requires distinct registered node IDs. Save the parent's
-state before returning; each child reads required facts from `getPrompt(state)`
-and saves its own output. Use
+`go(Target)` accepts exactly one destination. `fanout()` requires at least two
+destinations with distinct registered node IDs. Save the parent's
+state before returning. Each child receives explicitly selected facts through
+`getPrompt(state)` or a task message from `onEnter()`, then saves its own output. Use
 [an explicit join](/ezgraph/docs/developer-guide/topology/#conditional-fan-out-and-join)
 to continue after all branches finish.
 
@@ -72,7 +75,7 @@ broadcast state or conversation messages to the workers. Single-target
 `go(Target).withState(...)` and `withMessage(...)` address that one target.
 
 The complete tool-call batch runs before a selected transition is returned.
-Repeated bare `go()` outcomes may name the same destination set; conflicting
+Repeated bare `fanout()` outcomes may name the same destination set; conflicting
 destinations or repeated response effects fail instead of choosing a winner.
 
 ## Typed task output

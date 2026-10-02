@@ -145,7 +145,7 @@ when deterministic policy needs data owned by another node. Do not mutate a
 node instance or a session document directly.
 
 With conditional fan-out, save parent-owned input before returning
-`go(Child1Node, Child2Node)`. Each worker supplies explicitly selected facts
+`fanout(Child1Node, Child2Node)`. Each worker supplies explicitly selected facts
 through `getPrompt(state)` or constructs a task message in
 [`onEnter()`](/ezgraph/docs/developer-guide/nodes-and-execution/#prepare-input-with-onenter),
 then saves accepted output in `onResponse()`. Its model history
