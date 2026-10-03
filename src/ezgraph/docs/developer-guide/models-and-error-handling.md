@@ -21,9 +21,17 @@ delegate it to a graph-wide default.
 
 Input preparation happens first through the node-only
 [`onEnter()` hook](/ezgraph/docs/developer-guide/nodes-and-execution/#prepare-input-with-onenter).
-It runs once on agent-loop entry; retries and temporary alternate-model
-recovery reuse its prepared input. An entry-hook error propagates directly
+Its synchronous result or Promise is awaited once on agent-loop entry, before
+prompt construction; retries and temporary alternate-model recovery reuse its
+prepared input and prompt. An entry-hook error or rejected Promise propagates directly
 without invoking model-error recovery.
+
+Successful work is finalized through the node-only
+[`onExit()` hook](/ezgraph/docs/developer-guide/nodes-and-execution/#finalize-successful-work-with-onexit).
+It runs once after response handling and completion validation, including
+handled model failures, before the result is published. Unhandled errors and
+cancellation skip it. An exit-hook failure propagates without invoking model
+recovery and the invocation update is not published.
 
 | Hook | Called for | Return value |
 | --- | --- | --- |

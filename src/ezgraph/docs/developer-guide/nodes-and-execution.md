@@ -57,7 +57,7 @@ Keep the corresponding channel in the graph's durable state registry.
 
 | Base class | Use it for | Execution policy |
 | --- | --- | --- |
-| `LlmNode` | Document extraction, interactive chat, nested calls, and sequential or parallel model work | The shared model/tool loop, `onEnter()`, `onResponse()`, candidate validation, LLM error hooks, invocation ownership, and token accounting |
+| `LlmNode` | Document extraction, interactive chat, nested calls, and sequential or parallel model work | The shared model/tool loop, `onEnter()`, `onResponse()`, `onExit()`, candidate validation, LLM error hooks, invocation ownership, and token accounting |
 | `GraphNode` | Deterministic work or custom execution | Implement `run()` and choose the required execution path |
 | `DecisionNode` | Typed classification and judging | The decision provider/runner and `onDecisionError()` policy |
 
@@ -73,9 +73,10 @@ the gateway directly does not automatically receive them.
 
 ## Prepare input with onEnter
 
-The protected synchronous `onEnter(langMessage, priorNode?)` hook runs once
-when a `LlmNode` enters its agent loop, before the first model call and before
-the empty-history seed. This includes the first node in a batch graph and
+The protected `onEnter(langMessage, priorNode?)` hook accepts a synchronous
+result or a Promise. EZGraph awaits it once when a `LlmNode` enters its agent
+loop, before constructing the prompt, applying the empty-history seed, and
+calling the model. This includes the first node in a batch graph and
 internal, nested, and parallel execution. A later invocation calls it again,
 including a new user turn on the same node. Model/tool rounds, retries, and
 temporary alternate-model recovery reuse the prepared input.
@@ -86,7 +87,7 @@ The default preserves the incoming message:
 protected onEnter(
   langMessage: MessageTypes | null | undefined,
   _priorNode?: string,
-): MessageTypes | null | undefined {
+): MessageTypes | null | undefined | Promise<MessageTypes | null | undefined> {
   return langMessage;
 }
 ```
@@ -106,8 +107,37 @@ Return a message to supply or replace the current input, or return
 execution records the prepared input once, without duplicating a passed-through
 message; internal execution keeps it ephemeral. If history is empty after the
 hook, `emptyHistorySeed` still applies: `"Start"` by default, or `null` for a
-system-only call. A thrown entry-hook error propagates as an application error,
-outside ordinary model recovery.
+system-only call. A thrown error or rejected Promise propagates as an application
+error, outside ordinary model recovery.
+
+Use `async onEnter()` for preprocessing or loading facts before model execution:
+
+```ts
+// Application-provided lookup or preprocessing function.
+declare function loadBatchFacts(rows: unknown[]): Promise<string>;
+
+class PreparedBatchNode extends LlmNode<MyGraphState, { rows?: unknown[]; facts?: string }> {
+  getPrompt() { return `Process the supplied batch using: ${this.getState().facts ?? ""}`; }
+
+  protected override async onEnter(
+    langMessage: MessageTypes | null | undefined,
+    _priorNode?: string,
+  ): Promise<MessageTypes | null | undefined> {
+    const rows = this.getState().rows;
+    if (rows === undefined) return langMessage;
+    const facts = await loadBatchFacts(rows);
+    this.saveState({ facts });
+    return new HumanMessage(JSON.stringify(rows));
+  }
+}
+```
+
+The prompt is built after entry finishes, so `getPrompt(state)` and `getState()`
+see facts staged by the hook. Keep per-invocation facts in node state or graph
+context because node instances are shared across sessions. Cancellation is
+checked before and after the await; use `currentTurnSignal()` when preprocessing
+I/O needs to honor cancellation itself. The entry hook is per invocation,
+including each new user turn, rather than a one-time node initializer.
 
 For a one-turn batch, keep the rows in node state and construct a user message
 on entry:
@@ -195,10 +225,82 @@ The same class works as a conversational node or an internal worker. In a
 conversation it saves the joke and publishes the text. Internally it saves the
 joke and publishes only its local-state update and token usage.
 
+## Finalize successful work with onExit
+
+The protected `onExit(context)` hook accepts `void` or `Promise<void>`. EZGraph
+awaits it once per successful node invocation, after `onResponse()` where
+applicable and after JSON completion validation or repair. Exit completes
+before the node update is published or downstream nodes start. A normal reply
+that keeps this node active also triggers exit.
+
+Import `LlmNodeExitContext` and `LlmNodeExitOutcome` from `@picoflow/ezgraph`.
+Their public shape is:
+
+```ts
+type LlmNodeExitOutcome<Output = string> =
+  | { readonly kind: "reply"; readonly response: string }
+  | { readonly kind: "taskResult"; readonly value: Output }
+  | { readonly kind: "go"; readonly targets: readonly [string] }
+  | {
+      readonly kind: "fanout";
+      readonly targets: readonly [string, string, ...string[]];
+    }
+  | {
+      readonly kind: "directTo";
+      readonly targets: readonly [string];
+      readonly response: string;
+    }
+  | { readonly kind: "finish"; readonly response: string };
+
+type LlmNodeExitContext<State extends GraphState, Output = string> = Readonly<{
+  nodeId: string;
+  mode: "conversation" | "internal";
+  state: Readonly<State>;
+  outcome: LlmNodeExitOutcome<Output>;
+  usage: TokenUsage;
+}>;
+```
+
+`state` is the current materialized invocation state, including staged entry,
+tool, and response writes. `outcome` is the final semantic result; ordinary text
+and `direct()` normalize to `reply`, and `taskResult` preserves the final typed
+value. Target arrays contain resolved node IDs, with exactly one for `go` and
+`directTo`, and at least two for `fanout`. `usage` is accumulated token usage
+for this invocation, not the session total.
+
+Inside a batch worker, stage final facts with the hook:
+
+```ts
+protected override async onExit(
+  context: LlmNodeExitContext<MyGraphState, BatchResult>,
+): Promise<void> {
+  if (context.outcome.kind === "taskResult") {
+    const summary = await summarizeBatch(context.outcome.value);
+    this.saveState({ summary });
+  }
+}
+```
+
+Tool-selected routing and completion trigger exit even though they skip
+`onResponse()`. `stay()` continues the loop; retries, rejected candidates, and
+intermediate tool rounds do not trigger exit. Successful model-error recovery
+does trigger it. Unhandled errors and cancellation skip exit. Cancellation is
+checked before and after the await; use `currentTurnSignal()` for postprocessing
+I/O that needs to stop itself. An exit-hook error propagates without model
+recovery and the invocation update is not published.
+
+Return values do not alter the outcome. Use `saveState()` to stage final local
+writes and the existing response hooks/builders to choose output and routing.
+Internal workers remain restricted to their own node state and token usage.
+This hook runs while state is staged, before session persistence.
+
+The lifecycle is: `onEnter` → prompt → model/tool loop → `onResponse` where
+applicable → completion validation → `onExit` → publish node result.
+
 ## Execution ownership
 
 Scheduling reuses the node's prompt, application-tool definitions,
-`getLlmConfig()`, `onEnter()`, `onResponse()`, and LLM error hooks. Ownership determines which
+`getLlmConfig()`, `onEnter()`, `onResponse()`, `onExit()`, and LLM error hooks. Ownership determines which
 effects it may publish:
 
 | Placement | How it is selected | Owns |

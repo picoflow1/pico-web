@@ -122,6 +122,20 @@ message and an internal worker whose batch message remains ephemeral.
 For nested calls, assert the known caller ID; ordinary graph entry leaves
 `priorNode` undefined. Entry-hook failures should propagate without model
 recovery, and concurrent invocations must keep their input isolated.
+For asynchronous entry, hold preprocessing pending and assert that neither
+prompt construction nor model calls have begun. Then release it and verify
+that facts saved by entry appear in the prompt. Include rejected preprocessing,
+cancellation during the await, and concurrent invocations that finish in a
+different order from their start order.
+
+For `onExit()`, inspect the final discriminated outcome for replies, typed task
+results, `go()`, `fanout()`, `directTo()`, and `finish()`. Include both tool-selected
+outcomes and outcomes returned by `onResponse()`. Verify that exit sees staged
+state, follows JSON completion repair, and runs exactly once after retries and
+tool follow-up. Hold an async exit pending and assert that downstream nodes
+have not started; after release, their state must include exit writes. Check
+unhandled failures, exit rejection, cancellation during its await, internal
+state restrictions, and concurrent shared-node invocations.
 
 Script accepted text, `taskResult()` output, blocked responses, and exhausted
 model errors. Assert that `onResponse()` saves the expected local state in both
