@@ -16,15 +16,24 @@ Nest.
 
 - One `FlowEngine` registered as a Nest provider, constructed from configuration.
 - Built-in model provider adapters for the providers you actually use.
+- Inline MongoDB and Cosmos client factories with application-owned credentials.
 - A custom adapter for a provider PicoFlow does not bundle.
 - A `POST /ai/run` controller that passes the session id both ways.
 
 ## Registering the engine
 
-From `pico-demo/src/app.module.ts`, lightly trimmed:
+From `pico-demo/src/app.module.ts`, trimmed to three flows and Cosmos key
+authentication. Install `mongodb` and `@azure/cosmos` as application dependencies
+for these SDK imports. The
+[persistence guide](/docs/guides/persistence/#application-owned-database-initialization)
+shows the demo's full Cosmos credential selection.
 
 ```ts
 import { ModelProvider, FlowEngine } from "@picoflow/core";
+import { Inject, Module, type OnApplicationShutdown } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { MongoClient } from "mongodb";
+import { CosmosClient } from "@azure/cosmos";
 import { BasicFlow } from "./myflow/basic-flow/basic-flow.js";
 import { HotelFlow } from "./myflow/hotel-flow/hotel-flow.js";
 import { InvoiceFlow } from "./myflow/invoice-flow/invoice-flow.js";
@@ -37,6 +46,18 @@ import { InvoiceFlow } from "./myflow/invoice-flow/invoice-flow.js";
       provide: FlowEngine,
       useFactory: (config: ConfigService) =>
         FlowEngine.create({
+          configManager: config,
+          sessionClients: {
+            mongodb: () => {
+              const url = config.getOrThrow<string>("MONGODB_URL");
+              const tlsCAFile = config.get<string>("MONGODB_TLS_CA_FILE");
+              return new MongoClient(url, tlsCAFile ? { tlsCAFile } : {});
+            },
+            cosmos: () => new CosmosClient({
+              endpoint: config.getOrThrow<string>("COSMODB_URL"),
+              key: config.getOrThrow<string>("COSMODB_KEY"),
+            }),
+          },
           flows: [BasicFlow, HotelFlow, InvoiceFlow],
           providers: [
             ...ModelProvider.createBuiltinAdapters({
@@ -60,10 +81,27 @@ import { InvoiceFlow } from "./myflow/invoice-flow/invoice-flow.js";
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements OnApplicationShutdown {
+  constructor(@Inject(FlowEngine) private readonly engine: FlowEngine) {}
+
+  async onApplicationShutdown(): Promise<void> {
+    await this.engine.close();
+  }
+}
 ```
 
-Four things are happening.
+The application owns registration, configuration, and SDK client construction.
+
+`configManager: config` gives the engine the same reader used for credentials.
+`SESSION_STORE` selects storage; only the selected `sessionClients` factory
+runs. With `COSMO`, no Mongo client is constructed and `MONGODB_URL` is not
+required. Mongo still needs `MONGODB_NAME` and `MONGODB_COLLECTION`; Cosmos
+needs `COSMODB_ID` and `COSMODB_SESSION_ID` and a container partitioned by `/id`.
+
+Keep connection settings inside these zero-argument callbacks. The full demo
+Cosmos factory supports key authentication, an explicit service principal, and
+`DefaultAzureCredential`. All seven tutorial flows use the same engine and
+store setup; their flow classes own business state and restore policy.
 
 `flows` is a registration list of constructors, not instances. `FlowEngine` stores the
 classes and builds a fresh `Flow` object per request through `FlowCreator.create(...)`.
@@ -72,7 +110,13 @@ instances are never shared between sessions.
 
 `FlowEngine.create(...)` is declared `async` and returns a `Promise<FlowEngine>`. Nest
 awaits a promise returned from `useFactory`, so this works without an explicit
-`await`. If you construct the engine outside Nest, remember to await it.
+`await`. The factory prepares the selected session store before returning.
+If you construct the engine outside Nest, remember to await it.
+
+`engine.close()` releases owned SDK clients during shutdown. Enable Nest's
+shutdown hooks with `app.enableShutdownHooks()` in `main.ts`, as the demo does.
+Use `sessionClients.ownsClients: false` only for clients shared and closed by
+your application. See [client ownership](/docs/guides/persistence/#client-ownership-and-shutdown).
 
 `ModelProvider.createBuiltinAdapters(...)` returns an array of adapters for every
 bundled provider — openai, azure-openai, google, anthropic, deepseek, moonshot, zai,

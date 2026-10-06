@@ -35,7 +35,7 @@ the in-memory document so later checkpoints in the same run use a fresh token.
 
 ## Choosing a store
 
-The store is selected by the `SESSION_STORE` environment variable, uppercased, and defaults to
+The store is selected by `SESSION_STORE` from the engine's configuration reader, uppercased, and defaults to
 `MEMORY`. An unrecognised value throws
 `No valid session store '<value>'. Use MEMORY, MONGO, COSMO, or SQLITE.`
 
@@ -48,20 +48,54 @@ const engine = await FlowEngine.create({
 });
 ```
 
+## Application-created clients
+
+`FlowEngine.create({ configManager, sessionClients })` accepts SDK clients
+created by your application. Keep their factories inline in `app.module.ts`
+or your standalone entry point, alongside flow and model registration.
+
+```ts
+export type SessionDatabaseClientFactories = Readonly<{
+  mongodb?: () => MongoClient | Promise<MongoClient>;
+  cosmos?: () => CosmosClient | Promise<CosmosClient>;
+  ownsClients?: boolean;
+}>;
+```
+
+Only the selected backend's factory is invoked. The application reads its
+connection string, endpoint, credentials, and SDK options inside the callback;
+the callback receives no arguments. PicoFlow still reads database/collection
+or database/container IDs from `configManager` and prepares the session store.
+An injected `sessionStore` overrides this setup entirely.
+
+Clients are engine-owned by default and released by `engine.close()`.
+Set `ownsClients: false` when returning shared clients whose lifecycle the
+application manages. Without a factory for the selected backend, the
+configuration-based built-in client creation remains available. See the
+[persistence guide](/docs/guides/persistence/#application-owned-database-initialization)
+for MongoDB, DocumentDB options, Cosmos authentication, and shutdown examples.
+
 ## The four bundled stores
 
 | `SESSION_STORE` | Class | Compare-and-swap mechanism | Configuration |
 | --- | --- | --- | --- |
 | `MEMORY` | `MemorySessionStore` | Compares the current in-memory revision before replacing a structured clone | None |
 | `SQLITE` | `SQLiteSession` | Atomic `UPDATE … WHERE id = ? AND revision = ?`; a row count other than 1 is a conflict | `SQLITE_PATH` |
-| `MONGO` | `MongoSession` | Update filter combining `_id`, the flow name, and the expected revision; `matchedCount` other than 1 is a conflict | `MONGODB_URL`, `MONGODB_NAME`, `MONGODB_COLLECTION` |
-| `COSMO` or `COSMOS` | `CosmoSession` | Expected revision plus an `_etag` `IfMatch` precondition | `COSMODB_URL`, `COSMODB_KEY`, `COSMODB_ID`, `COSMODB_SESSION_ID` |
+| `MONGO` or `MONGODB` | `MongoSession` | Update filter combining `_id`, the flow name, and the expected revision; `matchedCount` other than 1 is a conflict | `MONGODB_NAME`, `MONGODB_COLLECTION`; client connection settings belong to the application factory, or `MONGODB_URL` for built-in creation |
+| `COSMO`, `COSMOS`, or `COSMOSDB` | `CosmoSession` | Expected revision plus an `_etag` `IfMatch` precondition | `COSMODB_ID`, `COSMODB_SESSION_ID`, `COSMOS_CREATE_IF_NOT_EXISTS`; client credentials belong to the application factory, or URL/key for built-in creation |
 
 `SQLiteSession` writes to a table named `session`, creates the parent directory if it is
 missing, and defaults to `ignore/session/session.sqlite`. The `revision` column is the
 compare-and-swap source of truth; older JSON-only rows are migrated by an `ALTER TABLE` on
 open. Mongo's filter includes the flow name, so a store-level attempt to change the flow bound
 to a session ID also fails.
+
+`FlowEngine.create()` connects MongoDB and initializes the Cosmos container
+before returning. Cosmos requires partition key `/id`.
+`COSMOS_CREATE_IF_NOT_EXISTS` defaults to `true`; set it to `false` to use
+resources provisioned separately. See
+[Environment variables](/docs/reference/environment-variables/#store-specific-settings)
+for Cosmos ID aliases and authentication settings.
 
 ### Deployment scope
 

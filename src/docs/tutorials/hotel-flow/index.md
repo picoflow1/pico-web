@@ -129,6 +129,13 @@ read the [InvoiceFlow track](/docs/tutorials/invoice-flow/).
 
 ## Running it
 
+HotelFlow uses the shared engine and application-owned MongoDB/Cosmos factories
+in `app.module.ts`. Follow the
+[bootstrap lesson](/docs/tutorials/basic-flow/bootstrapping/#registering-the-engine)
+and [persistence guide](/docs/guides/persistence/#application-owned-database-initialization)
+to configure its session store. Set `USE_ENV=1` on the test command to retain
+that configured store; the default test uses isolated SQLite.
+
 ```bash
 npm run start:dev
 npm run test:hotel-flow

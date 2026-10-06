@@ -126,10 +126,12 @@ widening them to `string` loses the compile-time check against the registered
 catalogue.
 
 The provider has to be registered on the engine. In the demo that happens once,
-in `pico-demo/src/app.module.ts`:
+in `pico-demo/src/app.module.ts`. This excerpt focuses on model registration;
+the same call supplies the configuration reader and inline database factories:
 
 ```ts
 FlowEngine.create({
+  configManager: config,
   flows: [BasicFlow, HotelFlow, InvoiceFlow],
   //register pre-build providers, only specify what you use.
   providers: [
@@ -145,6 +147,13 @@ FlowEngine.create({
 One engine serves every flow, so a single application can run OpenAI-backed and
 Google-backed flows side by side. The per-step override on `ExtractInvoiceStep`
 is resolved the same way as the flow default.
+
+InvoiceFlow uses the application's shared session store, including for a single
+extraction request. Keep MongoDB/Cosmos initialization in AppModule's
+`sessionClients` factories. See
+[the bootstrap lesson](/docs/tutorials/basic-flow/bootstrapping/#registering-the-engine)
+and [the persistence guide](/docs/guides/persistence/#application-owned-database-initialization)
+for the full engine setup.
 
 <div class="callout callout--info"><span class="callout__title">Provider family is derived from the model name</span><p><code>Step.getLLMType()</code> classifies by prefix — names starting <code>gemini</code> or <code>gemma</code> map to <code>LLMType.GEMINI</code>, <code>gpt</code> to <code>OPENAI</code>, <code>claude</code> to <code>ANTHROPIC</code>, anything else to <code>UNSUPPORTED</code>. Lesson 4 uses that value to pick the right file-upload client, so an unusually named model will fail there even if the chat calls work fine.</p></div>
 

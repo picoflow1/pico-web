@@ -95,6 +95,13 @@ an abandoned application from resuming indefinitely with old quote inputs.
 
 ## Run the twenty-turn live test
 
+HomeInsuranceQuoteFlow uses the shared engine and database factories in
+`app.module.ts`. See the
+[bootstrap lesson](/docs/tutorials/basic-flow/bootstrapping/#registering-the-engine)
+and [persistence guide](/docs/guides/persistence/#application-owned-database-initialization).
+Set `USE_ENV=1` on the command below to use the configured MongoDB/Cosmos store;
+the default test uses isolated SQLite.
+
 From `pico-demo`:
 
 ```bash
@@ -102,7 +109,7 @@ npm run test:home-insurance-flow
 ```
 
 With `OPENAI_API_KEY` and `PICOFLOW_KEY`, the command runs all twenty live turns and
-grades each response semantically. It also reads the final SQLite session document
+grades each response semantically. It also reads the final session document from the selected store
 and asserts the corrected four-year roof, the re-rated $5,000 deductible, the current
 Enhanced selection, explicit contact consent, and completed status.
 

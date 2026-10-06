@@ -103,6 +103,13 @@ reproducible; a value read off an invoice is not a creative decision.
 
 ## Running it
 
+InvoiceFlow's extraction requests use the same application-owned database
+factories as the conversational flows. See the
+[bootstrap lesson](/docs/tutorials/basic-flow/bootstrapping/#registering-the-engine)
+and [persistence guide](/docs/guides/persistence/#application-owned-database-initialization).
+Set `USE_ENV=1` on the test command to retain the configured store; the default
+test uses isolated SQLite.
+
 ```bash
 npm run start:dev
 npm run test:invoice-flow

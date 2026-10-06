@@ -78,6 +78,13 @@ auditing, approved plan documents, privacy controls, and jurisdiction-specific r
 
 ## Run the tests
 
+EmployeeBenefitsFlow uses AppModule's shared engine and application-owned
+MongoDB/Cosmos client factories. See the
+[bootstrap lesson](/docs/tutorials/basic-flow/bootstrapping/#registering-the-engine)
+and [persistence guide](/docs/guides/persistence/#application-owned-database-initialization).
+Set `USE_ENV=1` on the test command to retain the configured store; the default
+test uses isolated SQLite.
+
 From `pico-demo`, run the deterministic policy checks without provider calls:
 
 The test loads provider credentials from `.env`; when they are absent, its live scenario is skipped.

@@ -16,6 +16,11 @@ conversation scenario lives in `pico-demo/test/basic-flow/`. Browse the
 
 ## What BasicFlow is
 
+BasicFlow uses the application's shared session store. Its
+[bootstrap lesson](/docs/tutorials/basic-flow/bootstrapping/#registering-the-engine)
+shows the inline MongoDB and Cosmos factories in `app.module.ts`, alongside
+flow and model registration.
+
 A `Flow` subclass with four overrides that matter and two that are situational:
 
 - `configModel()` declares the default model, `openai` / `gpt-4o-mini`, with

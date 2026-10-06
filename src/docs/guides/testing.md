@@ -36,9 +36,20 @@ npm run typecheck        # tsc --project tsconfig.contract.json
 Each spec is a plain `node --test` file executed through `tsx`, with no test framework beyond
 `node:assert/strict`.
 
-Every flow suite loads `.env`. It honors `SESSION_STORE` and `DOCUMENT_DB` when configured;
-otherwise it falls back to SQLite under `test/.tmp/`. For example, `SESSION_STORE=MONGO`
-writes the test session to MongoDB.
+The BasicFlow, HotelFlow, InvoiceFlow, SupportFlow, home-insurance, and
+employee-benefits suites load `.env` but default to isolated SQLite storage
+under `test/.tmp/`. Set `USE_ENV=1` to retain the configured `SESSION_STORE` and
+run against your MongoDB or Cosmos session store through AppModule's client
+factory. This switch does not provide model credentials.
+
+```bash
+USE_ENV=1 npm run test:basic-flow
+```
+
+The DecisionHotelFlow live suite retains the configured store and defaults to
+memory when `SESSION_STORE` is unset; its contract suite explicitly uses memory.
+See [application-owned database initialization](/docs/guides/persistence/#application-owned-database-initialization)
+for the shared demo setup.
 
 There are also two unit specs, `test/tool-decorator.spec.ts` and
 `test/tool-response-helper.spec.ts`, which no npm script currently runs. Invoke them directly:

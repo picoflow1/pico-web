@@ -82,13 +82,22 @@ export class CollectCustomerStep extends Step {
 
 ### 3. Register providers and flows on the engine
 
-`FlowEngine.create({ flows, providers })` is the form the demo application uses. It is a
-static async factory that returns a configured engine.
+The demo registers flows, providers, and application-owned database clients in
+`app.module.ts`. `FlowEngine.create()` asynchronously prepares the selected
+session store and returns a configured engine.
 
 ```ts
 // src/app.module.ts
 FlowEngine.create({
+  configManager: config,
   flows: [BasicFlow, HotelFlow, InvoiceFlow, CustomerFlow],
+  sessionClients: {
+    mongodb: () => new MongoClient(config.getOrThrow<string>("MONGODB_URL")),
+    cosmos: () => new CosmosClient({
+      endpoint: config.getOrThrow<string>("COSMODB_URL"),
+      key: config.getOrThrow<string>("COSMODB_KEY"),
+    }),
+  },
   providers: [
     ...ModelProvider.createBuiltinAdapters({
       openai: { apiKey: config.get<string>("OPENAI_API_KEY") },
@@ -99,7 +108,14 @@ FlowEngine.create({
 });
 ```
 
-PicoFlow ships no default model catalog and reads no API key on its own. If nothing registers
+Import `MongoClient` from `mongodb` and `CosmosClient` from `@azure/cosmos` in
+the application. These inline factories read credentials only when their
+backend is selected by `SESSION_STORE`. The shortened Cosmos example uses a
+key; see [application-owned database initialization](/docs/guides/persistence/#application-owned-database-initialization)
+for the demo's service-principal and default Azure credential paths, required
+store identifiers, and shutdown cleanup.
+
+Provider credentials are passed explicitly to adapters. If nothing registers
 an adapter for the provider string in `configModel()`, the flow fails at bootstrap with
 `Model 'openai:gpt-4o-mini' is not registered and provider 'openai' has no adapter.`
 

@@ -96,6 +96,13 @@ The closing step can then produce a factual recap from those committed records.
 
 ## Running it
 
+SupportFlow uses AppModule's shared engine and inline MongoDB/Cosmos client
+factories. See the
+[bootstrap lesson](/docs/tutorials/basic-flow/bootstrapping/#registering-the-engine)
+and [persistence guide](/docs/guides/persistence/#application-owned-database-initialization)
+for configuration and cleanup. Set `USE_ENV=1` on the test command to retain
+that configured store; the default test uses isolated SQLite.
+
 From the demo application:
 
 ```bash

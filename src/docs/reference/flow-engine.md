@@ -13,37 +13,65 @@ into NestJS, but nothing in the class depends on it.
 
 ```ts
 public static async create(
-  options: FlowEngineOptions = {},
+  options: FlowEngineCreateOptions = {},
 ): Promise<FlowEngine>;
 ```
 
 ```ts
 export type FlowEngineOptions = Readonly<{
-  configManager?: ConfigManager;
+  configManager?: ConfigReader;
   flows?: FlowRegistration;
   models?: readonly Model[];
   providers?: readonly ModelProviderAdapter[];
+  decisionProviders?: readonly DecisionProviderAdapter[];
   /** Override the configured session backend, primarily for tests and DI. */
   sessionStore?: SessionStore;
 }>;
+
+export type FlowEngineCreateOptions = FlowEngineOptions & Readonly<{
+  sessionClients?: SessionDatabaseClientFactories;
+}>;
 ```
 
-`create()` is `async` for forward compatibility; it currently just returns `new FlowEngine(options)`.
-The constructor calls `CoreConfig.setup(configManager)` — this is where environment
-configuration is read — and then constructs the session store selected by `SESSION_STORE`,
-unless `sessionStore` was supplied.
+`create()` asynchronously prepares the session store selected by `SESSION_STORE`,
+then constructs and registers the engine. `configManager` accepts PicoFlow's
+`ConfigManager` or an application reader such as Nest's `ConfigService`.
+`sessionStore` takes precedence when supplied, so database factories are not
+called. Use `create()` when passing SDK factories; the synchronous constructor
+accepts `FlowEngineOptions` without `sessionClients`.
 
 ```ts
+import { ConfigManager, FlowEngine, ModelProvider } from "@picoflow/core";
+import { MongoClient } from "mongodb";
+import { CosmosClient } from "@azure/cosmos";
+
+const config = new ConfigManager();
 const engine = await FlowEngine.create({
+  configManager: config,
   flows: [BasicFlow, HotelFlow, InvoiceFlow],
+  sessionClients: {
+    mongodb: () => new MongoClient(config.require("MONGODB_URL")),
+    cosmos: () => new CosmosClient({
+      endpoint: config.require("COSMODB_URL"),
+      key: config.require("COSMODB_KEY"),
+    }),
+  },
   providers: [
     ...ModelProvider.createBuiltinAdapters({
-      openai: { apiKey: process.env.OPENAI_API_KEY },
-      google: { apiKey: process.env.GEMINI_API_KEY },
+      openai: { apiKey: config.get("OPENAI_API_KEY") },
+      google: { apiKey: config.get("GEMINI_API_KEY") },
     }),
   ],
 });
 ```
+
+This example imports `MongoClient` from `mongodb` and `CosmosClient` from
+`@azure/cosmos` in the application. Only the selected store's zero-argument
+factory runs. Factories may return promises. See
+[application-owned database initialization](/docs/guides/persistence/#application-owned-database-initialization)
+for the full Nest example and Cosmos credential choices, and
+[SessionDatabaseClientFactories](/docs/reference/session-stores/#application-created-clients)
+for ownership rules. Call `await engine.close()` during application shutdown.
 
 Passing `models` or `providers` here registers them with `replace = true`, so a later
 `registerProvider(adapter)` without `replace` will not override them.

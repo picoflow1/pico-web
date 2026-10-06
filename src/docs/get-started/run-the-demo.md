@@ -21,21 +21,17 @@ yarn install
 npm install
 ```
 
-The demo depends on `@picoflow/core`. In this repository the dependency is wired to a local
-staging build of the library rather than to the published package:
-
-```json
-"@picoflow/core": "file:../picoflow/npmlib/staging/lib"
-```
-
-If you are working from the monorepo layout, build the library before installing the demo:
+The demo installs the published `@picoflow/core` package. If you are also
+developing the framework in the sibling `picoflow` checkout, build its local
+package first:
 
 ```bash
 npm --prefix ../picoflow run build:locallib
 ```
 
-The demo also exposes that as a script, `npm run build:picoflow`. If you are working from a
-standalone clone, replace the `file:` dependency with the published version.
+The demo also exposes that as `npm run build:picoflow`. To consume that local
+build, change the dependency to `file:../picoflow/npmlib/staging/lib` and
+reinstall. A standalone demo clone can keep the published dependency.
 
 ## Environment variables
 
@@ -71,27 +67,38 @@ SESSION_STORE=SQLITE
 SQLITE_PATH=ignore/session/session.sqlite
 ```
 
-`SESSION_STORE` selects the backend and accepts `MEMORY` (the default), `SQLITE`, `MONGO`,
-`COSMO` or `COSMOS`. Session-idle policy belongs to the Flow's
+`SESSION_STORE` selects the backend and accepts `MEMORY` (the default), `SQLITE`,
+`MONGO`/`MONGODB`, or `COSMO`/`COSMOS`/`COSMOSDB`. Session-idle policy belongs to the Flow's
 `onRestoreSessionDoc()` hook; it is not an environment setting.
 
-<div class="callout callout--warning"><span class="callout__title">Warning</span><p>The shipped <code>.env-example</code> sets <code>DOCUMENT_DB=COSMO</code>. The library reads <code>SESSION_STORE</code>, not <code>DOCUMENT_DB</code>. If you only set <code>DOCUMENT_DB</code> you will silently get the in-process <code>MEMORY</code> store, and every session will disappear on restart. Set <code>SESSION_STORE</code>.</p></div>
+The current `.env-example` sets `SESSION_STORE=SQLITE`. Its legacy
+`DOCUMENT_DB` entry has no runtime effect.
 
 SQLite is the recommended local durable store. Relative `SQLITE_PATH` values resolve from
 the project root. For MongoDB or Cosmos DB, fill in the corresponding block:
 
 ```bash
+SESSION_STORE=MONGO
 MONGODB_NAME=picoflow
 MONGODB_COLLECTION=sessions
 MONGODB_URL=mongodb://localhost:27017/?directConnection=true
 ```
 
 ```bash
-COSMODB_URL=http://localhost:8081/
-COSMODB_KEY=...
+SESSION_STORE=COSMO
+COSMODB_URL=https://your-account.documents.azure.com:443/
+COSMODB_KEY=your-account-key
 COSMODB_ID=picoflow
 COSMODB_SESSION_ID=sessions
+COSMOS_CREATE_IF_NOT_EXISTS=false
 ```
+
+`app.module.ts` reads database credentials and constructs SDK clients in inline
+`sessionClients` factories. Only the selected backend is initialized. The
+Cosmos example above uses a key and resources provisioned separately; the demo
+also supports service-principal and default Azure credentials. See
+[application-owned database initialization](/docs/guides/persistence/#application-owned-database-initialization)
+for authentication choices, optional `MONGODB_TLS_CA_FILE`, and provisioning.
 
 ### Batch mode only
 
@@ -123,18 +130,30 @@ The service listens on port 8000 and binds `0.0.0.0`.
 ## Which flows are registered
 
 `src/app.module.ts` is the application bootstrap contract. It builds the engine in a NestJS
-factory:
+factory. This excerpt shortens the Cosmos factory to key authentication:
 
 ```ts
 FlowEngine.create({
+  configManager: config,
+  sessionClients: {
+    mongodb: () => new MongoClient(config.getOrThrow<string>("MONGODB_URL")),
+    cosmos: () => new CosmosClient({
+      endpoint: config.getOrThrow<string>("COSMODB_URL"),
+      key: config.getOrThrow<string>("COSMODB_KEY"),
+    }),
+  },
   flows: [
     BasicFlow,
     HotelFlow,
     InvoiceFlow,
     SupportFlow,
+    DecisionHotelFlow,
     HomeInsuranceQuoteFlow,
     EmployeeBenefitsFlow,
   ],
+  decisionProviders: DecisionProvider.create({
+    typesafe: { apiKey: config.get<string>("TYPESAFE_API_KEY") },
+  }),
   providers: [
     ...ModelProvider.createBuiltinAdapters({
       openai: { apiKey: config.get<string>("OPENAI_API_KEY") },
@@ -152,6 +171,11 @@ FlowEngine.create({
   ],
 });
 ```
+
+`MongoClient` and `CosmosClient` are SDK imports owned by the application.
+The engine uses the same `ConfigService` reader for store identifiers and
+runtime settings. `AppModule.onApplicationShutdown()` calls `engine.close()`;
+`main.ts` enables Nest shutdown hooks to release owned clients on process signals.
 
 The NVIDIA entry is worth reading twice: it uses an OpenAI-compatible endpoint but stays an
 application-owned integration rather than a PicoFlow built-in, which is exactly what

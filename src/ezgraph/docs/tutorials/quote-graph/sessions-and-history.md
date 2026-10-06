@@ -23,6 +23,22 @@ idle-session policy, four history spaces, and shared runtime context.
 - Know which facts live in history and which in node state.
 - Persist runtime metadata shared by coverage calculation and quote acceptance.
 
+## Initialize the session store in AppModule
+
+QuoteGraph uses the session store configured by its application.
+[ezgraph-demo's `app.module.ts`](https://github.com/picoflowio/ezgraph-demo/blob/main/src/app.module.ts)
+registers the graphs and model providers, reads database settings through
+`ConfigService`, and supplies inline MongoDB and Cosmos SDK client factories as
+`sessionClients` to `GraphEngine.create()`. Only the factory selected by
+`SESSION_STORE` runs. For example, `SESSION_STORE=cosmos` uses the Cosmos factory
+without requiring a MongoDB connection.
+
+The application chooses key, service-principal, or other SDK authentication.
+EZGraph handles session persistence through the selected client and releases
+owned clients when the engine closes. See
+[application-owned database initialization](/ezgraph/docs/developer-guide/state-context-and-history/#application-owned-database-initialization)
+for the `app.module.ts` example, configuration, and cleanup rules.
+
 ## One clock
 
 ```ts

@@ -1,8 +1,8 @@
 ---
 title: Persistence and session stores
 eyebrow: Guides
-lede: Pick a session store, configure it, and understand the difference between completing a workflow and deleting its record. Memory is the default and it does not survive a restart.
-source: pf/src/picoflow/session/flow-session.ts
+lede: Initialize database clients in your application, choose a session store, and manage its lifecycle. Memory is the default and it does not survive a restart.
+source: pico-demo/src/app.module.ts, pf/src/picoflow/session/flow-session.ts
 ---
 
 Every PicoFlow conversation is one JSON document. Choosing where that document lives is a
@@ -17,8 +17,8 @@ process-local memory and loses everything on restart.
 | --- | --- | --- | --- | --- |
 | Memory | `MEMORY` (default) | No | No | Examples, unit tests, throwaway local runs |
 | SQLite | `SQLITE` | Yes | Yes, over a shared file | Local development, single-node deployments |
-| MongoDB | `MONGO` | Yes | Yes | Horizontally scaled deployments |
-| Cosmos DB | `COSMO` or `COSMOS` | Yes | Yes | Azure deployments |
+| MongoDB | `MONGO` or `MONGODB` | Yes | Yes | Horizontally scaled deployments |
+| Cosmos DB | `COSMO`, `COSMOS`, or `COSMOSDB` | Yes | Yes | Azure deployments |
 
 All four implement the same contract, including revision-based compare-and-swap. The
 difference is where the atomic check happens — see
@@ -29,6 +29,112 @@ An unrecognised value fails fast at startup:
 ```text
 No valid session store 'POSTGRES'. Use MEMORY, MONGO, COSMO, or SQLITE.
 ```
+
+## Application-owned database initialization
+
+Initialize MongoDB and Cosmos SDK clients in your application's startup code,
+alongside flows and model providers. In
+[pico-demo's AppModule](https://github.com/picoflowio/pico-demo/blob/main/src/app.module.ts),
+`FlowEngine.create()` receives `configManager: config` and inline `sessionClients`
+factories. The application reads the URL, credentials, and SDK options;
+PicoFlow supplies the session-store adapter and persistence contract.
+
+Install the SDKs your application imports:
+
+```sh
+npm install mongodb @azure/cosmos @azure/identity
+```
+
+This Nest example follows the demo's convention, with three tutorial flows and
+their model providers. Add the other flow registrations your application uses.
+
+```ts
+import { Inject, Module, type OnApplicationShutdown } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { MongoClient } from "mongodb";
+import { CosmosClient } from "@azure/cosmos";
+import { ClientSecretCredential, DefaultAzureCredential } from "@azure/identity";
+import { FlowEngine, ModelProvider } from "@picoflow/core";
+import { BasicFlow } from "./myflow/basic-flow/basic-flow.js";
+import { HotelFlow } from "./myflow/hotel-flow/hotel-flow.js";
+import { InvoiceFlow } from "./myflow/invoice-flow/invoice-flow.js";
+
+@Module({
+  imports: [ConfigModule.forRoot()],
+  providers: [{
+    provide: FlowEngine,
+    inject: [ConfigService],
+    useFactory: (config: ConfigService) => FlowEngine.create({
+      configManager: config,
+      flows: [BasicFlow, HotelFlow, InvoiceFlow],
+      providers: ModelProvider.createBuiltinAdapters({
+        openai: { apiKey: config.get<string>("OPENAI_API_KEY") },
+        google: { apiKey: config.get<string>("GEMINI_API_KEY") },
+      }),
+      sessionClients: {
+        mongodb: () => {
+          const url = config.getOrThrow<string>("MONGODB_URL");
+          const tlsCAFile = config.get<string>("MONGODB_TLS_CA_FILE");
+          return new MongoClient(url, tlsCAFile ? { tlsCAFile } : {});
+        },
+        cosmos: () => {
+          const endpoint = config.get<string>("COSMODB_URL")
+            || config.get<string>("COSMO_ENDPOINT")
+            || config.get<string>("COSMOS_ENDPOINT");
+          if (!endpoint) throw new Error("Cosmos endpoint is required.");
+          const key = config.get<string>("COSMODB_KEY")
+            || config.get<string>("COSMOS_KEY");
+          if (key) return new CosmosClient({ endpoint, key });
+
+          const tenantId = config.get<string>("AZURE_TENANT_ID");
+          const clientId = config.get<string>("COSMO_DB_CLIENT_ID");
+          const clientSecret = config.get<string>("COSMO_DB_CLIENT_SECRET");
+          if (clientId || clientSecret) {
+            if (!tenantId || !clientId || !clientSecret) {
+              throw new Error("Cosmos service principal requires tenant, client ID, and secret.");
+            }
+            return new CosmosClient({
+              endpoint,
+              aadCredentials: new ClientSecretCredential(tenantId, clientId, clientSecret),
+            });
+          }
+          return new CosmosClient({ endpoint, aadCredentials: new DefaultAzureCredential() });
+        },
+      },
+    }),
+  }],
+})
+export class AppModule implements OnApplicationShutdown {
+  constructor(@Inject(FlowEngine) private readonly engine: FlowEngine) {}
+
+  async onApplicationShutdown(): Promise<void> {
+    await this.engine.close();
+  }
+}
+```
+
+`SESSION_STORE` selects the backend; only that backend's factory runs. With
+`SESSION_STORE=COSMO`, the engine does not construct a MongoDB client or require
+`MONGODB_URL`. Factories take no arguments and can return a client or a promise.
+Read backend-specific settings inside each factory so unused credentials are
+not required during startup.
+
+The Cosmos factory uses a key first. To use an explicit service principal, omit
+the key and set `AZURE_TENANT_ID`, `COSMO_DB_CLIENT_ID`, and
+`COSMO_DB_CLIENT_SECRET`. With neither a key nor explicit client credentials,
+this application uses `DefaultAzureCredential`. Choose other SDK authentication
+and connection options here when your deployment needs them.
+
+`MONGODB_TLS_CA_FILE` is optional: it supplies the MongoDB SDK's `tlsCAFile`
+option when the connection needs a custom CA certificate file. Keep TLS and
+DocumentDB-specific options in the application factory.
+
+PicoFlow connects the MongoDB client before returning the engine. For Cosmos,
+it initializes the configured database/container and checks that the partition
+key is `/id`. Factories are optional; without one for the selected backend,
+the framework retains its built-in configuration-based client creation. That
+Cosmos fallback uses key authentication; the factory above owns the additional
+Azure credential choices.
 
 ## Configuration
 
@@ -42,17 +148,42 @@ MONGODB_NAME=picoflow
 MONGODB_COLLECTION=sessions
 
 # SESSION_STORE=COSMO
-COSMODB_URL=http://localhost:8081/
-COSMODB_KEY=...
+COSMODB_URL=https://your-account.documents.azure.com:443/
+COSMODB_KEY=your-account-key
 COSMODB_ID=picoflow
 COSMODB_SESSION_ID=sessions
+COSMOS_CREATE_IF_NOT_EXISTS=false  # for resources provisioned separately
 ```
 
-<div class="callout callout--danger"><span class="callout__title">DOCUMENT_DB is dead configuration</span><p>The demo's <code>.env-example</code> sets <code>DOCUMENT_DB=COSMO</code>. No PicoFlow source reads that variable. The store is selected exclusively from <code>SESSION_STORE</code>, read in <code>CoreConfig</code> and defaulting to <code>MEMORY</code>. A project that only sets <code>DOCUMENT_DB</code> silently runs on the in-memory store and loses every session on restart.</p></div>
+`MONGODB_NAME` and `MONGODB_COLLECTION` are required even when your factory
+supplies a MongoDB client. Cosmos requires a database ID and container ID; their
+aliases are listed in [Environment variables](/docs/reference/environment-variables/#store-specific-settings).
+`COSMOS_CREATE_IF_NOT_EXISTS` defaults to `true`, which permits PicoFlow to
+create the Cosmos database and container if needed. Set it to `false` for
+pre-provisioned resources and grant the identity the permissions required for
+session operations.
 
-Configuration is read once, when `FlowEngine` is constructed, through a `ConfigManager` whose
-precedence is explicit values, then the environment, then a dotenv file. Changing an
-environment variable at runtime has no effect.
+`SESSION_STORE` is the selector; the legacy `DOCUMENT_DB` entry in the demo's
+sample file has no runtime effect. The current sample sets `SESSION_STORE=SQLITE`.
+
+Pass the same configuration reader to the engine and your SDK factories. Nest's
+`ConfigService` is supported directly. Standalone applications can use
+`ConfigManager`, whose precedence is explicit values, then the environment,
+then a dotenv file. The selected store and existing SDK clients are established
+when `FlowEngine.create()` runs; changing settings later does not switch them.
+
+## Client ownership and shutdown
+
+Clients returned by `sessionClients` are owned by the engine by default.
+`await engine.close()` closes MongoDB or disposes Cosmos, and owned resources
+are released if engine initialization fails. The demo calls it from
+`AppModule.onApplicationShutdown()` and enables Nest shutdown hooks in `main.ts`
+with `app.enableShutdownHooks()`.
+
+For an application-managed shared client, set `sessionClients.ownsClients: false`.
+The engine then leaves that SDK client open; your application closes it when
+all its consumers are done. A standalone service should call `engine.close()`
+through its own shutdown lifecycle.
 
 ## What the document contains
 

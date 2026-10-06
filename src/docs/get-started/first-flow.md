@@ -167,15 +167,30 @@ PicoFlow ships no default model catalog. Every model — the flow default, every
 `.useModel(...)` override, and any memory-summary model — must resolve through a provider
 adapter that your application registers.
 
+This example also supplies inline MongoDB and Cosmos key-authentication
+factories. Install their SDKs in your application with
+`npm install mongodb @azure/cosmos`. Only the factory selected by
+`SESSION_STORE` runs; memory remains the default.
+
 ```ts
 // src/engine.ts
 import { ConfigManager, FlowEngine, ModelProvider } from "@picoflow/core";
+import { MongoClient } from "mongodb";
+import { CosmosClient } from "@azure/cosmos";
 import { SupportFlow } from "./support-flow/support-flow.js";
 
 const config = new ConfigManager();
 
 export const engine = await FlowEngine.create({
+  configManager: config,
   flows: [SupportFlow],
+  sessionClients: {
+    mongodb: () => new MongoClient(config.require("MONGODB_URL")),
+    cosmos: () => new CosmosClient({
+      endpoint: config.require("COSMODB_URL"),
+      key: config.require("COSMODB_KEY"),
+    }),
+  },
   providers: [
     ...ModelProvider.createBuiltinAdapters({
       openai: { apiKey: config.get("OPENAI_API_KEY") },
@@ -186,6 +201,13 @@ export const engine = await FlowEngine.create({
 
 `FlowEngine.create({ ... })` is asynchronous and validates the complete set of flows before
 registering any of them.
+
+MongoDB requires `MONGODB_NAME` and `MONGODB_COLLECTION`; Cosmos requires
+`COSMODB_ID` and `COSMODB_SESSION_ID`. Keep database credentials and connection
+options in these application factories. For Nest's `app.module.ts`, Cosmos
+service principals, default Azure credentials, and pre-provisioned resources,
+see [application-owned database initialization](/docs/guides/persistence/#application-owned-database-initialization).
+Call `await engine.close()` through your service's shutdown lifecycle.
 
 By default the registered flow name is the class name, so callers send
 `"flowName": "SupportFlow"`. If you need a public name that survives a TypeScript class

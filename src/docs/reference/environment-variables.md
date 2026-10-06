@@ -1,12 +1,14 @@
 ---
 title: Environment variables
 eyebrow: Reference
-lede: "Every variable PicoFlow and the demo application actually read, what each one does, the units that are easy to get wrong, and where the sample env file disagrees with the code."
-source: pf/src/picoflow/configs/core-config.ts
+lede: "Runtime configuration and application-owned database credentials, including store selection, Cosmos authentication, and flow-test persistence."
+source: pf/src/picoflow/configs/core-config.ts, pf/src/picoflow/session/flow-session.ts, pico-demo/src/app.module.ts
 ---
 
-Configuration is read once, when `FlowEngine` constructs a `ConfigManager` and calls
-`CoreConfig.setup(...)`. Values resolve in this precedence:
+Pass a configuration reader to `FlowEngine.create({ configManager })`.
+The demo supplies Nest's `ConfigService` and reads SDK credentials in its inline
+`sessionClients` factories. Standalone applications can use `ConfigManager`;
+its values resolve in this precedence:
 
 ```text
 explicit `values` option  >  process.env  >  the dotenv file (.env by default)
@@ -14,6 +16,8 @@ explicit `values` option  >  process.env  >  the dotenv file (.env by default)
 
 A missing dotenv file is not an error. Flow model policy and session-idle policy
 are deliberately not read from the environment.
+The selected store and its SDK client are initialized when the engine is
+created; changing settings later does not switch an existing engine's backend.
 
 ## License
 
@@ -48,27 +52,42 @@ reads them. They become live only when you uncomment or add the corresponding
 | --- | --- | --- |
 | `SESSION_STORE` | `MEMORY` | Selects the store. Uppercased before comparison |
 
-Accepted values are `MEMORY`, `SQLITE`, `MONGO`, and `COSMO` or `COSMOS`. Anything else throws
+Accepted values are `MEMORY`, `SQLITE`, `MONGO`/`MONGODB`, and
+`COSMO`/`COSMOS`/`COSMOSDB`. Anything else throws
 `No valid session store '<value>'. Use MEMORY, MONGO, COSMO, or SQLITE.`
 
-<div class="callout callout--danger"><span class="callout__title">.env-example names the wrong variable</span><p><code>pico-demo/.env-example</code> sets <code>DOCUMENT_DB=COSMO</code>. No code in <code>pf/src</code> or <code>pico-demo/src</code> reads <code>DOCUMENT_DB</code>. The variable <code>CoreConfig</code> actually reads is <code>SESSION_STORE</code>, and it does not appear in the sample file at all — so an application copied from <code>.env-example</code> silently runs on the in-memory store.</p></div>
+The current `pico-demo/.env-example` sets `SESSION_STORE=SQLITE`. Its legacy
+`DOCUMENT_DB` entry has no runtime effect; use `SESSION_STORE` to select storage.
 
 ### Store-specific settings
 
 | Variable | Required for | Default | Purpose |
 | --- | --- | --- | --- |
 | `SQLITE_PATH` | `SQLITE` | `ignore/session/session.sqlite` | Database file. Relative paths resolve from the working directory; the parent directory is created if missing |
-| `MONGODB_URL` | `MONGO` | — | Connection string |
-| `MONGODB_NAME` | `MONGO` | — | Database name |
-| `MONGODB_COLLECTION` | `MONGO` | — | Collection name |
-| `COSMODB_URL` | `COSMO` | — | Account endpoint |
-| `COSMODB_KEY` | `COSMO` | — | Account key |
-| `COSMODB_ID` | `COSMO` | — | Database ID |
-| `COSMODB_SESSION_ID` | `COSMO` | — | Container ID |
+| `MONGODB_URL` | Demo Mongo factory or built-in Mongo creation | — | Connection string, read explicitly in the demo's `app.module.ts` |
+| `MONGODB_TLS_CA_FILE` | Optional demo Mongo SDK option | — | Custom CA certificate file passed as `tlsCAFile` |
+| `MONGODB_NAME` | `MONGO`/`MONGODB` | — | Database name, including when a client factory is supplied |
+| `MONGODB_COLLECTION` | `MONGO`/`MONGODB` | — | Collection name, including when a client factory is supplied |
+| `COSMODB_URL` | Demo Cosmos factory or built-in Cosmos creation | — | Account endpoint; aliases `COSMO_ENDPOINT`, `COSMOS_ENDPOINT` |
+| `COSMODB_KEY` | Cosmos key authentication | — | Account key; alias `COSMOS_KEY`. Omit for the demo factory's Azure credential path |
+| `AZURE_TENANT_ID` | Demo Cosmos service-principal path | — | Tenant ID |
+| `COSMO_DB_CLIENT_ID` | Demo Cosmos service-principal path | — | Application client ID |
+| `COSMO_DB_CLIENT_SECRET` | Demo Cosmos service-principal path | — | Client secret |
+| `COSMODB_ID` | `COSMO`/`COSMOS`/`COSMOSDB` | — | Database ID; aliases `COSMO_DB_ID`, `COSMOS_DATABASE` |
+| `COSMODB_SESSION_ID` | `COSMO`/`COSMOS`/`COSMOSDB` | — | Container ID; aliases `COSMO_DB_SESSION_CONTAINER_ID`, `COSMOS_CONTAINER` |
+| `COSMOS_CREATE_IF_NOT_EXISTS` | Cosmos provisioning policy | `true` | Set to `false` for a database/container provisioned separately. The container must use partition key `/id` |
 
-The Mongo and Cosmos values are required at the moment the store is constructed or first used,
-and a missing one throws `Configuration value '<KEY>' is required.` The Memory store needs no
-configuration.
+Endpoint, credentials, and TLS options belong to the application factory when
+one is supplied. Only the selected backend's factory runs, so Cosmos does not
+require MongoDB credentials. The demo's Cosmos factory tries a key, then an
+explicit service principal, then `DefaultAzureCredential`; incomplete explicit
+client credentials fail at startup. Without a Cosmos factory, PicoFlow's
+built-in client creation uses URL/key authentication.
+
+Database/collection or database/container identifiers remain required by the
+store. Memory needs no database configuration. See
+[application-owned database initialization](/docs/guides/persistence/#application-owned-database-initialization)
+for the inline AppModule example and cleanup rules.
 
 ## Flow-owned policies
 
@@ -85,7 +104,7 @@ global expiry environment variable or persist an `expireAfter` field.
 
 `Flow.concurrentSteps(...)` posts one request per work item back to this application. Point it
 at the run endpoint, for example `http://localhost:8000/ai/run`. Only batch coordinators need
-it. Like `SESSION_STORE`, it is read by `CoreConfig` but absent from `.env-example`.
+it. It is read by `CoreConfig` but absent from `.env-example`.
 
 ## Test determinism
 
@@ -112,19 +131,18 @@ provide model credentials.
 
 | Variable | In `.env-example` | Read by code | Note |
 | --- | --- | --- | --- |
-| `SESSION_STORE` | no | yes | The real store selector |
+| `SESSION_STORE` | yes | yes | The real store selector; sample defaults to SQLite |
 | `SELF_URL` | no | yes | Required for batch mode |
 | `HOTEL_FLOW_CURRENT_DATE` | no | yes | Demo test determinism |
 | `DOCUMENT_DB` | yes | **no** | Superseded by `SESSION_STORE`; has no effect |
 | `MOONSHOT_API_KEY` | yes | no | Only referenced by commented-out demo wiring |
 | `ZAI_API_KEY` | yes | no | Only referenced by commented-out demo wiring |
-| `DEEPSEEK_API_KEY` | yes | no | nly referenced by commented-out demo wiring |
+| `DEEPSEEK_API_KEY` | yes | partly | Loaded into `CoreConfig`; the demo adapter is commented out |
 | `OLLAMA_BASE_URL` | yes | no | Only referenced by commented-out demo wiring |
 | `OPENROUTER_API_KEY` | yes | partly | Loaded into `CoreConfig` but unused; the demo's OpenRouter adapter is commented out |
 
-Everything else in `.env-example` — the three live provider keys, `NVIDIA_API_KEY`,
-`SQLITE_PATH`, the four `COSMODB_*` values, the three `MONGODB_*` values, and
-`PICOFLOW_KEY` — matches what the code reads.
+The sample also includes the database settings listed above, optional TLS and
+Cosmos service-principal fields, provider keys, and `PICOFLOW_KEY`.
 
 ## Not configurable by environment
 

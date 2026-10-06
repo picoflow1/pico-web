@@ -82,6 +82,21 @@ walk a single deterministic eight-turn path through all of it.
 
 <div class="callout callout--note"><span class="callout__title">Note</span><p>The demo application registers all seven tutorial flows in one NestJS module and serves them from one endpoint, <code>POST /ai/run</code>. The <code>flowName</code> field in the request body selects which flow a session belongs to. A session is bound to exactly one flow for its lifetime.</p></div>
 
+## One application-owned database setup
+
+All seven flows use the `FlowEngine` configured in
+[pico-demo's `app.module.ts`](https://github.com/picoflowio/pico-demo/blob/main/src/app.module.ts).
+The application supplies `configManager: config` and inline `sessionClients`
+factories alongside flow, model, and decision-provider registration. It reads
+`MONGODB_URL` or Cosmos endpoint/credentials and constructs the corresponding
+SDK client. Only the factory selected by `SESSION_STORE` runs.
+
+The flow classes own their business state and restore policies. Keep database
+authentication, TLS options, and client lifecycle in the application bootstrap.
+Start with [the BasicFlow bootstrap lesson](/docs/tutorials/basic-flow/bootstrapping/#registering-the-engine),
+then use [the persistence guide](/docs/guides/persistence/#application-owned-database-initialization)
+for Cosmos keys, service principals, default Azure credentials, and cleanup.
+
 ## Running the code alongside the lessons
 
 Every lesson names the demo file it quotes, in the `source` line under the page

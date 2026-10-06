@@ -119,8 +119,10 @@ version` or `License expired`.
 
 ## Where environment variables go
 
-PicoFlow reads configuration through its own `ConfigManager`, which is created when you
-build a `FlowEngine`. Precedence is, from lowest to highest:
+Pass your application's configuration reader to
+`FlowEngine.create({ configManager })`. Nest's `ConfigService` is supported;
+standalone applications can use PicoFlow's `ConfigManager`. For that reader,
+precedence is, from lowest to highest:
 
 1. values loaded from a dotenv file (`.env` in the current working directory by default);
 2. `process.env`;
@@ -146,15 +148,17 @@ const engine = await FlowEngine.create({
 If a `.env` file is absent, `ConfigManager` continues silently; any other read error is
 thrown.
 
-### The variables PicoFlow itself reads
+### Session configuration and application credentials
 
 | Variable | Purpose |
 | --- | --- |
 | `PICOFLOW_KEY` | Runtime license token. Required. |
-| `SESSION_STORE` | Session backend: `MEMORY` (default), `SQLITE`, `MONGO`, `COSMO`/`COSMOS`. |
+| `SESSION_STORE` | Session backend: `MEMORY` (default), `SQLITE`, `MONGO`/`MONGODB`, `COSMO`/`COSMOS`/`COSMOSDB`. |
 | `SQLITE_PATH` | SQLite file path. Defaults to `ignore/session/session.sqlite`. |
-| `COSMODB_KEY`, `COSMODB_URL`, `COSMODB_ID`, `COSMODB_SESSION_ID` | Azure Cosmos DB connection. |
-| `MONGODB_NAME`, `MONGODB_COLLECTION`, `MONGODB_URL` | MongoDB connection. |
+| `COSMODB_ID`, `COSMODB_SESSION_ID` | Required Cosmos database and container IDs. |
+| `MONGODB_NAME`, `MONGODB_COLLECTION` | Required MongoDB database and collection names. |
+| `COSMODB_URL`, `COSMODB_KEY` | Cosmos endpoint and key read by the application's client factory, or the built-in key-authentication fallback. |
+| `MONGODB_URL` | MongoDB URL read by the application's client factory, or built-in client creation. |
 | `SELF_URL` | The application's own run endpoint. Only needed for `concurrentSteps(...)` batch mode. |
 
 Provider API keys such as `OPENAI_API_KEY` are also read into `CoreConfig`, but the
@@ -162,6 +166,12 @@ adapters you register in `FlowEngine.create({ providers })` receive their creden
 explicitly from your bootstrap code. Reading the key from configuration and passing it to
 an adapter is your application's job, not a hidden default. See
 [Models and providers](/docs/concepts/models-and-providers/).
+
+Follow the same convention for databases: pass inline `sessionClients`
+factories alongside flows and providers, and read the URL, endpoint, credentials,
+and SDK options in application code. Only the selected backend's factory runs.
+See [application-owned database initialization](/docs/guides/persistence/#application-owned-database-initialization)
+for `app.module.ts`, Cosmos service principals, TLS options, and client cleanup.
 
 ## Verify the install
 

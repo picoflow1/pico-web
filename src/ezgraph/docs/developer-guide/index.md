@@ -47,10 +47,12 @@ Use one LlmNode contract for conversation, batch input, nested calls, and parall
 
 ## State, context, and history
 
-Choose the initial node, route history, and manage durable node state and graph context.
+Initialize database clients in your application, choose the initial node, route history,
+and manage durable node state and graph context.
 
 [Read this topic →](/ezgraph/docs/developer-guide/state-context-and-history/)
 
+- <a id="application-owned-database-initialization" href="/ezgraph/docs/developer-guide/state-context-and-history/#application-owned-database-initialization">Application-owned database initialization</a>
 - <a id="initial-node-and-history-routing" href="/ezgraph/docs/developer-guide/state-context-and-history/#initial-node-and-history-routing">Initial node and history routing</a>
 - <a id="graph-wide-runtime-context" href="/ezgraph/docs/developer-guide/state-context-and-history/#graph-wide-runtime-context">Graph-wide runtime context</a>
 - <a id="state-belongs-to-the-node-that-owns-it" href="/ezgraph/docs/developer-guide/state-context-and-history/#state-belongs-to-the-node-that-owns-it">State belongs to the node that owns it</a>

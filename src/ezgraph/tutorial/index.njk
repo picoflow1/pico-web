@@ -226,21 +226,82 @@ export class WeatherGraph extends BaseGraph&lt;WeatherGraphStateType&gt; {
           Import <code>reflect-metadata</code> once at the top of your entry point.
           <code>GraphEngine</code> owns the session document: each <code>run()</code> call is
           one user turn, and the persisted <code>currentNode</code> tells the next turn where
-          to resume, even after a process restart. Set <code>OPENAI_API_KEY</code>; sessions use
-          an in-memory store unless <code>SESSION_STORE</code> selects SQLite, MongoDB, or
-          Cosmos DB.
+          to resume. Set <code>OPENAI_API_KEY</code> in <code>.env</code> or the environment.
+          Sessions default to memory and last for the process lifetime; a persistent store
+          lets the engine resume a saved session after a restart.
         </p>
         <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">main.ts</span></div><pre><code>import "reflect-metadata";
-import { GraphEngine } from "@picoflow/ezgraph";
+import { ConfigManager, GraphEngine, ModelProvider } from "@picoflow/ezgraph";
 import { WeatherGraph } from "./weather-graph.js";
 
-const engine = await GraphEngine.create({ graphs: [WeatherGraph] });
+const config = new ConfigManager();
+const engine = await GraphEngine.create({
+  configManager: config,
+  graphs: [WeatherGraph],
+  providers: ModelProvider.createBuiltinAdapters({
+    openai: { apiKey: config.get("OPENAI_API_KEY") },
+  }),
+});
 
-const first = await engine.run({ graphName: "WeatherGraph", sessionId: "trip-1", userMessage: "Hi" });
-// first.body: { success: true, completed: false, message: "Which city …?" }
+try {
+  const first = await engine.run({ graphName: "WeatherGraph", sessionId: "trip-1", userMessage: "Hi" });
+  // first.body: { success: true, completed: false, message: "Which city …?" }
 
-const second = await engine.run({ graphName: "WeatherGraph", sessionId: "trip-1", userMessage: "Lisbon" });
-// second.body: { success: true, completed: true, message: "Today's forecast: sunny and 24°C in Lisbon." }</code></pre></div>
+  const second = await engine.run({ graphName: "WeatherGraph", sessionId: "trip-1", userMessage: "Lisbon" });
+  // second.body: { success: true, completed: true, message: "Today's forecast: sunny and 24°C in Lisbon." }
+} finally {
+  await engine.close();
+}</code></pre></div>
+        <h4 id="application-owned-database-initialization">Initialize database clients in your application</h4>
+        <p>
+          For a database-backed application, follow
+          <a href="https://github.com/picoflowio/ezgraph-demo/blob/main/src/app.module.ts">ezgraph-demo's <code>app.module.ts</code></a>:
+          register graphs, model providers, and inline database client factories together.
+          The application reads the URL, endpoint, credentials, and SDK options. Install
+          the SDKs used below with <code>npm install mongodb @azure/cosmos</code>.
+        </p>
+        <p>
+          In a Nest project with <code>ConfigModule.forRoot({ isGlobal: true })</code>,
+          this GraphEngine provider uses <code>ConfigService</code> to load configuration.
+          This compact example uses a Cosmos account key:
+        </p>
+        <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">app.module.ts — GraphEngine provider</span></div><pre><code>import { ConfigService } from "@nestjs/config";
+import { MongoClient } from "mongodb";
+import { CosmosClient } from "@azure/cosmos";
+import { GraphEngine, ModelProvider } from "@picoflow/ezgraph";
+import { WeatherGraph } from "./weather-graph.js";
+
+// Add this entry to @Module({ providers: [...] }).
+const graphEngineProvider = {
+  provide: GraphEngine,
+  inject: [ConfigService],
+  useFactory: (config: ConfigService) =&gt; GraphEngine.create({
+    configManager: config,
+    graphs: [WeatherGraph],
+    providers: ModelProvider.createBuiltinAdapters({
+      openai: { apiKey: config.get&lt;string&gt;("OPENAI_API_KEY") },
+    }),
+    sessionClients: {
+      mongodb: () =&gt; new MongoClient(config.getOrThrow&lt;string&gt;("MONGODB_URL")),
+      cosmos: () =&gt; new CosmosClient({
+        endpoint: config.getOrThrow&lt;string&gt;("COSMO_ENDPOINT"),
+        key: config.getOrThrow&lt;string&gt;("COSMODB_KEY"),
+      }),
+    },
+  }),
+};</code></pre></div>
+        <p>
+          Set <code>SESSION_STORE=mongodb</code> with <code>MONGODB_URL</code>,
+          <code>MONGODB_NAME</code>, and <code>MONGODB_COLLECTION</code>, or set
+          <code>SESSION_STORE=cosmos</code> with <code>COSMO_ENDPOINT</code>,
+          <code>COSMODB_KEY</code>, <code>COSMO_DB_ID</code>, and
+          <code>COSMO_DB_SESSION_CONTAINER_ID</code>. Only the selected factory runs.
+          EZGraph connects MongoDB, prepares the session store, and closes owned clients
+          when you call <code>engine.close()</code> during application shutdown.
+          See the <a href="/ezgraph/docs/developer-guide/state-context-and-history/#application-owned-database-initialization">developer guide</a>
+          for the full AppModule example, Cosmos service-principal and default Azure
+          credentials, TLS options, pre-provisioned containers, and shared-client ownership.
+        </p>
       </li>
 
       <li>

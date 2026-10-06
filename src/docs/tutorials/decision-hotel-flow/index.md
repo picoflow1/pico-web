@@ -145,6 +145,14 @@ attempts after the first. Both deadlines apply per attempt.
 
 ## Running it
 
+DecisionHotelFlow is registered with the other flows on AppModule's shared
+engine. Its session database uses the same inline MongoDB/Cosmos factories;
+Jev's `decisionProviders` registration is separate from database authentication.
+See the [bootstrap lesson](/docs/tutorials/basic-flow/bootstrapping/#registering-the-engine)
+and [persistence guide](/docs/guides/persistence/#application-owned-database-initialization).
+The live suite retains the configured `SESSION_STORE`, defaulting to memory
+when unset; the contract suite uses memory explicitly.
+
 ```bash
 cd pico-demo
 npm run test:decision-hotel-flow:contract
