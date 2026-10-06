@@ -1,7 +1,7 @@
 ---
 layout: layouts/ezgraph.njk
 title: Graph topology and deterministic policy | EZGraph
-description: Register conversation ownership, schedule internal LLM work, and use conditional fan-out with an explicit join.
+description: Register conversation ownership and compare awaited runNode() child tasks with conditional fan-out and an explicit graph join.
 permalink: /ezgraph/docs/developer-guide/topology/
 ezgraph: true
 ezgraphDocument: true
@@ -90,6 +90,67 @@ returns an ordinary reply or routes to termination. Conditional `fanout()` keeps
 rejected movie arguments, ordinary replies, and termination out of the fan-out.
 See [response effects](/ezgraph/docs/developer-guide/tool-responses/#fan-out-response-effects)
 for multi-target builder rules.
+
+## Await children with runNode
+
+Use `await this.runNode(...)` when the current parent needs child results before
+choosing its next action. `LlmNode` inherits this protected method from
+`GraphNode`; it is available in async hooks and decorated tool handlers as well
+as `run()`. A single call can await one judge or several concurrent workers:
+
+```ts
+const [judge] = await this.runNode({
+  node: JudgeNode,
+  input: { candidate },
+});
+if (judge.outcome.kind !== "taskResult") {
+  throw new Error("Judge must return a structured verdict.");
+}
+// The parent continues here and applies its acceptance policy.
+
+const [first, second] = await this.runNode(Child1Node, Child2Node);
+if (!first.state.joke || !second.state.joke) {
+  throw new Error("Both children must save a joke.");
+}
+this.saveState({ childJokes: [first.state.joke, second.state.joke] });
+```
+
+The examples assume registered child classes and corresponding typed state
+channels. Register targets with `graph.nodes(...)`; with a turn registry,
+leave child-only nodes out of `registerTurns()`. In a fixed-entry graph, use
+`graph.workers(...)` for child-only LLM nodes. No traversal edge or barrier is
+needed for this call. The children run as LangGraph functional tasks, their
+results return in argument order, and execution resumes after the `await`.
+
+After all children succeed, their local state and usage are staged in the
+parent's invocation. The parent publishes that state with its eventual update
+and chooses the next graph transition. See
+[the child-call contract](/ezgraph/docs/developer-guide/nodes-and-execution/#await-registered-children-with-runnode)
+for typed output, explicit input, isolation, and errors.
+
+### runNode versus fanout
+
+Both reuse the children's normal model configuration, tools, lifecycle hooks,
+and recovery policy. Their continuation and join ownership differ:
+
+| Question | `await this.runNode(...)` | `return fanout(...)` |
+| --- | --- | --- |
+| How many children? | One or more; multiple children run concurrently | Two or more distinct registered destinations |
+| Where does execution continue? | In the current parent method, after `await` | Through graph edges after the parent returns the transition |
+| Who joins results? | The parent receives an ordered readonly tuple | A separate node behind an array-source barrier reads worker state |
+| How is input supplied? | Optional JSON `input` per child, plus a common state snapshot | Workers select saved facts from graph state; no per-target `withState()` or `withMessage()` |
+| What happens to child edges? | They are not traversed by the call | They define continuation and the join |
+| What if a child fails? | All started children settle; ordinary failure throws `RunNodeBatchError` and joins no child business state | An unrecovered worker failure prevents the barrier join from running |
+| Who chooses the next user-turn owner? | The parent chooses its subsequent response or transition | The downstream conversational node takes ownership when it replies |
+
+Use `runNode()` for a private judge or enrichment that the parent must inspect
+before continuing. Use `fanout()` when workers and their join are explicit
+stages of graph traversal. `fanout()` is an imported response builder, not an
+awaitable `LlmNode` method, and it returns no child-output tuple.
+
+Neither API alone establishes recovery across a process restart. The current
+EZGraph engine does not configure a LangGraph checkpointer; `runNode()` requires
+an active compiled graph even when no checkpointer is configured.
 
 ## Sequential and fixed-entry workers
 

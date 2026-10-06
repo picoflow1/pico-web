@@ -18,48 +18,56 @@ next inside a single turn, how does the new stage know what just happened?
 
 ## The goal
 
-- Keep large prompts in Markdown files and compose them in `getPrompt()`.
+- Load Markdown files directly in each node with `Prompt.file()` and compose them in `getPrompt()`.
 - Fill live values, such as today's date or the current tiers, into a prompt.
 - Write stage prompts that describe the conversation and leave policy to code.
 - Choose between a prompt cue, a stage message, and a forwarded request when changing stages.
 
 ## Loading and composing prompts
 
-`prompt/quote-prompt.ts` reads every file once, at module load:
+Each node loads the shared role and its own stage instructions at module scope.
+For example, `nodes/driver.node.ts` declares:
 
 ```ts
-export const quotePrompt = {
-  role: readPrompt("./role.md"),
-  driver: readPrompt("./driver.md"),
-  vehicle: readPrompt("./vehicle.md"),
-  history: readPrompt("./history.md"),
-  coverage: readPrompt("./coverage.md"),
-  quote: readPrompt("./quote.md"),
-};
+import { Prompt } from "@picoflow/ezgraph";
 
-export const endChatInstruction =
+const QuoteRolePrompt = Prompt.file("../prompt/role.md");
+const DriverPrompt = Prompt.file("../prompt/driver.md");
+const EndChatInstruction =
   "If the user explicitly wants to end the conversation, call terminate_session immediately. Never mention internal tools, phases, schemas, or implementation details.";
-
-export function fillPrompt(prompt: string, replacements: Record<string, string>): string {
-  let filled = prompt;
-  for (const [name, value] of Object.entries(replacements)) {
-    filled = filled.replaceAll(`{{${name}}}`, value);
-  }
-  return filled;
-}
 ```
 
-Each node composes the same three parts:
+`Prompt.file()` resolves relative to the calling module, not the process working
+directory, and caches the file text by absolute path. Calling it directly from
+the node keeps the path next to its owner. The shared `role.md` uses the same
+cache entry across all five nodes; there is no separate prompt-loader module.
+
+`getPrompt()` composes the same three parts and fills the stage's placeholders
+with `Prompt.replace()`:
 
 ```ts
 getPrompt(): string {
-  return `${quotePrompt.role}\n\n${fillPrompt(quotePrompt.driver, {
+  return `${QuoteRolePrompt}\n\n${Prompt.replace(DriverPrompt, {
     CURRENT_DATE: quoteNow().toISOString().slice(0, 10),
-  })}\n\n${endChatInstruction}`;
+  })}\n\n${EndChatInstruction}`;
 }
 ```
 
-`getPrompt()` runs every time the node's agent loop starts, so filled values are always current.
+The file text is cached, but `getPrompt()` renders it when the node's agent loop
+starts, after `onEnter()` finishes. Tool follow-ups and retries reuse that
+rendered prompt; a later node invocation renders it again. Dates, resolved
+vehicles, and tiers are read from current state rather than baked into the
+cached template.
+
+`Prompt.replace()` substitutes every matching `{{KEY}}` with a string value.
+Serialize objects with `JSON.stringify()` before passing them in. Missing keys
+and empty strings leave their placeholders intact, so use explicit values such
+as `"null"` and `"[]"` when data is absent. Replacement values are inserted
+literally, including dollar signs, without changing the original template.
+
+The build must preserve the relative `nodes/` and `prompt/` layout. The demo's
+`nest-cli.json` copies `graphs/quote-graph/prompt/*.md` into `dist`. Restart the
+process after editing a prompt file to refresh the file cache.
 
 ## The shared role
 
@@ -75,7 +83,7 @@ getPrompt(): string {
 ```
 
 Persona, tone, and scope are written once. The termination rule appears here and again in
-`endChatInstruction`, so every assembled prompt states it twice. That is harmless, but if you
+the local `EndChatInstruction`, so every assembled prompt states it twice. That is harmless, but if you
 change one, change both, or remove the duplicate.
 
 ## A stage specification
@@ -213,6 +221,12 @@ invisible to the customer.
 - **Passing data through message text.** Put data in state and words in messages.
 - **Duplicated instructions drifting apart.** Keep each rule in one place, or change every copy
   together.
+- **Loading files inside `getPrompt()`.** Declare `Prompt.file()` constants at module scope,
+  then render runtime values in `getPrompt()`.
+- **Wrapping `Prompt.file()` in a loader.** Relative paths resolve against the immediate
+  caller, so a wrapper changes the base directory.
+- **Missing template values.** Check placeholder names and pass non-empty strings;
+  `Prompt.replace()` preserves missing or empty values as raw placeholders.
 
 ## Next
 

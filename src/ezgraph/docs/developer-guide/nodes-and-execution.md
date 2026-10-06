@@ -308,6 +308,7 @@ effects it may publish:
 | Conversation | Register the class with `registerTurns()` or `registerTurnNodes()` | Its named conversation history, user reply, routing, and completion |
 | Internal graph work | With a turn registry, add the class via `nodes()` but leave it out of `registerTurns()` | Its own node channel and token usage; edges own continuation |
 | Fixed-entry internal work | Mark the class with `workers()` | Its own node channel and token usage; explicit START and worker edges own scheduling |
+| Awaited child work | `await this.runNode(Child, ...)` during compiled graph execution | Child-local state and usage; the parent joins the results and chooses continuation |
 | Nested work | Call `child.invoke(state)` during another node's invocation | Its own node channel and token usage; the caller publishes the returned update |
 
 In a fixed-entry graph, an unmarked `LlmNode` owns conversation; use `workers()`
@@ -327,10 +328,116 @@ reply. `go()`, `fanout()`, `directTo()`, `finish()`, and `terminate_session` are
 worker outcomes. `terminate_session` is not offered to an internal worker;
 an internal-only graph does not need its provider.
 
+### Await registered children with runNode
+
+`LlmNode` inherits the protected `runNode()` method from `GraphNode`. Call it
+from `run()`, an async lifecycle hook, or a decorated tool handler when the
+parent needs a child result before proceeding:
+
+```ts
+const [judge] = await this.runNode({
+  node: JudgeNode,
+  input: { candidate, criteria },
+});
+
+if (judge.outcome.kind !== "taskResult") {
+  throw new Error("Judge must return a structured verdict.");
+}
+if (judge.outcome.value.accepted) {
+  // The parent applies policy, saves its own state, and chooses its next action.
+}
+```
+
+Here `JudgeNode` declares `LlmNode<State, LocalState, Verdict>` with an
+`accepted` field in `Verdict`, and returns a schema-validated `taskResult()`.
+Its usual `onResponse()` and successful `onExit()` run before the result returns.
+Narrow `outcome.kind` before reading a verdict: an LLM node with a typed output
+can still produce a text reply.
+
+Children must be registered before compilation. `graph.nodes(JudgeNode)`
+registers the configured instance; a turn registry makes children omitted from
+`registerTurns()` internal. For a fixed-entry graph, use
+`graph.workers(JudgeNode)` to register a child-only LLM node. `runNode()` uses
+those instances and retains their tools, model overrides, and node-to-graph
+recovery. It does not traverse their graph edges.
+
+The optional `input` is invocation-local JSON data. In the child, read it with
+`this.getRunNodeInput<Input>()`, then validate it with a schema. The generic
+accessor supplies typing, not runtime validation. Omitted input returns
+`undefined`. These facts are not automatically saved or added to conversation
+history.
+
+With multiple targets, children run concurrently and results follow argument
+order. Even a single child returns a readonly tuple:
+
+```ts
+const [first, second] = await this.runNode(
+  { node: Child1Node, input: { topic: "parallel work" } },
+  { node: Child2Node, input: { topic: "concurrent work" } },
+);
+```
+
+| Result field | Meaning |
+| --- | --- |
+| `nodeId` | Registered stable node ID |
+| `state` | Final materialized child-local state after successful hooks |
+| `outcome` | LLM text `{ kind: "reply", response }`, typed `{ kind: "taskResult", value }`, or ordinary `GraphNode` `{ kind: "state" }` |
+| `usage` | Chat-model usage for that child invocation |
+| `decisionUsage` | Separate decision-provider accounting |
+
+All siblings see protected copies of the same baseline, including the parent's
+staged facts. They can save only their own node state and usage. They cannot
+write shared context, another node's state, or conversational history, route
+to another node, or finish the session. Internal LLM replies are private child
+results. Returned results are detached and deeply readonly.
+
+After all children succeed, the coordinator stages their complete node entries
+and sums usage once in the parent. `this.graph.graphState()` then sees the
+joined state. The parent's eventual successful update publishes it; there is
+no intermediate session-store write and no need to add child usage manually.
+
+For ordinary failures, all started children settle before `RunNodeBatchError`
+is thrown. The failed batch joins no child business state. A parent may catch
+the error and inspect its ordered `results`, `usage`, and `decisionUsage`:
+
+```ts
+import { RunNodeBatchError } from "@picoflow/ezgraph";
+
+try {
+  const [judge] = await this.runNode(JudgeNode);
+  // Inspect the result and continue.
+} catch (error) {
+  if (!(error instanceof RunNodeBatchError)) throw error;
+  // Decide how to handle error.results in the parent.
+}
+```
+
+Known usage is retained in the parent's accounting when it catches a batch
+error. State rollback does not undo external tool effects. Cancellation and
+LangGraph control signals propagate rather than becoming rejected verdicts;
+existing model retries apply, but the batch does not retry entire children.
+
+At least one target is required. Duplicate IDs, self-targets, unregistered
+classes, and overlapping active calls for the same child are rejected.
+Sequential reuse after settlement is allowed. A child started by `runNode()`
+cannot invoke another nested child or start another batch in this version.
+
+`runNode()` requires an active compiled LangGraph node or task. Standalone
+`parent.invoke()` execution that calls it is unsupported. The default EZGraph
+engine does not configure a LangGraph checkpointer, so functional task
+scheduling is not a promise of restart durability.
+
+Compare this with graph-scheduled branches in
+[runNode versus fanout](/ezgraph/docs/developer-guide/topology/#runnode-versus-fanout):
+an awaited call resumes the parent method; a returned `fanout()` continues
+through graph edges and an explicit join.
+
 ### Nested calls
 
-Always execute a child through `invoke()` so the shared loop, hooks, and
-ownership checks apply. A nested invocation is internal automatically:
+For manual child invocation, execute through `invoke()` so the shared loop,
+hooks, and ownership checks apply. A nested invocation is internal automatically.
+Unlike `runNode()`, this lower-level pattern requires the caller to merge and
+publish the returned update:
 
 ```ts
 import { isCommand } from "@langchain/langgraph";

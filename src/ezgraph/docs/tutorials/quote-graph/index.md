@@ -57,8 +57,10 @@ The shape is a pipeline with one loop at the end:
 
 ## Supporting files
 
-Only the graph, state, and node files import from `@picoflow/ezgraph`. The backend and prompt
-modules are plain TypeScript that a unit test can call directly.
+The graph, state, and node files import from `@picoflow/ezgraph`. The backend
+modules are plain TypeScript that a unit test can call directly. Each node loads
+its Markdown prompts with `Prompt.file()` at module scope and renders live
+values with `Prompt.replace()` in `getPrompt()`.
 
 | File | Responsibility |
 | --- | --- |
@@ -68,7 +70,7 @@ modules are plain TypeScript that a unit test can call directly.
 | `backend/vehicle-catalog.ts` | Loads `data/vehicles.json` and searches it by year, make, model, and trim |
 | `backend/rating-engine.ts` | Coverage validation, the rating subject, the risk factor, premiums, and tiers |
 | `data/vehicles.json` | Twelve ratable vehicles with trim, body style, risk group, and MSRP |
-| `prompt/quote-prompt.ts` | Loads the prompt files, fills `{{PLACEHOLDER}}` values, and holds the shared end-chat instruction |
+| `nodes/*.node.ts` | Load role and stage prompts directly, render `{{PLACEHOLDER}}` values, and append the local end-chat instruction |
 | `prompt/role.md` | Persona, tone, and the termination rule shared by every stage |
 | `prompt/driver.md`, `vehicle.md`, `history.md`, `coverage.md`, `quote.md` | One stage specification per node |
 
@@ -98,7 +100,7 @@ modules are plain TypeScript that a unit test can call directly.
 3. [Anatomy of a conversation turn](/ezgraph/docs/tutorials/quote-graph/conversation-turn-anatomy/) —
    what the engine, the node, and the agent loop do between a customer message and a reply.
 4. [Prompts and stage handoffs](/ezgraph/docs/tutorials/quote-graph/prompts-and-handoffs/) —
-   prompt files, filled values, and three ways to start the next stage well.
+   direct `Prompt.file()` loading, `Prompt.replace()` templating, and three ways to start the next stage well.
 5. [Validated collection](/ezgraph/docs/tutorials/quote-graph/validated-tools/) — schemas as the
    interface and code as the policy, in the driver and history stages.
 6. [Catalog lookup and disambiguation](/ezgraph/docs/tutorials/quote-graph/vehicle-catalog/) —

@@ -24,8 +24,9 @@ The node contract has one rule worth remembering:
 
 Conversational handlers select replies, transitions, or completion. Internal
 workers save accepted output in `onResponse()` and leave continuation to their
-caller. `fanout(Child1Node, Child2Node)` selects concurrent branches; an explicit
-array-source edge joins them before the next conversational stage.
+caller. `await this.runNode(Child1Node, Child2Node)` returns child results to the
+parent's current method. `fanout(Child1Node, Child2Node)` selects concurrent
+graph branches; an explicit array-source edge joins them before the next stage.
 
 Read the guide by topic. Start with [Nodes and execution](/ezgraph/docs/developer-guide/nodes-and-execution/), or use [the first-graph tutorial](/ezgraph/tutorial/) for a small complete example.
 
@@ -40,6 +41,7 @@ Use one LlmNode contract for conversation, batch input, nested calls, and parall
 - <a id="prepare-input-with-onenter" href="/ezgraph/docs/developer-guide/nodes-and-execution/#prepare-input-with-onenter">Prepare input with onEnter</a>
 - <a id="handle-accepted-output-with-onresponse" href="/ezgraph/docs/developer-guide/nodes-and-execution/#handle-accepted-output-with-onresponse">Handle accepted output with onResponse</a>
 - <a id="execution-ownership" href="/ezgraph/docs/developer-guide/nodes-and-execution/#execution-ownership">Execution ownership</a>
+- <a id="await-registered-children-with-runnode" href="/ezgraph/docs/developer-guide/nodes-and-execution/#await-registered-children-with-runnode">Await registered children with runNode</a>
 - <a id="nested-calls" href="/ezgraph/docs/developer-guide/nodes-and-execution/#nested-calls">Nested calls</a>
 - <a id="llmrunner-and-custom-execution" href="/ezgraph/docs/developer-guide/nodes-and-execution/#llmrunner-and-custom-execution">LlmRunner and custom execution</a>
 
@@ -83,6 +85,8 @@ Register conversation ownership, schedule internal LLM work, and use conditional
 
 - <a id="build-topology-explicitly" href="/ezgraph/docs/developer-guide/topology/#build-topology-explicitly">Build topology explicitly</a>
 - <a id="conditional-fan-out-and-join" href="/ezgraph/docs/developer-guide/topology/#conditional-fan-out-and-join">Conditional fan-out and join</a>
+- <a id="await-children-with-runnode" href="/ezgraph/docs/developer-guide/topology/#await-children-with-runnode">Await children with runNode</a>
+- <a id="runnode-versus-fanout" href="/ezgraph/docs/developer-guide/topology/#runnode-versus-fanout">runNode versus fanout</a>
 - <a id="sequential-and-fixed-entry-workers" href="/ezgraph/docs/developer-guide/topology/#sequential-and-fixed-entry-workers">Sequential and fixed-entry workers</a>
 - <a id="keep-policy-deterministic" href="/ezgraph/docs/developer-guide/topology/#keep-policy-deterministic">Keep policy deterministic</a>
 

@@ -24,13 +24,22 @@ and the third sends the conversation backwards. This lesson reads the node in fu
 ## The presentation prompt
 
 ```ts
+const QuoteRolePrompt = Prompt.file("../prompt/role.md");
+const QuotePrompt = Prompt.file("../prompt/quote.md");
+const EndChatInstruction =
+  "If the user explicitly wants to end the conversation, call terminate_session immediately. Never mention internal tools, phases, schemas, or implementation details.";
+
 getPrompt(state: QuoteGraphStateType): string {
   const local = this.state(state) as QuoteGraphNodeState<"QuoteNode">;
-  return `${quotePrompt.role}\n\n${fillPrompt(quotePrompt.quote, {
+  return `${QuoteRolePrompt}\n\n${Prompt.replace(QuotePrompt, {
     TIERS_JSON: JSON.stringify(local.tiers ?? []),
-  })}\n\n${endChatInstruction}`;
+  })}\n\n${EndChatInstruction}`;
 }
 ```
+
+`QuoteNode` loads its own files at module scope. See
+[prompt loading and composition](/ezgraph/docs/tutorials/quote-graph/prompts-and-handoffs/#loading-and-composing-prompts)
+for the shared cache and relative-path convention.
 
 `quote.md` asks the model to present each tier from the JSON as a numbered option, recommend
 `selected`, and offer three paths: adjust (`adjust_quote` with only the changed fields), accept

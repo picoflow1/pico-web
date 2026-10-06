@@ -78,6 +78,21 @@ The complete tool-call batch runs before a selected transition is returned.
 Repeated bare `fanout()` outcomes may name the same destination set; conflicting
 destinations or repeated response effects fail instead of choosing a winner.
 
+### Awaited child calls versus fan-out
+
+Within an async LLM tool handler or lifecycle hook, use
+`await this.runNode(Child1Node, Child2Node)` to collect results and continue in
+the parent before choosing a response. It returns an ordered readonly tuple
+and stages successful child state and usage in the parent.
+
+Returning `fanout(Child1Node, Child2Node)` instead selects graph destinations;
+it returns no child result tuple and requires graph edges and a barrier join
+for subsequent work. Both require registered targets. See
+[runNode versus fanout](/ezgraph/docs/developer-guide/topology/#runnode-versus-fanout)
+for the comparison and
+[the runNode contract](/ezgraph/docs/developer-guide/nodes-and-execution/#await-registered-children-with-runnode)
+for input, typed output, and error handling.
+
 ## Typed task output
 
 An LLM tool can complete its loop with data validated and owned by code:
