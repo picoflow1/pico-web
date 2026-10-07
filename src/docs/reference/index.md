@@ -23,23 +23,23 @@ Nothing on the instance survives except what is written into the session documen
 
 ## Subclass hooks
 
-| Hook | Signature | Default | Override when |
-| --- | --- | --- | --- |
-| `configModel()` | `protected abstract configModel(): ModelSelection` | Abstract — you must implement it | Always |
-| `configLlmCallPolicy()` | `protected configLlmCallPolicy(): LlmCallPolicy` | `{}` — no deadline | Model invocation attempts need a Flow-wide wall-clock budget |
-| `configDecision()` | `protected configDecision(): DecisionStepOptions` | `{}` — use DecisionStep defaults | Registered DecisionSteps need Flow-wide provider, model, timeout, or retry policy |
-| `onDecisionError()` | `public async onDecisionError(context: DecisionErrorContext): Promise<DecisionResponse \| null>` | `null` — propagate | A DecisionStep delegates terminal decision recovery to application-wide policy |
-| `onLlmBlocked()` | `public async onLlmBlocked(context: LlmBlockedContext): Promise<LlmBlockedResponse \| null>` | `null` — propagate | A Step delegates a provider refusal or safety block |
-| `shouldRetryLlmError()` | `public shouldRetryLlmError(context: LlmAttemptErrorContext): boolean \| undefined` | `undefined` — framework default | A Step delegates ordinary invocation-error retry policy |
-| `onLlmError()` | `public async onLlmError(context: LlmErrorContext): Promise<LlmErrorResponse \| null>` | `null` — propagate | A Step delegates terminal chat-model recovery |
-| `init()` | `public async init(): Promise<void>` | No operation | Deterministic per-instance setup is needed before steps are collected |
-| `defineSteps()` | `protected defineSteps(): Step[]` | `[new TerminateSessionStep(this).useMemory('temp')]` | The flow declares its own stages |
-| `initialStep()` | `protected initialStep(): StepClassType \| null` | `null` — the first step from `defineSteps()` starts the session | The initial cursor depends on runtime context |
-| `defineTool()` | `public defineTool(): ToolType[]` | `[]` | Several steps share one tool definition |
-| `onRestoreSessionDoc()` | `protected onRestoreSessionDoc(sessionDoc: SessionType): Promise<SessionType \| null>` | Accepts only the current document version | The stored document needs migration, an idle-time reset, or another stricter policy |
-| `spawnSteps()` | `protected spawnSteps(): Promise<string>` | Returns `''` | `config._concurrent` should coordinate worker sessions |
-| `run()` | `public run(message: string): Promise<RunResponseType>` | Dispatches to `spawnSteps()` or the current step, then builds the response envelope | The whole dispatch contract intentionally differs |
-| `isBatch()` | `public isBatch(): boolean` | `false` | An extra pre-run session checkpoint is required |
+| Hook | Default | Override when |
+| --- | --- | --- |
+| `configModel()` | Abstract — you must implement it | Always |
+| `configLlmCallPolicy()` | `{}` — no deadline | Model invocation attempts need a Flow-wide wall-clock budget |
+| `configDecision()` | `{}` — use DecisionStep defaults | Registered DecisionSteps need Flow-wide provider, model, timeout, or retry policy |
+| `onDecisionError()` | `null` — propagate | A DecisionStep delegates terminal decision recovery to application-wide policy |
+| `onLlmBlocked()` | `null` — propagate | A Step delegates a provider refusal or safety block |
+| `shouldRetryLlmError()` | `undefined` — framework default | A Step delegates ordinary invocation-error retry policy |
+| `onLlmError()` | `null` — propagate | A Step delegates terminal chat-model recovery |
+| `init()` | No operation | Deterministic per-instance setup is needed before steps are collected |
+| `defineSteps()` | `[new TerminateSessionStep(this).useMemory('temp')]` | The flow declares its own stages |
+| `initialStep()` | `null` — the first step from `defineSteps()` starts the session | The initial cursor depends on runtime context |
+| `defineTool()` | `[]` | Several steps share one tool definition |
+| `onRestoreSessionDoc()` | Accepts only the current document version | The stored document needs migration, an idle-time reset, or another stricter policy |
+| `spawnSteps()` | Returns `''` | `config._concurrent` should coordinate worker sessions |
+| `run()` | Dispatches to `spawnSteps()` or the current step, then builds the response envelope | The whole dispatch contract intentionally differs |
+| `isBatch()` | `false` | An extra pre-run session checkpoint is required |
 
 ### configModel()
 
@@ -78,6 +78,14 @@ the same hook with another positive integer, or return `{ timeoutMs: null }` to 
 inherited deadline. The policy is not persisted in the session document.
 
 ### Decision and chat-model failure policy
+
+```ts
+protected configDecision(): DecisionStepOptions;
+public async onDecisionError(context: DecisionErrorContext): Promise<DecisionResponse | null>;
+public async onLlmBlocked(context: LlmBlockedContext): Promise<LlmBlockedResponse | null>;
+public shouldRetryLlmError(context: LlmAttemptErrorContext): boolean | undefined;
+public async onLlmError(context: LlmErrorContext): Promise<LlmErrorResponse | null>;
+```
 
 `configDecision()` sets Flow-wide defaults for registered
 [`DecisionStep`s](/docs/reference/decision-step/). `onDecisionError()` runs only after the

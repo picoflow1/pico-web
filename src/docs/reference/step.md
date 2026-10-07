@@ -22,30 +22,60 @@ export abstract class Step {
 
 ## Override hooks
 
-| Hook | Signature | Default | Override when |
-| --- | --- | --- | --- |
-| `configLlmCallPolicy()` | `protected configLlmCallPolicy(): LlmCallPolicyOverride` | `{}` — inherits the Flow policy | This Step needs another `timeoutMs`, or `{ timeoutMs: null }` to remove the Flow deadline |
-| `getPrompt()` | `public getPrompt(): string \| null` | Returns the `_prompt` state value saved by `.withPrompt(...)`, else `null` | The step needs a system prompt |
-| `defineTool()` | `public defineTool(): ToolType[]` | `[]` | The flow needs a tool registered with a name, description, and Zod object schema |
-| `useTool()` | `public useTool(): string[]` | `[]` | The step exposes a tool defined elsewhere, or keeps an undecorated legacy handler |
-| `onStart()` | `public async onStart(): Promise<MessageTypes \| null>` | Calls `onEnter()`, then `onCrossing(null)` | A new session's starting step needs custom bootstrap |
-| `onRestore()` | `public async onRestore(): Promise<void>` | No operation | Runtime-only caches must be rebuilt on resume |
-| `onEnter()` | `protected async onEnter(): Promise<void>` | No operation | Setup runs every time the step becomes active |
-| `onExit()` | `protected async onExit(): Promise<void>` | No operation | Cleanup runs when the step is deactivated |
-| `onCrossing()` | `public onCrossing(langMessage: MessageTypes \| null \| undefined, _priorStep?: string): MessageTypes \| null` | Synthesises `HumanMessageEx(this, 'Start')` when there is no incoming message and history does not already end on this step | A stage must rewrite, replace, or suppress the crossing message |
-| `onResponse()` | `public async onResponse(llmResult: string \| object): Promise<LastResponseType>` | `JSON.stringify` for objects, otherwise the value unchanged | Free-form or structured output needs validation, rewriting, or routing |
-| `checkResponse()` | `public checkResponse(_llmResult: string \| object): boolean` | `false` | A bad response should be retried — return `true` to retry |
-| `onLlmBlocked()` | `public async onLlmBlocked(context: LlmBlockedContext): Promise<LlmBlockedResponse \| null>` | `null` — delegate to the Flow | The provider refuses or blocks a prompt or candidate and the Step can return a safe response or route |
-| `shouldRetryLlmError()` | `public shouldRetryLlmError(context: LlmAttemptErrorContext): boolean \| undefined` | `undefined` — delegate to the Flow, then framework default | A thrown invocation error should stop early or use another configured attempt |
-| `onLlmError()` | `public async onLlmError(context: LlmErrorContext): Promise<LlmErrorResponse \| null>` | `null` — delegate to the Flow | Exhausted or declined model work needs a final response, route, or one temporary alternate model |
-| `structOutputSchema()` | `public structOutputSchema(): object \| null` | `null` | The provider should use constrained structured output |
-| `isLogic()` | `public isLogic(): boolean` | `false` | Never directly — extend `LogicStep` instead |
-| `isEnd()` | `public isEnd(): boolean` | `flow.getSessionDoc().runStatus === 'completed'` | A specialised terminal step reports completion differently |
+| Hook | Default | Override when |
+| --- | --- | --- |
+| `configLlmCallPolicy()` | `{}` — inherits the Flow policy | This Step needs another `timeoutMs`, or `{ timeoutMs: null }` to remove the Flow deadline |
+| `getPrompt()` | Returns the `_prompt` state value saved by `.withPrompt(...)`, else `null` | The step needs a system prompt |
+| `defineTool()` | `[]` | The flow needs a tool registered with a name, description, and Zod object schema |
+| `useTool()` | `[]` | The step exposes a tool defined elsewhere, or keeps an undecorated legacy handler |
+| `onStart()` | Calls `onEnter()`, then `onCrossing(null)` | A new session's starting step needs custom bootstrap |
+| `onRestore()` | No operation | Runtime-only caches must be rebuilt on resume |
+| `onEnter()` | No operation | Setup runs every time the step becomes active |
+| `onExit()` | No operation | Cleanup runs when the step is deactivated |
+| `onCrossing()` | Synthesises `HumanMessageEx(this, 'Start')` when there is no incoming message and history does not already end on this step | A stage must rewrite, replace, or suppress the crossing message |
+| `onResponse()` | `JSON.stringify` for objects, otherwise the value unchanged | Free-form or structured output needs validation, rewriting, or routing |
+| `checkResponse()` | `false` | A bad response should be retried — return `true` to retry |
+| `onLlmBlocked()` | `null` — delegate to the Flow | The provider refuses or blocks a prompt or candidate and the Step can return a safe response or route |
+| `shouldRetryLlmError()` | `undefined` — delegate to the Flow, then framework default | A thrown invocation error should stop early or use another configured attempt |
+| `onLlmError()` | `null` — delegate to the Flow | Exhausted or declined model work needs a final response, route, or one temporary alternate model |
+| `structOutputSchema()` | `null` | The provider should use constrained structured output |
+| `isLogic()` | `false` | Never directly — extend `LogicStep` instead |
+| `isEnd()` | `flow.getSessionDoc().runStatus === 'completed'` | A specialised terminal step reports completion differently |
 
 `checkResponse()` has inverted semantics on purpose: `false` accepts, `true` asks the retry
 loop to run again. It runs before tool dispatch, so a rejected candidate's tool calls are not
 executed. Keep it deterministic and side-effect free; it can be evaluated more than once per
 turn.
+
+### Configuration, activation, and response signatures
+
+```ts
+// Configuration and model-call preparation
+protected configLlmCallPolicy(): LlmCallPolicyOverride;
+public getPrompt(): string | null;
+public defineTool(): ToolType[];
+public useTool(): string[];
+public structOutputSchema(): object | null;
+
+// Activation and restoration
+public async onStart(): Promise<MessageTypes | null>;
+public async onRestore(): Promise<void>;
+protected async onEnter(): Promise<void>;
+protected async onExit(): Promise<void>;
+public onCrossing(
+  langMessage: MessageTypes | null | undefined,
+  _priorStep?: string,
+): MessageTypes | null;
+
+// Candidate validation, response handling, and execution kind
+public checkResponse(llmResult: string | object): boolean;
+public async onResponse(llmResult: string | object): Promise<LastResponseType>;
+public isLogic(): boolean;
+public isEnd(): boolean;
+```
+
+For the order and frequency of these calls, see
+[Step lifecycle](/docs/concepts/step-lifecycle/). Recovery signatures are listed separately below.
 
 ### Model refusal, retry, and recovery hooks
 

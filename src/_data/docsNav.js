@@ -360,6 +360,7 @@ export default {
 					label: "Building a flow",
 					items: [
 						{ title: "Create and register a flow", url: "/docs/guides/" },
+						{ title: "Application configuration", url: "/docs/guides/application-configuration/" },
 						{ title: "The Flow subclass contract", url: "/docs/guides/flow-contract/" },
 						{
 							title: "Register providers and models",

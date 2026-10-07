@@ -129,6 +129,9 @@ The service listens on port 8000 and binds `0.0.0.0`.
 
 ## Which flows are registered
 
+For the complete setup walkthrough, see
+[Application configuration](/docs/guides/application-configuration/).
+
 `src/app.module.ts` is the application bootstrap contract. It builds the engine in a NestJS
 factory. This excerpt shortens the Cosmos factory to key authentication:
 

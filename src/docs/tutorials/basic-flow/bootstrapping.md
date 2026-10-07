@@ -22,6 +22,9 @@ Nest.
 
 ## Registering the engine
 
+For chat and decision providers, model choices, database clients, and shutdown in one place,
+see [Application configuration](/docs/guides/application-configuration/).
+
 From `pico-demo/src/app.module.ts`, trimmed to three flows and Cosmos key
 authentication. Install `mongodb` and `@azure/cosmos` as application dependencies
 for these SDK imports. The

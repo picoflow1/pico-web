@@ -711,6 +711,31 @@ a:hover {
 	white-space: nowrap;
 }
 
+/* Keep Flow and Step hook identifiers intact; tables scroll on narrow screens. */
+.prose h2#subclass-hooks + table th:first-child,
+.prose h2#subclass-hooks + table td:first-child,
+.prose h2#override-hooks + table th:first-child,
+.prose h2#override-hooks + table td:first-child {
+	min-width: 15rem;
+	white-space: nowrap;
+}
+
+.prose h2#subclass-hooks + table td:first-child code,
+.prose h2#override-hooks + table td:first-child code {
+	word-break: normal;
+}
+
+/* The lifecycle hook map puts hook identifiers in its second column. */
+.prose h2#hook-map + p + table th:nth-child(2),
+.prose h2#hook-map + p + table td:nth-child(2) {
+	min-width: 15rem;
+	white-space: nowrap;
+}
+
+.prose h2#hook-map + p + table td:nth-child(2) code {
+	word-break: normal;
+}
+
 /* Keep the five-track comparison table wide enough to scroll horizontally
    instead of collapsing its columns on narrow screens. */
 .prose h2#what-each-track-demonstrates + table {

@@ -86,6 +86,10 @@ The demo registers flows, providers, and application-owned database clients in
 `app.module.ts`. `FlowEngine.create()` asynchronously prepares the selected
 session store and returns a configured engine.
 
+See [Application configuration](/docs/guides/application-configuration/) for a complete
+`app.module.ts` example covering chat providers, decision providers, model selection,
+database clients, and shutdown.
+
 ```ts
 // src/app.module.ts
 FlowEngine.create({

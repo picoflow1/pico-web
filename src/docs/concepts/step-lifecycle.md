@@ -1,16 +1,68 @@
 ---
 title: Step lifecycle
 eyebrow: Concepts
-lede: Four scenarios — new session, restored session, top-level transition, and nested execution — and exactly which of onStart, onRestore, onEnter, onExit and onCrossing fires in each.
+lede: "When each Step hook runs: configuration, tool registration, activation, model-call preparation, response handling, recovery, and completion."
 source: pico-demo/docs/step-authoring-contract.md
 ---
 
-Five hooks decide when a step gets to prepare itself. They look similar and they are not
+The Step lifecycle includes configuration, tool registration, activation, execution, recovery,
+and completion. The framework calls your override hooks at different points in that sequence;
+helpers such as `saveState()` and `runStep()` are operations your code chooses to call.
+
+Five activation hooks decide when a step gets to prepare itself. They look similar and they are not
 interchangeable. The rule that resolves almost every question is: **entry hooks fire on
 activation, restore fires on rehydration, and crossing fires on message hand-off** — and
 those are three different events.
 
-## The five hooks
+## Hook map
+
+This table covers every override hook in the [Step reference](/docs/reference/step/#override-hooks).
+It describes timing; the reference holds signatures and return contracts.
+
+| Phase | Hook | When the framework calls it |
+| --- | --- | --- |
+| Configuration | `configLlmCallPolicy()` | During ordinary Step bootstrap validation, and when resolving effective policy for model calls; inherits the Flow policy |
+| Execution-kind checks | `isLogic()` | During model validation and runner dispatch; extend `LogicStep` rather than override it directly |
+| Tool registration | `defineTool()` | During Flow tool composition after hydration, for every registered Step; DecisionSteps also query it during configuration validation |
+| New session | `onStart()` | Once for the initial Step of a newly created session |
+| Restore | `onRestore()` | On the current Step when a running session is rehydrated |
+| Activation | `onEnter()` | Via default `onStart()`, on entry through a different top-level Step, or before nested execution |
+| Message hand-off | `onCrossing()` | Via default `onStart()` and the runner's cross-step message path |
+| Model-call preparation | `useTool()` | While resolving exposed tools or checking tool availability; DecisionSteps also query it to reject chat-tool configuration |
+| Model-call preparation | `getPrompt()` | When preparing the chat-model call; also used by the Decision runner |
+| Model-call preparation | `structOutputSchema()` | After binding tools, before invoking the chat model; DecisionSteps also query it to reject structured chat output |
+| Candidate validation | `checkResponse()` | For a usable, unblocked model candidate, before tool dispatch or `onResponse()` |
+| Final model response | `onResponse()` | After a candidate is accepted and has no tool calls |
+| Invocation-error retry | `shouldRetryLlmError()` | When an ordinary chat-model invocation throws |
+| Terminal model recovery | `onLlmError()` | When chat-model retries are declined or exhausted without an accepted candidate |
+| Provider refusal | `onLlmBlocked()` | When the chat provider refuses or blocks the prompt or candidate |
+| Deactivation | `onExit()` | When leaving a top-level Step, or in nested-execution cleanup |
+| Completion reporting | `isEnd()` | On the current Step when Flow builds the turn's response envelope |
+
+Some hooks are queried repeatedly. Keep configuration and selection hooks free of external
+side effects; do not treat them as once-per-session initialization. The activation scenarios
+below explain entry and exit timing, followed by the execution and recovery paths.
+
+## Configuration and tool registration
+
+For each engine invocation, the Flow constructs its registered Steps through `defineSteps()`.
+Before session hydration, it resolves model selections and validates ordinary Steps' effective
+call policies. `configLlmCallPolicy()` supplies a Step override of the Flow policy; it can be
+queried again during execution, so it must not assume hydrated state during bootstrap.
+Step model overrides come from `useModel()` and persisted model settings rather than a
+Step `configModel()` override hook.
+
+After the initial Step's `onStart()` or the restored current Step's `onRestore()`, the Flow
+composes its tool registry. It calls `defineTool()` on **every registered Step**, then on the
+Flow, and combines those definitions into a shared registry. A Step does not have
+to become active for its tools to be registered. Registration repeats on each engine invocation.
+
+`defineTool()` declares tools for the shared registry; `useTool()` selects named tools for the
+executing Step. Its own decorated `@Tool` and `@Tools` declarations are included automatically.
+A tool defined elsewhere is exposed by naming it in `useTool()`. See
+[Decorators](/docs/reference/decorators/) for declaration and handler details.
+
+## Activation hooks
 
 | Hook | Visibility | Default behaviour |
 | --- | --- | --- |
@@ -33,12 +85,14 @@ Flow creates step documents, currentStep = initialStep()
   -> the resulting message is pushed into the step's memory namespace
   -> session is saved
   -> Step.run(userMessage)
+       -> resolve call policy and model
+       -> obtain selected tools (useTool() + decorated tools)
        -> getPrompt()
-       -> obtain selected tools
        -> structOutputSchema()
-       -> model call
-            -> tool calls: @Tool handler -> stay/go -> continue or cross
-            -> no tool call: checkResponse() -> onResponse()
+       -> model call / retry / recovery
+            -> accepted candidate: checkResponse() returns false
+                 -> tool calls: @Tool handler -> stay/go -> continue or cross
+                 -> no tool call: onResponse()
   -> persist currentStep, step state, memory, model overrides, session
 ```
 
@@ -177,7 +231,146 @@ Transition authority belongs to the owner. Parallel children receive private clo
 history visible at their fork, even when their canonical Steps use the same namespace. Raw
 child history is discarded rather than interleaved into the parent's transcript.
 
-## Summary table
+## Model-call and response lifecycle
+
+The shared runner dispatches to chat, logic, or decision execution according to the Step's
+kind. For an ordinary chat-model Step, one execution pass follows this order:
+
+```text
+resolve Flow + Step call policy and effective model
+  -> cross-step checkpoint and onCrossing(), when applicable
+  -> obtainTools(): useTool() + decorated tool names
+  -> getPrompt(): install the system message
+  -> bind selected tools
+  -> structOutputSchema(): apply structured output, when supplied
+  -> invoke model within the configured attempt budget
+       -> refusal: blocked-response recovery
+       -> empty candidate: retry
+       -> usable candidate: checkResponse()
+            -> true: reject and retry
+            -> false: accept
+  -> accepted candidate with tools: dispatch handlers
+       -> direct response: return without another model call
+       -> otherwise: apply feedback / transitions and continue execution
+  -> accepted candidate without tools: onResponse()
+       -> final response, completion, or transition
+```
+
+`getPrompt()`, `useTool()`, and `structOutputSchema()` prepare a model-call pass, not each
+attempt inside its retry loop. A follow-up call after tool feedback or a transition prepares
+another pass. A temporary alternate model also prepares a new pass with the same Step.
+
+`checkResponse()` runs **before tool handlers**, including for candidates containing tool
+calls. Returning `true` prevents those candidate tools from executing and requests another
+attempt; returning `false` accepts the candidate. It can run several times, so keep it
+deterministic and free of side effects. A thrown exception propagates outside model recovery.
+
+`onResponse()` handles accepted responses without tool calls. It can rewrite output or return
+a transition or `finish(...)`. Tool results and recovery results use normal response routing
+without first passing through `onResponse()`.
+
+### Logic and decision execution
+
+`LogicStep` executes `stepLogic()` without a chat-model call. Its activation and crossing
+behaviour still applies, but chat tool selection, structured output, candidate validation,
+and chat-model recovery hooks do not run. See
+[LogicStep and terminal Steps](/docs/reference/logic-and-terminal-steps/).
+
+`DecisionStep` uses `getPrompt()`, `defineQuestions()`, and `decisionInput()` to prepare a
+typed decision request; `decisionInput()` includes facts supplied by `getDecisionFacts()`.
+It merges options supplied through `useDecision()` with the Flow's `configDecision()` defaults,
+validates the returned answers, and calls `onDecision()` on success. It does not use
+`useTool()`, `structOutputSchema()`, `checkResponse()`, or `onResponse()` for that decision.
+During configuration validation, it does query the inherited chat-tool and structured-output
+hooks to reject unsupported configuration. Its `onDecisionError()` path is described below;
+full contracts are in the
+[DecisionStep reference](/docs/reference/decision-step/).
+
+## Completion and persistence
+
+At the end of normal Flow execution, the Flow reads `isEnd()` from its **current** Step to
+set the response's `completed` field. The default checks whether the session's `runStatus`
+is `completed`. `isEnd()` reports completion; returning `true` from a custom override does
+not itself mark the stored session completed. Use `finish(...)`, `sessionCompleted()`, or
+the terminal Step's completion behaviour to update that state.
+
+The engine then saves the session, including Step state, model overrides, memory, and Flow
+context. `onExit()` is not an end-of-request hook: a conversational Step can remain current
+across many turns without exiting. See
+[Flow persistence](/docs/concepts/flow-lifecycle/#9-persistence) for save ordering and the
+[completion guide](/docs/guides/error-handling/) for session status semantics.
+
+## Failure and recovery lifecycle
+
+Activation is only part of the lifecycle. During an ordinary chat-model Step's execution,
+PicoFlow also gives the Step a chance to retry or recover from model failures. Each hook
+runs on the executing Step first; delegation lets the Flow supply a shared policy.
+
+```text
+model invocation
+  -> ordinary invocation error
+       -> Step.shouldRetryLlmError(context)
+       -> undefined: Flow.shouldRetryLlmError(context)
+       -> undefined: framework retry default
+       -> retry if permitted and an attempt remains
+  -> empty response or checkResponse() returns true
+       -> retry if an attempt remains (no shouldRetryLlmError() call)
+  -> retries declined or exhausted without an accepted response
+       -> Step.onLlmError(context)
+       -> null: Flow.onLlmError(context)
+       -> both null: propagate the error
+
+provider refusal or safety block (separate path)
+  -> Step.onLlmBlocked(context)
+  -> null: Flow.onLlmBlocked(context)
+  -> both null: propagate the block
+```
+
+`shouldRetryLlmError()` returns `true` to use another configured attempt, `false` to stop,
+or `undefined` to delegate. It cannot extend the attempt budget. `onLlmError()` handles
+terminal `invocation_error`, `empty_response`, and `response_rejected` outcomes. It may
+return a final response, a normal transition, or `retryWithModel(...)` for one temporary
+alternate model. The alternate gets one attempt per model call and does not change the
+Step's configured model for later turns.
+
+`onLlmBlocked()` may return a response or normal transition. Refusals do not enter ordinary
+invocation-error retries or `onLlmError()` recovery. A handled result follows normal response
+and routing behaviour; recovering does not itself complete the session.
+
+### DecisionStep failures
+
+`DecisionStep` uses a separate decision runner, not the chat-model failure hooks:
+
+```text
+decision provider call / answer validation
+  -> eligible provider retries within the configured decision budget
+  -> failure remains
+       -> DecisionStep.onDecisionError(context)
+       -> null: Flow.onDecisionError(context)
+       -> both null: propagate the error
+```
+
+A non-null result supplies a decision recovery response or transition. Decision
+`maxRetries` counts additional attempts after the first; chat `retryAttempts` counts total
+attempts. Invalid decision answers are not retried.
+
+### Errors outside model recovery
+
+Cancellation bypasses recovery output. Errors in prompt construction, activation hooks,
+token accounting, tool handlers, or exceptions thrown by `checkResponse()` or `onResponse()`
+are outside the chat-model failure hooks. An unrecovered error reaches the engine's
+[failure boundary](/docs/concepts/flow-lifecycle/#failure-and-recovery-lifecycle).
+
+A tool may already have written state or caused an external effect before a later model
+call fails. Recovery should inspect that state or route to review rather than repeat the
+effect blindly. `onExit()` is not a general error handler: nested execution invokes it in
+its cleanup path, while top-level transitions invoke it when leaving a step.
+
+See the [Step recovery reference](/docs/reference/step/#model-refusal-retry-and-recovery-hooks)
+and [DecisionStep recovery reference](/docs/reference/decision-step/#decision-failure-recovery)
+for signatures, context fields, and return contracts.
+
+## Activation summary table
 
 | Event | `onStart` | `onEnter` | `onCrossing` | `onExit` | `onRestore` |
 | --- | :---: | :---: | :---: | :---: | :---: |
@@ -189,7 +382,7 @@ child history is discarded rather than interleaved into the parent's transcript.
 | `runStep(Child)` — child | no | yes | no | yes | no |
 | Direct response to another step | no | yes | usually not | yes | no |
 
-## Choosing a hook
+## Choosing an activation hook
 
 Ask what the work depends on.
 
