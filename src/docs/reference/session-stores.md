@@ -21,6 +21,8 @@ export interface SessionStore {
 }
 ```
 
+<div class="reference-table-scroll" tabindex="0" role="region" aria-label="Scrollable reference table">
+
 | Method | Required behaviour |
 | --- | --- |
 | `load` | Return the stored document without applying restoration policy. A Flow's idle-time or other restore decision belongs in `onRestoreSessionDoc()`, not the store |
@@ -28,6 +30,8 @@ export interface SessionStore {
 | `save` | Persist only if the stored revision equals `expectedRevision`, then return the document at `expectedRevision + 1` |
 | `delete` | Compare-and-swap when a revision is supplied; unconditional when it is omitted |
 | `close` | Release connections and handles |
+
+</div>
 
 `FlowSession` wraps the store: it asserts the one-flow invariant, stamps `saveOn`, passes the
 document's current `revision` as the expected value, and copies the returned revision back onto
@@ -77,12 +81,16 @@ for MongoDB, DocumentDB options, Cosmos authentication, and shutdown examples.
 
 ## The four bundled stores
 
+<div class="reference-table-scroll" tabindex="0" role="region" aria-label="Scrollable reference table">
+
 | `SESSION_STORE` | Class | Compare-and-swap mechanism | Configuration |
 | --- | --- | --- | --- |
 | `MEMORY` | `MemorySessionStore` | Compares the current in-memory revision before replacing a structured clone | None |
 | `SQLITE` | `SQLiteSession` | Atomic `UPDATE … WHERE id = ? AND revision = ?`; a row count other than 1 is a conflict | `SQLITE_PATH` |
 | `MONGO` or `MONGODB` | `MongoSession` | Update filter combining `_id`, the flow name, and the expected revision; `matchedCount` other than 1 is a conflict | `MONGODB_NAME`, `MONGODB_COLLECTION`; client connection settings belong to the application factory, or `MONGODB_URL` for built-in creation |
 | `COSMO`, `COSMOS`, or `COSMOSDB` | `CosmoSession` | Expected revision plus an `_etag` `IfMatch` precondition | `COSMODB_ID`, `COSMODB_SESSION_ID`, `COSMOS_CREATE_IF_NOT_EXISTS`; client credentials belong to the application factory, or URL/key for built-in creation |
+
+</div>
 
 `SQLiteSession` writes to a table named `session`, creates the parent directory if it is
 missing, and defaults to `ignore/session/session.sqlite`. The `revision` column is the

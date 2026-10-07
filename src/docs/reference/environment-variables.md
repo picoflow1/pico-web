@@ -31,6 +31,8 @@ an invalid-license error. The result is cached after the first successful verifi
 
 ## Provider credentials
 
+<div class="reference-table-scroll" tabindex="0" role="region" aria-label="Scrollable provider credentials table">
+
 | Variable | Read by | Purpose |
 | --- | --- | --- |
 | `OPENAI_API_KEY` | `CoreConfig`, demo `AppModule` | OpenAI adapter credentials, and OpenAI file uploads |
@@ -38,6 +40,8 @@ an invalid-license error. The result is cached after the first successful verifi
 | `ANTHROPIC_API_KEY` | `CoreConfig`, demo `AppModule` | Anthropic adapter credentials, and Claude file uploads |
 | `OPENROUTER_API_KEY` | `CoreConfig` | Loaded into `CoreConfig.OpenRouterApiKey`; nothing in `pf/src` consumes it today |
 | `NVIDIA_API_KEY` | demo `AppModule` | The demo's application-owned NVIDIA adapter |
+
+</div>
 
 <div class="callout callout--note"><span class="callout__title">Adapters do not read the environment</span><p>Provider adapters take credentials as explicit constructor options. The application passes them in — for example <code>openai: { apiKey: config.get("OPENAI_API_KEY") }</code>. The three keys <code>CoreConfig</code> reads for itself are used by <code>LLMFileManager</code> for provider-side file uploads, which has no adapter of its own.</p></div>
 
@@ -61,6 +65,8 @@ The current `pico-demo/.env-example` sets `SESSION_STORE=SQLITE`. Its legacy
 
 ### Store-specific settings
 
+<div class="reference-table-scroll" tabindex="0" role="region" aria-label="Scrollable store settings table">
+
 | Variable | Required for | Default | Purpose |
 | --- | --- | --- | --- |
 | `SQLITE_PATH` | `SQLITE` | `ignore/session/session.sqlite` | Database file. Relative paths resolve from the working directory; the parent directory is created if missing |
@@ -76,6 +82,8 @@ The current `pico-demo/.env-example` sets `SESSION_STORE=SQLITE`. Its legacy
 | `COSMODB_ID` | `COSMO`/`COSMOS`/`COSMOSDB` | — | Database ID; aliases `COSMO_DB_ID`, `COSMOS_DATABASE` |
 | `COSMODB_SESSION_ID` | `COSMO`/`COSMOS`/`COSMOSDB` | — | Container ID; aliases `COSMO_DB_SESSION_CONTAINER_ID`, `COSMOS_CONTAINER` |
 | `COSMOS_CREATE_IF_NOT_EXISTS` | Cosmos provisioning policy | `true` | Set to `false` for a database/container provisioned separately. The container must use partition key `/id` |
+
+</div>
 
 Endpoint, credentials, and TLS options belong to the application factory when
 one is supplied. Only the selected backend's factory runs, so Cosmos does not

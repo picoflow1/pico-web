@@ -117,6 +117,8 @@ export type ToolResponseBuilder = StepResponseType & {
 };
 ```
 
+<div class="reference-table-scroll" tabindex="0" role="region" aria-label="Scrollable reference table">
+
 | Method | Field set | Effect |
 | --- | --- | --- |
 | `withToolFeedback(text)` | `tool` | The text is returned to the model as the tool result, as a `ToolMessageInfo` |
@@ -124,6 +126,8 @@ export type ToolResponseBuilder = StepResponseType & {
 | `withPrompt(text)` | `prompt` | `saveState({ _prompt: text })` on the destination; the base `getPrompt()` returns it |
 | `withMessage(message)` | `message` | The message is appended after the tool-result messages |
 | `withContentType(type)` | `contentType` | Sets the destination step's `contentType` |
+
+</div>
 
 The builder methods are defined as non-enumerable properties, so spreading a builder yields a
 plain `StepResponseType`.

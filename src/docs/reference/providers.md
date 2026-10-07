@@ -48,6 +48,8 @@ providers: [
 
 ### The bundled adapters
 
+<div class="reference-table-scroll" tabindex="0" role="region" aria-label="Scrollable reference table">
+
 | Option key | Registered provider name | LangChain runtime | Connection options |
 | --- | --- | --- | --- |
 | `openai` | `openai` | `openai` | `apiKey` |
@@ -60,6 +62,8 @@ providers: [
 | `zai` | `zai` | `openai` | `apiKey`, `baseUrl` — defaults to the Z.AI PaaS v4 endpoint |
 | `ollama` | `ollama` | `ollama` | `baseUrl` |
 | `openrouter` | `openrouter` | `openrouter` | `apiKey` |
+
+</div>
 
 Moonshot and Z.AI are OpenAI-compatible Chat Completions endpoints, so they reuse the OpenAI
 runtime with a `baseURL` override while keeping their own provider name.
@@ -126,6 +130,8 @@ ModelProvider.createCustomAdapter({
 }),
 ```
 
+<div class="reference-table-scroll" tabindex="0" role="region" aria-label="Scrollable reference table">
+
 | Field | Notes |
 | --- | --- |
 | `provider` | The name a selection's `provider` must match. A blank value throws `A provider adapter requires a non-empty provider name.` |
@@ -133,6 +139,8 @@ ModelProvider.createCustomAdapter({
 | `config` | Connection values only — merged into the model constructor and stripped of the `provider` key |
 | `capabilities` | Optional per-selection capability report, currently just `temperature` |
 | `retryAttempts` | Fallback maximum runner attempts when the Flow or Step selection omits one. Must be a positive integer, and is deliberately never read from an environment variable |
+
+</div>
 
 When both the selected model and its adapter omit `retryAttempts`, the runner uses its own
 default of three attempts.

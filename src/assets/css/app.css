@@ -711,6 +711,119 @@ a:hover {
 	white-space: nowrap;
 }
 
+.prose .reference-table-scroll {
+	max-width: 100%;
+	overflow-x: auto;
+	margin: 0 0 var(--space-5);
+}
+
+.prose .reference-table-scroll:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
+
+.prose .reference-table-scroll > table {
+	display: table;
+	width: 100%;
+	min-width: 40rem;
+	margin: 0;
+	overflow: visible;
+}
+
+/* Keep provider credential variable names intact. */
+.prose h2#provider-credentials + .reference-table-scroll > table th:first-child,
+.prose h2#provider-credentials + .reference-table-scroll > table td:first-child {
+	min-width: 15rem;
+	white-space: nowrap;
+}
+
+.prose h2#provider-credentials + .reference-table-scroll > table td:first-child code {
+	word-break: normal;
+}
+
+/* Reserve room for the longer database configuration variable names. */
+.prose h3#store-specific-settings + .reference-table-scroll > table th:first-child,
+.prose h3#store-specific-settings + .reference-table-scroll > table td:first-child {
+	min-width: 15rem;
+	white-space: nowrap;
+}
+
+.prose h3#store-specific-settings + .reference-table-scroll > table td:first-child code {
+	word-break: normal;
+}
+
+/* Keep bundled adapter option keys readable; the table scrolls on narrow screens. */
+.prose h3#the-bundled-adapters + .reference-table-scroll > table th:first-child,
+.prose h3#the-bundled-adapters + .reference-table-scroll > table td:first-child {
+	min-width: 9rem;
+	white-space: nowrap;
+}
+
+.prose h3#the-bundled-adapters + .reference-table-scroll > table td:first-child code {
+	word-break: normal;
+}
+
+/* Keep custom adapter field names intact beside their explanatory notes. */
+.prose h2#modelprovidercreatecustomadapter + .picoflow-code-body + .picoflow-code-body + p + .picoflow-code-body + .reference-table-scroll > table th:first-child,
+.prose h2#modelprovidercreatecustomadapter + .picoflow-code-body + .picoflow-code-body + p + .picoflow-code-body + .reference-table-scroll > table td:first-child {
+	min-width: 11rem;
+	white-space: nowrap;
+}
+
+.prose h2#modelprovidercreatecustomadapter + .picoflow-code-body + .picoflow-code-body + p + .picoflow-code-body + .reference-table-scroll > table td:first-child code {
+	word-break: normal;
+}
+
+/* Reserve room for builder methods and field names without splitting identifiers. */
+.prose h2#toolresponsebuilder + p + .picoflow-code-body + .reference-table-scroll > table th:first-child,
+.prose h2#toolresponsebuilder + p + .picoflow-code-body + .reference-table-scroll > table td:first-child {
+	min-width: 16rem;
+	white-space: nowrap;
+}
+
+.prose h2#toolresponsebuilder + p + .picoflow-code-body + .reference-table-scroll > table th:nth-child(2),
+.prose h2#toolresponsebuilder + p + .picoflow-code-body + .reference-table-scroll > table td:nth-child(2) {
+	min-width: 8rem;
+	white-space: nowrap;
+}
+
+.prose h2#toolresponsebuilder + p + .picoflow-code-body + .reference-table-scroll > table td:nth-child(-n+2) code {
+	word-break: normal;
+}
+
+/* Keep durable flow field names readable beside their types and meanings. */
+.prose h2#the-flow-object + .reference-table-scroll > table th:first-child,
+.prose h2#the-flow-object + .reference-table-scroll > table td:first-child {
+	min-width: 9rem;
+	white-space: nowrap;
+}
+
+.prose h2#the-flow-object + .reference-table-scroll > table td:first-child code {
+	word-break: normal;
+}
+
+/* Give session store methods room beside their contract descriptions. */
+.prose h2#the-contract + .picoflow-code-body + .reference-table-scroll > table th:first-child,
+.prose h2#the-contract + .picoflow-code-body + .reference-table-scroll > table td:first-child {
+	min-width: 8rem;
+	white-space: nowrap;
+}
+
+.prose h2#the-contract + .picoflow-code-body + .reference-table-scroll > table td:first-child code {
+	word-break: normal;
+}
+
+/* Keep bundled session store class names intact in the second column. */
+.prose h2#the-four-bundled-stores + .reference-table-scroll > table th:nth-child(2),
+.prose h2#the-four-bundled-stores + .reference-table-scroll > table td:nth-child(2) {
+	min-width: 12rem;
+	white-space: nowrap;
+}
+
+.prose h2#the-four-bundled-stores + .reference-table-scroll > table td:nth-child(2) code {
+	word-break: normal;
+}
+
 /* Keep Flow and Step hook identifiers intact; tables scroll on narrow screens. */
 .prose h2#subclass-hooks + table th:first-child,
 .prose h2#subclass-hooks + table td:first-child,

@@ -39,6 +39,8 @@ developer guide.
 
 ## The envelope
 
+<div class="reference-table-scroll" tabindex="0" role="region" aria-label="Scrollable reference table">
+
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `id` | non-empty string | The session ID. A UUID v4 at creation |
@@ -50,6 +52,8 @@ developer guide.
 | `flow` | object | The one flow envelope. Never an array |
 | `tokens` | object | Provider-neutral token accounting |
 | `log`, `error`, `warn`, `debug`, `verbose` | object arrays | Structured session log entries |
+
+</div>
 
 <div class="callout callout--note"><span class="callout__title">revision is not version</span><p><code>revision</code> is the concurrency token the store compares and swaps on. <code>version</code> is the document schema version your migration code branches on. They change for entirely different reasons, and <code>saveSession()</code> stamps <code>version</code> on every write.</p></div>
 
