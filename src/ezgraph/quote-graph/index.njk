@@ -1,88 +1,28 @@
 ---
-layout: layouts/ezgraph.njk
-title: EZGraph QuoteGraph walkthrough
-description: Read a production-sized guided quote conversation built with explicit node state and direct tool responses.
+layout: layouts/ezgraph-marketing.njk
+title: "QuoteGraph — a guided application with explicit policy"
+description: "Walk through a five-stage EZGraph quote conversation with schema validation, catalog disambiguation, deterministic rating, revisions, and explicit acceptance."
 permalink: /ezgraph/quote-graph/
 ezgraph: true
-ezgraphDocs: true
 ---
-<section class="tight">
-  <div class="wrap wrap-narrow">
-    <span class="eyebrow">Real application walkthrough</span>
-    <h1 style="font-size:clamp(2rem,4.4vw,3.1rem)">Walk a real graph, not a toy</h1>
-    <p class="lede">
-      QuoteGraph collects driver, vehicle, insurance history, and coverage details, rates them
-      deterministically, then presents and accepts a quote. It is the same application used in
-      the demo repository and it follows the current EZGraph response contract end to end.
-    </p>
-    <div class="callout tip"><span class="label">Source of truth</span><p>Read and run the implementation in <a href="https://github.com/picoflowio/ezgraph-demo"><b>ezgraph-demo</b></a>. The site explains the design; the repository is the executable reference.</p></div>
-  </div>
-</section>
-
-<section class="band tight">
-  <div class="wrap wrap-narrow"><ol class="steps">
-    <li>
-      <h3>Run the deterministic suite first</h3>
-      <div class="install"><span class="prompt">$</span><code>git clone https://github.com/picoflowio/ezgraph-demo.git</code></div>
-      <div class="install"><span class="prompt">$</span><code>cd ezgraph-demo &amp;&amp; yarn</code></div>
-      <div class="install"><span class="prompt">$</span><code>yarn test:quote-graph</code></div>
-      <p style="margin-top:20px">The normal test target uses scripted models and exercises validation, state replacement, transitions, rating, and acceptance without calling a provider. Run the live scenario only when you opt in:</p>
-      <div class="install"><span class="prompt">$</span><code>USE_ENV=1 yarn test2:quote-graph</code></div>
-    </li>
-
-    <li>
-      <h3>Start with state ownership</h3>
-      <p>Each durable fact belongs to the node that validates it. The registry is converted into the annotated LangGraph state once, in the graph-state module.</p>
-      <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">quote-graph.state.ts</span></div><pre><code>export type QuoteGraphNodes = {
-  DriverNode?: NodeStateValue&lt;{ driver?: DriverProfile }&gt;;
-  VehicleNode?: NodeStateValue&lt;{ resolvedVehicleId?: string; vehicle?: VehicleUse }&gt;;
-  HistoryNode?: NodeStateValue&lt;{ history?: InsuranceHistory }&gt;;
-  CoverageNode?: NodeStateValue&lt;{ coverage?: CoverageSelection }&gt;;
-  QuoteNode?: NodeStateValue&lt;{ tiers?: QuoteTier[]; acceptedTier?: QuoteTierName }&gt;;
-};
-
-export const QuoteGraphState = createGraphStateAnnotation(
-  DriverNode.name,
-  () =&gt; ({} as QuoteGraphNodes),
-);</code></pre></div>
-    </li>
-
-    <li>
-      <h3>A collection node validates, saves, and moves on</h3>
-      <p>The driver node validates model input in code. A rejection remains in the same node; an accepted driver is immediately persisted and transitions to vehicle collection.</p>
-      <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">nodes/driver.node.ts</span></div><pre><code>export class DriverNode extends LlmNode&lt;QuoteGraphStateType&gt; {
-  @Tool("capture_driver")
-  async captureDriver(input: DriverInput): Promise&lt;ToolResponse&gt; {
-    const driver = validateDriver(input); // deterministic domain validation
-    if (!driver.ok) return stay(JSON.stringify(driver.error));
-
-    this.saveState({ driver: driver.value });
-    return go(VehicleNode);
-  }
-}</code></pre></div>
-      <p>This is intentionally direct: there is no separately maintained turn context, no synthetic handoff payload, and no automatic router to configure.</p>
-    </li>
-
-    <li>
-      <h3>Keep policy and presentation code-owned</h3>
-      <p>When coverage becomes valid, the graph can save the rate into a target channel and steer the model into quote presentation. Once a quote needs exact amounts and explicit approval, the response is built in code.</p>
-      <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">nodes/coverage.node.ts</span></div><pre><code>this.saveState({ coverage });
-const tiers = rateQuote(driver, vehicle, history, coverage);
-return go(QuoteNode).withState({ tiers });</code></pre></div>
-      <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">nodes/quote.node.ts</span></div><pre><code>this.saveState({ acceptedTier: tier, referenceNumber });
-return direct(renderQuoteConfirmation(tier, referenceNumber));</code></pre></div>
-    </li>
-
-    <li>
-      <h3>Topology is declared in one place</h3>
-      <div class="code"><div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="file">quote-graph.ts</span></div><pre><code>graph.registerTurnNodes(
-  DriverNode, VehicleNode, HistoryNode, CoverageNode, QuoteNode,
-  TerminateSessionNode,
-);
-graph.addEdge(TerminateSessionNode, END);</code></pre></div>
-      <p>Every conversational node, including the built-in termination node, is registered. Node-returned <code>go()</code> responses decide ordinary transitions.</p>
-    </li>
-  </ol></div>
-</section>
-
-<section><div class="wrap wrap-narrow"><div class="section-head"><span class="eyebrow">Read deeper</span><h2>The response contract scales to corrections and side effects</h2><p>The <a href="/ezgraph/docs/tutorials/quote-graph/">QuoteGraph tutorial</a> takes this graph apart lesson by lesson, and the <a href="/ezgraph/docs/tutorials/decision-hotel-graph/">DecisionHotelGraph tutorial</a> uses the same primitives with Jev decision nodes, grounded presentation, and fallbacks.</p></div><div class="btn-row"><a class="btn btn-primary" href="/ezgraph/docs/developer-guide/">Developer guide</a><a class="btn btn-ghost" href="/ezgraph/tutorial/">Start with the small tutorial</a><a class="btn btn-ghost" href="/ezgraph/compare/langgraph/">Why the layer exists</a></div></div></section>
+<section class="eg-page-hero"><div class="eg-container"><div class="eg-breadcrumb"><a href="/ezgraph/workflows/">Workflow examples</a><span aria-hidden="true">/</span>QuoteGraph</div><span class="eg-eyebrow">The flagship guided conversation</span><h1>Let the model understand.<br>Let your code decide.</h1><p class="eg-lede">QuoteGraph turns a customer's details into a calculated insurance quote. Models recognize information and handle ambiguity. Code validates facts, applies example rating rules, supports revisions, and records acceptance.</p><div class="eg-actions"><a class="eg-button" href="/ezgraph/docs/tutorials/quote-graph/live-replay/">Read the recorded conversation <span aria-hidden="true">→</span></a><a class="eg-button eg-button-secondary" href="/ezgraph/docs/tutorials/quote-graph/">Explore the complete tutorial</a></div><p class="eg-note">A demonstration application and rating engine. <a href="https://github.com/picoflowio/ezgraph-demo/tree/main/src/graphs/quote-graph">Inspect the source ↗</a></p></div></section>
+<section class="eg-section"><div class="eg-container"><div class="eg-section-head"><span class="eg-eyebrow">Five stages. A clear owner for each fact.</span><h2>Follow the application from intake to acceptance.</h2><p>Each stage uses the same prompt, tool, validation, and transition contract. The graph declares business history spaces and a separate termination history.</p></div>
+<div class="eg-workflow-row"><span class="eg-workflow-index">01</span><div><h3>Driver</h3><p>Capture identity and license details. Reject invalid dates, unsupported state codes, and inconsistent licensed years before saving the profile.</p><a class="eg-link" href="/ezgraph/docs/tutorials/quote-graph/validated-tools/">See validated collection <span aria-hidden="true">→</span></a></div><div class="eg-flow"><strong>capture_driver</strong><span>→</span><strong>VehicleNode</strong></div></div>
+<div class="eg-workflow-row"><span class="eg-workflow-index">02</span><div><h3>Vehicle</h3><p>Resolve the customer's vehicle against a code-owned catalog. Ask for disambiguation when several matches remain, then save an accepted selection.</p><a class="eg-link" href="/ezgraph/docs/tutorials/quote-graph/vehicle-catalog/">See catalog disambiguation <span aria-hidden="true">→</span></a></div><div class="eg-flow"><strong>resolve_vehicle</strong><span>→</span><strong>capture_vehicle_use</strong></div></div>
+<div class="eg-workflow-row"><span class="eg-workflow-index">03</span><div><h3>Insurance history</h3><p>Collect prior coverage and incidents with stage-specific validation. Its business history space keeps detailed incident dialogue separate from general intake.</p><a class="eg-link" href="/ezgraph/docs/tutorials/quote-graph/sessions-and-history/">See named histories <span aria-hidden="true">→</span></a></div><div class="eg-flow"><strong>capture_history</strong><span>→</span><strong>CoverageNode</strong></div></div>
+<div class="eg-workflow-row"><span class="eg-workflow-index">04</span><div><h3>Coverage</h3><p>Validate the coverage request against accepted facts. Calculate tiers with a deterministic rating engine, then hand off to presentation.</p><a class="eg-link" href="/ezgraph/docs/tutorials/quote-graph/deterministic-rating/">See code-owned rating <span aria-hidden="true">→</span></a></div><div class="eg-flow"><strong>select_coverage</strong><span>→</span><strong>rateQuote()</strong></div></div>
+<div class="eg-workflow-row"><span class="eg-workflow-index">05</span><div><h3>Quote and acceptance</h3><p>Present tiers, apply deductible changes, return to coverage when needed, and record a chosen tier. Code constructs exact confirmation content.</p><a class="eg-link" href="/ezgraph/docs/tutorials/quote-graph/revise-and-accept/">See revisions and acceptance <span aria-hidden="true">→</span></a></div><div class="eg-flow"><strong>adjust_quote</strong><span>→</span><strong>accept_quote</strong></div></div>
+</div></section>
+<section class="eg-section eg-section-tint"><div class="eg-container eg-split"><div><span class="eg-eyebrow">The same contract at each stage</span><h2>Declare what is shared.<br>Keep ownership visible.</h2><p>Driver, vehicle, and coverage nodes share intake history. Insurance incidents and quote presentation use separate business spaces. The graph's model policy and restore policy have established locations alongside topology.</p><a class="eg-link" href="/ezgraph/docs/tutorials/quote-graph/graph-and-state/">Explore the graph and state registry <span aria-hidden="true">→</span></a></div><div class="eg-code"><div class="eg-code-head"><span>quote-graph.ts · history excerpt</span><span>TypeScript</span></div><pre><code class="language-typescript">historySpaces: [
+  [DriverNode, "quote-intake"],
+  [VehicleNode, "quote-intake"],
+  [HistoryNode, "quote-incidents"],
+  [CoverageNode, "quote-intake"],
+  [QuoteNode, "quote-present"],
+  [TerminateSessionNode, "quote-terminal"],
+]</code></pre></div></div></section>
+<section class="eg-section"><div class="eg-container eg-split"><div><span class="eg-eyebrow">Run the scripted application</span><h2>Inspect the behavior before connecting a model.</h2><p>The deterministic suite covers validation, state, transitions, rating, and acceptance. The tutorial includes a recorded live replay and instructions for a separately configured provider-backed run.</p><div class="eg-actions"><a class="eg-button" href="/ezgraph/docs/tutorials/quote-graph/testing/">Read the test guide <span aria-hidden="true">→</span></a><a class="eg-button eg-button-secondary" href="/ezgraph/compare/langgraph/quotegraph-case-study/">Inspect the code comparison</a></div></div><div class="eg-terminal"><div class="eg-terminal-label">Example repository · scripted tests</div><pre><code>git clone https://github.com/picoflowio/ezgraph-demo.git
+cd ezgraph-demo
+yarn
+yarn test:quote-graph</code></pre></div></div></section>
+{% include "partials/ezgraph/landing/call-to-action.njk" %}

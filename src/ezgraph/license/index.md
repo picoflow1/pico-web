@@ -1,14 +1,14 @@
 ---
-layout: layouts/ezgraph.njk
-title: EZGraph Commercial Runtime License
-description: The EZGraph Commercial Runtime License permits production use without a runtime fee while prohibiting competing redistribution.
+layout: layouts/ezgraph-marketing.njk
+title: "Commercial Runtime License"
+description: "The EZGraph runtime license permits production application use and restricts competing hosted services and competing SDK redistribution."
 permalink: /ezgraph/license/
 ezgraph: true
-ezgraphDocument: true
+ezgraphLegal: true
 ---
 # EZGraph Commercial Runtime License
 
-Licensor: ezgraph Authors
+Licensor: picoflow LLC
 Licensed Work: ezgraph (including its TypeScript source code, compiled JavaScript, and type definitions)
 
 ## 1. Grant of License

@@ -1,72 +1,25 @@
-<!-- ============================== HERO ============================== -->
-<section class="hero">
-  <div class="wrap">
-    <div class="hero-grid">
-      <div>
-        <span class="hero-badge">
-          <span class="pill">v1.0</span>
-          TypeScript · runs on LangGraph 1.4 · no account required
-        </span>
-
-        <h1>LangGraph's missing layer<br>is <span class="grad-text">EZGraph</span></h1>
-
-        <p class="sub">
-          LangGraph is a runtime, not an application framework. Every team building a
-          reliable guided chatbot still writes the same agent loop, the same tool dispatch,
-          the same concurrency bugs. EZGraph is the layer on top: same engine, one node
-          contract, <strong>51.9% less framework-facing code</strong> — measured on one
-          chatbot built twice.
-        </p>
-
-        <div class="btn-row">
-          <a class="btn btn-primary" href="/ezgraph/tutorial/">
-            Build your first graph
-            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M3 8h9M8.5 4.5L12 8l-3.5 3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </a>
-          <a class="btn btn-ghost" href="/ezgraph/compare/langgraph/quotegraph-case-study/">See the 666 lines you delete</a>
-        </div>
-
-        <ul class="trust-row">
-          <li>
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            No EZGraph account or key
-          </li>
-          <li>
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Production use, no runtime fee
-          </li>
-          <li>
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Public TypeScript declarations
-          </li>
-          <li>
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            No cloud control plane
-          </li>
-          <li>
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Private source/debug with support
-          </li>
-        </ul>
+<section class="eg-hero">
+  <div class="eg-container eg-hero-grid">
+    <div>
+      <span class="eg-eyebrow">TypeScript · Built on LangGraph</span>
+      <h1>Build LangGraph workflows your team can <em>understand, debug, and maintain.</em></h1>
+      <p class="eg-lede">EZGraph is the application layer for guided agentic workflows. One reusable node contract brings prompts, scoped tools, state, history, model configuration, and recovery together.</p>
+      <p class="eg-lede">Build guided conversations, extraction workflows, and reviewed tasks—with an inspectable session document.</p>
+      <div class="eg-actions">
+        <a class="eg-button" href="/ezgraph/tutorial/">Run your first workflow <span aria-hidden="true">↗</span></a>
+        <a class="eg-button eg-button-secondary" href="#node-contract">See the node contract</a>
       </div>
-
-      <div>
-        <figure class="chat-demo">
-          <picture>
-            <source srcset="/assets/ezgraph/img/quote-graph-chat.svg" type="image/svg+xml" media="(prefers-reduced-motion: no-preference)">
-            <img
-              src="/assets/ezgraph/img/quote-graph-chat-still.png"
-              width="440"
-              height="560"
-              alt="QuoteGraph guided quote: Driver, Vehicle, History, Coverage, then Quote. Jamie Rivera finances a 2019 Camry SE; the graph rejects liability-only because the lender requires collision, presents three tiers, adjusts deductibles, and locks in Selected as QT-482910."
-            >
-          </picture>
-          <figcaption>QuoteGraph — five stages, one session, no dropped state</figcaption>
-        </figure>
-      </div>
+      <p class="eg-note">No EZGraph account or key. No runtime fee.<br><a href="/ezgraph/license/">Commercial runtime license</a> · Bring your own model provider.</p>
+    </div>
+    <div class="eg-graph" role="img" aria-label="Illustrative guided workflow: CollectNode validates input, ReviewNode evaluates it, and FinishNode publishes an accepted result. Each stage has its own tools, and the application keeps a session document.">
+      <div class="eg-graph-top"><span>guided-workflow.ts</span><span>One node contract</span></div>
+      <div class="eg-graph-node"><div class="eg-graph-node-heading">CollectNode <span>LlmNode</span></div><p>Recognize intent. Validate the facts.</p><code>tools: capture_details</code></div>
+      <div class="eg-graph-edge"><span aria-hidden="true">↓</span>go(ReviewNode)</div>
+      <div class="eg-graph-node"><div class="eg-graph-node-heading">ReviewNode <span>LlmNode</span></div><p>Check the result against your criteria.</p><code>tools: review_result</code></div>
+      <div class="eg-graph-edge"><span aria-hidden="true">↓</span>go(FinishNode)</div>
+      <div class="eg-graph-node"><div class="eg-graph-node-heading">FinishNode <span>LlmNode</span></div><p>Publish the accepted result.</p><code>tools: confirm_result</code></div>
+      <div class="eg-graph-record"><span>session.document</span><span>state · history · diagnostics</span></div>
     </div>
   </div>
 </section>
-
+<div class="eg-strip"><div class="eg-container eg-strip-inner"><span>TypeScript &amp; Node.js</span><span>Compiles to LangGraph</span><span>Run in your infrastructure</span><span>Start without model credentials</span></div></div>

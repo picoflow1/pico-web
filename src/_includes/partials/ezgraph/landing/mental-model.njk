@@ -1,125 +1,37 @@
-<!-- ============================== HOW IT WORKS ============================== -->
-<section id="how">
-  <div class="wrap">
-    <div class="section-head">
-      <span class="eyebrow">How it works</span>
-      <h2>The whole mental model, in five concepts</h2>
-      <p>
-        That's the entire thing. If you know these five, you can read any EZGraph graph in
-        any team's repository.
-      </p>
+<section class="eg-section eg-section-tint" id="node-contract">
+  <div class="eg-container eg-split">
+    <div>
+      <span class="eg-eyebrow">The LlmNode contract</span><h2>A stage you can read in one place.</h2>
+      <p class="eg-lede">The node says what the model should do. Its handler says what the application will accept.</p>
+      <ol class="eg-contract-list">
+        <li><b>01</b><div><strong>Declare the prompt and allowed tools.</strong><p>The city collector offers <code>capture_city</code>, with a schema checked before its handler runs.</p></div></li>
+        <li><b>02</b><div><strong>Save facts where they become valid.</strong><p><code>saveState()</code> stages a write to the current node's typed channel. Shared context has an explicit home too.</p></div></li>
+        <li><b>03</b><div><strong>Return an explicit outcome.</strong><p><code>stay()</code> supplies corrective tool feedback; <code>go()</code> enters the next stage. Replies and completion have their own builders.</p></div></li>
+      </ol>
+      <a class="eg-link" href="/ezgraph/docs/developer-guide/nodes-and-execution/">Read the lifecycle and execution contract <span aria-hidden="true">→</span></a>
     </div>
+    <div class="eg-code"><div class="eg-code-head"><span>CityNode · abridged from the starter</span><span>TypeScript</span></div><pre><code class="language-typescript">class CityNode extends LlmNode&lt;StarterStateType&gt; {
+  getPrompt() {
+    return "Ask for a city, then call capture_city.";
+  }
 
-    <dl class="concepts">
-      <div class="concept reveal">
-        <dt>A session is a document</dt>
-        <dd>
-          One JSON row per conversation, keyed by session id, holding the chat histories, the
-          active node, your per-node state, accumulated token usage, warnings and errors.
-          <b>Nothing lives in process memory between turns</b> — and you can open the row in a
-          database browser and read it.
-        </dd>
-      </div>
-      <div class="concept reveal">
-        <dt>A turn is one <code>run()</code></dt>
-        <dd>
-          <code>engine.run({ graphName, sessionId, userMessage })</code> loads the document,
-          takes an exclusive lease, runs the graph, saves, and returns an HTTP-shaped result.
-          The turn is the unit of concurrency, cancellation, logging, and persistence.
-        </dd>
-      </div>
-      <div class="concept reveal">
-        <dt>A node is a stage</dt>
-        <dd>
-          One <code>LlmNode</code> class owns a prompt, tools, model configuration,
-          <code>onResponse()</code>, error hooks, and local state. Use that same class for
-          conversation, nested calls, or parallel work; its graph or caller owns scheduling.
-          It does <b>not</b> own persistence plumbing or routing tables. Nodes are constructed once, shared
-          across sessions, and frozen — so a per-turn value stored on <code>this</code> throws
-          immediately instead of leaking across customers.
-        </dd>
-      </div>
-      <div class="concept reveal">
-        <dt>A tool response is the decision</dt>
-        <dd>
-          <code>stay()</code>, <code>go(Next)</code>, <code>direct(text)</code>, or
-          <code>finish(text)</code>. <code>go(Child1, Child2)</code> starts concurrent work,
-          and an explicit join waits for both. Internal workers can return
-          <code>taskResult(value)</code> for <code>onResponse()</code> to save. Nodes write
-          the state they own before returning; the outcome controls what happens next.
-        </dd>
-      </div>
-      <div class="concept reveal">
-        <dt><code>currentNode</code> resumes</dt>
-        <dd>
-          The document remembers which stage the conversation is sitting in. The next request
-          enters that stage directly. That is why an interrupt here is <b>a persisted string
-          instead of a suspended coroutine</b> — and why nothing re-executes on resume.
-        </dd>
-      </div>
-    </dl>
+  defineTool(): readonly ToolDefinition[] {
+    return [{
+      name: "capture_city",
+      description: "Save a destination city.",
+      schema: z.object({ city: z.string().min(2) }),
+    }];
+  }
 
-    <div class="grid grid-2 mt-40">
-      <div class="card">
-        <h3>The contract every team learns once</h3>
-        <p style="margin-bottom:18px">
-          Verified mechanically across all five stages of the benchmark app. Each node keeps
-          the same small shape: prompt, tool definitions, and decorated handlers. The quote
-          node adds <code>getLlmConfig</code> because it pays for a stronger presentation model.
-        </p>
-        <div class="table-wrap">
-          <table style="min-width:0">
-            <thead><tr><th>Node</th><th>Members</th></tr></thead>
-            <tbody>
-              <tr><td><code>DriverNode</code></td><td class="mono" style="font-size:0.8rem">getPrompt · defineTool · @Tool ×1</td></tr>
-              <tr><td><code>VehicleNode</code></td><td class="mono" style="font-size:0.8rem">getPrompt · defineTool · @Tool ×2</td></tr>
-              <tr><td><code>HistoryNode</code></td><td class="mono" style="font-size:0.8rem">getPrompt · defineTool · @Tool ×1</td></tr>
-              <tr><td><code>CoverageNode</code></td><td class="mono" style="font-size:0.8rem">getPrompt · defineTool · @Tool ×1</td></tr>
-              <tr><td><code>QuoteNode</code></td><td class="mono" style="font-size:0.8rem">getPrompt · <span class="win">getLlmConfig</span> · defineTool · @Tool ×3</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p class="table-note">
-          The LangGraph version's five stages are <em>not</em> uniform: each is split across two
-          arrow-function properties plus entries in four module-level maps, and each organizes
-          its dispatch differently depending on how many tools it owns.
-        </p>
-      </div>
-
-      <div class="card">
-        <h3>Adding a sixth stage</h3>
-        <p style="margin-bottom:18px">
-          The honest test of modularity: how many places do you touch? In EZGraph, <b>a stage
-          is a file.</b>
-        </p>
-        <ul class="checks">
-          <li>
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span><b>1.</b> Write <code>nodes/discounts.node.ts</code> — prompt, tools, handlers, validation, transition, all in one place</span>
-          </li>
-          <li>
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span><b>2.</b> Add one key to <code>QuoteGraphNodes</code></span>
-          </li>
-          <li>
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span><b>3.</b> Add one line to <code>historySpaces</code></span>
-          </li>
-          <li>
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span><b>4.</b> Add the class to <code>registerTurnNodes(...)</code></span>
-          </li>
-          <li>
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span><b>5.</b> Point the upstream <code>go(DiscountsNode)</code> at it</span>
-          </li>
-        </ul>
-        <div class="verdict" style="margin-top:20px">
-          Steps 3–5 take the <b>class</b>, so forgetting one is a compile error. Routing needs
-          no edit. <b>The LangGraph equivalent is 14 edit sites</b>, eleven of them one-line
-          changes to shared maps and string unions that nothing cross-checks.
-        </div>
-      </div>
-    </div>
+  @Tool("capture_city")
+  async captureCity({ city }: { city: string }) {
+    const value = city.trim();
+    if (!/^[\p{L} .'-]+$/u.test(value)) {
+      return stay("Ask for a valid city name.");
+    }
+    this.saveState({ city: value });
+    return go(SummaryNode);
+  }
+}</code></pre></div>
   </div>
 </section>

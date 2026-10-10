@@ -168,6 +168,8 @@ function searchText(value) {
 
 export default function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy({ "src/assets": "assets" });
+  eleventyConfig.addPassthroughCopy({ "examples/ezgraph-starter": "assets/ezgraph/starter" });
+  eleventyConfig.addPassthroughCopy({ "scripts/ezgraph-compare-metrics.mjs": "assets/ezgraph/ezgraph-compare-metrics.mjs" });
   eleventyConfig.addPassthroughCopy({ "src/public": "." });
   eleventyConfig.addWatchTarget("src/assets/css/");
 

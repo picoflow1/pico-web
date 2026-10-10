@@ -1,122 +1,34 @@
 ---
-layout: layouts/ezgraph.njk
-title: EZGraph vs. LangGraph
-description: Compare EZGraph's application and session conventions with direct LangGraph, then explore the separate QuoteGraph case study and implementation evidence.
+layout: layouts/ezgraph-marketing.njk
+title: "EZGraph and LangGraph — choose your application layer"
+description: "Compare EZGraph's supplied application contracts with direct LangGraph and LangChain composition, including nodes, tools, models, history, sessions, and execution boundaries."
 permalink: /ezgraph/compare/langgraph/
 ezgraph: true
 ezgraphCompare: true
 ---
-<section class="tight">
-  <div class="wrap">
-    <span class="eyebrow">Architecture &amp; operating model</span>
-    <h1>EZGraph vs. LangGraph</h1>
-    <p class="lede">Keep LangGraph as the execution engine. Choose which application conventions your team wants supplied.</p>
-    <p>EZGraph is an application layer built on LangGraph and LangChain. It brings class-based
-      nodes, conversation handling, and durable session management to guided applications.
-      Direct LangGraph gives your team the graph primitives and lets you choose the surrounding
-      application structure.</p>
-    <p>Start here for the architecture. The <a href="/ezgraph/compare/langgraph/quotegraph-case-study/">QuoteGraph case study</a>
-      separately examines one insurance chatbot built both ways, with code counts, edit sites,
-      and the measurement method.</p>
-  </div>
-</section>
-
-<section class="band" id="ownership">
-  <div class="wrap">
-    <div class="section-head">
-      <span class="eyebrow">Architecture</span>
-      <h2>The ownership choice</h2>
-      <p>Both execute LangGraph graphs. EZGraph standardizes the conversation and session layer around them.</p>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Concern</th><th>EZGraph supplies</th><th>A direct LangGraph team chooses</th></tr></thead>
-        <tbody>
-          <tr><td>Authoring</td><td>Node classes with prompts, tools, state writes, and outcomes; validated registration through <code>StateGraphExt</code>.</td><td>Node functions, state schemas, edges, and how to organize those responsibilities in application code.</td></tr>
-          <tr><td>Conversation handling</td><td>A reusable <code>LlmNode</code> model/tool loop and response contracts.</td><td>How to compose model calls, tool handling, validation, and response policy, including available LangChain helpers.</td></tr>
-          <tr><td>Session lifecycle</td><td><code>GraphEngine</code> coordinates restore, invocation, progress persistence, and final saves through a session manager.</td><td>The invocation boundary and how graph execution connects to application sessions and storage.</td></tr>
-          <tr><td>Execution</td><td>A class-based authoring layer that compiles to a LangGraph <code>StateGraph</code>.</td><td>Direct use of graph topology, channels, reducers, and execution controls.</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="mt-32">LangGraph's <a href="https://docs.langchain.com/oss/javascript/langgraph/graph-api">Graph API</a>
-      defines the underlying execution model. Adding EZGraph changes the application contract;
-      it does not replace that scheduler with PicoFlow's Flow/Step runtime.</p>
-  </div>
-</section>
-
-<section id="state-and-sessions">
-  <div class="wrap">
-    <div class="section-head">
-      <span class="eyebrow">Operating model</span>
-      <h2>State, memory, and sessions</h2>
-      <p>A shared session convention gives each conversation an application-readable operating record.</p>
-    </div>
-    <p>EZGraph keeps business data in graph-owned state, with node-owned channels and named
-      histories. Node classes group behavior; mutable instance fields are not a place to keep
-      one customer's conversation state, because graph and node objects serve multiple sessions.</p>
-    <p>The session layer restores the saved conversation and records progress and diagnostics.
-      This provides a common boundary for continuing a conversation, inspecting a failed turn,
-      and applying application-specific restore policy. See the
-      <a href="/ezgraph/docs/developer-guide/">developer guide</a> for state ownership and node contracts.</p>
-    <div class="callout tip">
-      <span class="label">Session records and checkpoints serve different boundaries</span>
-      <p>EZGraph's normal session persistence is an application-level record. It is not a promise
-        of LangGraph checkpoint history or arbitrary mid-node resume. Direct LangGraph offers
-        <a href="https://docs.langchain.com/oss/javascript/langgraph/persistence">checkpointers and stores</a>;
-        a team can use them alongside its own domain records. Choose the recovery and inspection
-        boundaries your application needs.</p>
-    </div>
-  </div>
-</section>
-
-<section class="band" id="conversation-contracts">
-  <div class="wrap">
-    <div class="section-head">
-      <span class="eyebrow">Application contracts</span>
-      <h2>One convention across conversation stages</h2>
-      <p>A node brings its prompt, allowed tools, validation, and transition decision together.</p>
-    </div>
-    <p>In a guided conversation, collecting information is only part of the work. A stage must
-      decide whether input is valid, whether to ask again, whether to return a direct response,
-      and when to advance. EZGraph supplies common node and tool contracts so those decisions
-      can be expressed consistently across stages.</p>
-    <p>The business policy remains application code: eligibility checks, pricing, authorization,
-      and external effects still need explicit handlers. Direct LangGraph can implement the
-      same behavior through node functions and shared helpers. The architectural choice is
-      whether EZGraph's existing conventions fit the product and the team's preferred authoring model.</p>
-    <p>Follow the <a href="/ezgraph/tutorial/">small tutorial</a> to see the contracts in use,
-      or the <a href="/ezgraph/quote-graph/">QuoteGraph walkthrough</a> for a complete staged conversation.</p>
-  </div>
-</section>
-
-<section id="choosing">
-  <div class="wrap">
-    <div class="section-head">
-      <span class="eyebrow">Decision guide</span>
-      <h2>Which layer should your team own?</h2>
-    </div>
-    <div class="grid grid-2">
-      <div class="card">
-        <h3>Choose EZGraph when…</h3>
-        <p>You want guided, multi-turn applications on LangGraph with reusable node, tool,
-          state, and session conventions. The value is a common application baseline that
-          your team can apply across conversations.</p>
-      </div>
-      <div class="card">
-        <h3>Choose direct LangGraph when…</h3>
-        <p>You want to design the graph and surrounding application contracts directly, or
-          already have a platform that supplies those conventions. Check the fit carefully
-          when custom execution and checkpoint behavior are central requirements.</p>
-      </div>
-    </div>
-    <p class="mt-32">The <a href="/ezgraph/#limits">EZGraph limits</a> describe the abstraction's
-      boundaries. The <a href="/ezgraph/compare/langgraph/quotegraph-case-study/">case study</a>
-      provides evidence for one implementation; its code reduction is not a universal
-      performance, quality, or productivity result.</p>
-    <div class="btn-row mt-32">
-      <a class="btn btn-primary" href="/ezgraph/compare/langgraph/quotegraph-case-study/">Read the QuoteGraph case study</a>
-      <a class="btn btn-ghost" href="/ezgraph/docs/developer-guide/">Explore the developer guide</a>
-    </div>
-  </div>
-</section>
+<section class="eg-page-hero"><div class="eg-container"><span class="eg-eyebrow">EZGraph + LangGraph</span><h1>Keep the runtime.<br>Choose the application contract.</h1><p class="eg-lede">LangGraph executes the graph. EZGraph supplies a TypeScript application layer around it. The choice is which conventions your team wants to adopt and which it wants to design.</p><div class="eg-actions"><a class="eg-button" href="/ezgraph/tutorial/">Try the node contract <span aria-hidden="true">↗</span></a><a class="eg-button eg-button-secondary" href="/ezgraph/compare/langgraph/quotegraph-case-study/">Inspect the QuoteGraph comparison</a></div></div></section>
+<nav class="eg-container eg-page-nav" aria-label="Comparison sections"><a href="#ownership">Application ownership</a><a href="#state-and-sessions">State and sessions</a><a href="#conversation-contracts">Stage contracts</a><a href="#choosing">Choosing the layer</a></nav>
+<section class="eg-article-section" id="ownership"><div class="eg-container"><span class="eg-eyebrow">A supplied convention or your own architecture</span><h2>What your application team owns.</h2><p>LangGraph's maintainers describe it as a low-level orchestration runtime that leaves prompts and application architecture open. That flexibility gives teams room to define their own conventions. <a href="https://docs.langchain.com/oss/javascript/langgraph/overview">LangGraph overview ↗</a></p>
+<div class="eg-table-wrap" tabindex="0" role="region" aria-label="Application ownership comparison"><table><thead><tr><th>Concern</th><th>EZGraph supplies</th><th>Direct LangGraph / LangChain composition</th></tr></thead><tbody>
+<tr><td>Stage structure</td><td><code>LlmNode</code> groups prompt, tools, state, and lifecycle hooks.</td><td>Organize node functions, agents, subgraphs, and shared helpers to fit the application.</td></tr>
+<tr><td>Model/tool rounds</td><td>A shared loop integrated with node outcomes, validation, histories, and diagnostics.</td><td>Use LangChain agents and middleware, or construct a custom loop and its surrounding contracts.</td></tr>
+<tr><td>Tool scope and validation</td><td>Node tool definitions, bound handlers, schema feedback, and explicit application outcomes.</td><td>Bind selected tools and schemas, then choose middleware and application validation policy.</td></tr>
+<tr><td>Model policy</td><td>Graph defaults, node overrides, catalog validation, and recovery configuration.</td><td>Compose model configuration and override rules with available model and agent APIs.</td></tr>
+<tr><td>History and business facts</td><td>Named history spaces, typed node channels, graph context, and staged writes.</td><td>Design state schemas, reducers, stores, and the memory each stage receives.</td></tr>
+<tr><td>User turns and sessions</td><td>An engine-managed turn boundary with application session documents.</td><td>Compose invocation, checkpointing, application records, and session policy.</td></tr>
+<tr><td>Recovery and testing</td><td>Node recovery with graph fallback; scripted providers and a turn harness.</td><td>Combine runtime capabilities, middleware, mocks, and application-specific tests.</td></tr>
+<tr><td>Execution controls</td><td>A validated graph facade that compiles to LangGraph.</td><td>Direct access to LangGraph topology, channels, streaming, and checkpoint controls.</td></tr>
+</tbody></table></div>
+<div class="eg-callout"><strong>The ecosystem already has higher-level tools.</strong><p>LangChain supplies agent loops and middleware for tool selection, retries, fallbacks, and guardrails. Those agents can be composed inside a larger LangGraph workflow. EZGraph differentiates through its integrated application contract. <a href="https://docs.langchain.com/oss/javascript/langchain/middleware/overview">LangChain middleware and composition ↗</a></p></div>
+</div></section>
+<section class="eg-article-section" id="state-and-sessions"><div class="eg-container eg-split eg-split-top"><div><span class="eg-eyebrow">State and persistence</span><h2>A domain record you can inspect.</h2><p>EZGraph stores accepted facts in typed node channels and shared graph context. Named histories specify which conversation each node sees. A session document records the active stage, application state, usage, and diagnostics.</p><p>The engine restores and persists that application record around turns. Schema versions, migration hooks, and restore policy provide common places for evolving sessions.</p><a class="eg-link" href="/ezgraph/docs/developer-guide/state-context-and-history/">Read the persistence contract <span aria-hidden="true">→</span></a></div><div class="eg-callout"><strong>Session snapshots and checkpoints have different jobs.</strong><p>LangGraph checkpointers save execution state and support their own continuation and inspection features. EZGraph's normal engine path uses application session snapshots and compiles without a native checkpointer by default. Its saved session does not promise arbitrary mid-node resume or LangGraph checkpoint history. <a href="https://docs.langchain.com/oss/javascript/langgraph/persistence">LangGraph persistence ↗</a></p></div></div></section>
+<section class="eg-article-section" id="conversation-contracts"><div class="eg-container"><span class="eg-eyebrow">A shared stage vocabulary</span><h2>Make continuation a decision you can read.</h2><p>A tool result expresses the application's next action. The same builders can handle collection, correction, review, a direct reply, or completion.</p><div class="eg-table-wrap" tabindex="0" role="region" aria-label="EZGraph response outcomes"><table><thead><tr><th>Outcome</th><th>Application meaning</th></tr></thead><tbody>
+<tr><td><code>stay(feedback)</code></td><td>Return corrective tool feedback and continue model work in the current node.</td></tr>
+<tr><td><code>go(NextNode)</code></td><td>Enter another registered node in the current turn.</td></tr>
+<tr><td><code>direct(content)</code></td><td>Return exact content from code; the current node stays active for the next turn.</td></tr>
+<tr><td><code>directTo(NextNode, content)</code></td><td>Reply now and select where the next user turn resumes.</td></tr>
+<tr><td><code>finish(content)</code></td><td>Complete the graph with an application-owned result.</td></tr>
+<tr><td><code>fanout(Child1, Child2)</code></td><td>Route concurrent branches with an explicitly declared join and state ownership.</td></tr>
+</tbody></table></div><p style="margin-top:25px">For caller-owned internal work, typed <code>runNode()</code> results let a parent decide what to merge and publish. See the <a href="/ezgraph/docs/developer-guide/nodes-and-execution/">execution ownership contract</a> and <a href="/ezgraph/docs/developer-guide/topology/">topology guide</a> for supported modes.</p></div></section>
+<section class="eg-article-section" id="choosing"><div class="eg-container"><span class="eg-eyebrow">Decision guide</span><h2>Choose the layer that fits the work.</h2><div class="eg-fit"><div><h3>EZGraph is a useful fit when…</h3><p>Your team builds guided TypeScript workflows and wants shared conventions for stages, tools, models, history, recovery, and readable application sessions. You prefer adapting a supplied contract to designing that contract across several applications.</p></div><div><h3>Direct composition is a useful fit when…</h3><p>You already have an application platform, want to choose each surrounding convention, or need execution controls outside EZGraph's facade. Validate requirements for native streaming, checkpoint continuation, and custom graph topology before adopting a layer.</p></div></div><p>Adoption means adapting nodes, state, and sessions deliberately. Start with the <a href="/ezgraph/tutorial/">small runnable workflow</a>, then compare the contract against a real requirement.</p><a class="eg-link" href="/ezgraph/compare/langgraph/quotegraph-case-study/">See one application implemented both ways <span aria-hidden="true">→</span></a></div></section>
+{% include "partials/ezgraph/landing/call-to-action.njk" %}

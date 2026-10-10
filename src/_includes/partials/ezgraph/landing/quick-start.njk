@@ -1,60 +1,16 @@
-<!-- ============================== QUICK START ============================== -->
-<section class="band" id="start">
-  <div class="wrap wrap-narrow">
-    <div class="section-head center">
-      <span class="eyebrow">Quick start</span>
-      <h2>Three minutes to a running graph</h2>
-      <p>Install the published <a href="https://www.npmjs.com/package/@picoflow/ezgraph"><code>@picoflow/ezgraph</code> npm package</a>,
-        then follow the <a href="/ezgraph/tutorial/">tutorial</a> to build a real two-stage
-        conversation end to end.</p>
-    </div>
+<section class="eg-section eg-section-tint" id="get-started">
+  <div class="eg-container eg-split">
+    <div><span class="eg-eyebrow">A small first commitment</span><h2>Run one workflow.<br>Inspect what it saves.</h2><p class="eg-lede">Start locally with two nodes, two turns, and an inspectable session. Scripted model replies make the first run reproducible.</p><p>The starter exercises the real engine, graph, handlers, and in-memory persistence. It includes tests for continuation, validation, and stage-specific tools. Node.js 22.5 or later; no model credentials needed for this run.</p><div class="eg-actions"><a class="eg-button" href="/ezgraph/tutorial/">Run your first workflow <span aria-hidden="true">↗</span></a><a class="eg-button eg-button-secondary" href="/assets/ezgraph/ezgraph-starter.zip" download>Download the starter</a></div><p class="eg-note">Then connect your model provider and persistence store using the developer guide.</p></div>
+    <div><div class="eg-terminal"><div class="eg-terminal-label">After downloading and extracting the starter</div><pre><code>cd ezgraph-starter
+npm install
+npm start
+npm test</code></pre></div><div class="eg-terminal eg-terminal-output" style="margin-top:18px"><div class="eg-terminal-label">Scripted run · actual workflow execution</div><pre><code>You: Hi
+EZGraph: Which city would you like to visit?
+You: Lisbon
+EZGraph: Trip to Lisbon: choose your dates,
+then book transport.
+Completed: true
 
-    <div class="install" style="margin-bottom:14px">
-      <span class="prompt">$</span>
-      <code>npm install @picoflow/ezgraph</code>
-    </div>
-    <div class="install" style="margin-bottom:26px">
-      <span class="prompt">$</span>
-      <code>npm install @langchain/openai   # or @langchain/anthropic, @langchain/google</code>
-    </div>
-
-    <div class="code">
-      <div class="code-head">
-        <span class="dots"><i></i><i></i><i></i></span>
-        <span class="file">main.ts</span>
-      </div>
-<pre><code>import "reflect-metadata";          // once, at the very top of your entry point
-import { GraphEngine } from "@picoflow/ezgraph";
-import { WeatherGraph } from "./weather-graph.js";
-
-const engine = await GraphEngine.create({ graphs: [WeatherGraph] });
-
-const result = await engine.run({
-  graphName: "WeatherGraph",
-  sessionId: "demo-1",
-  userMessage: "hi",
-});
-
-// { status: 200, body: { success: true, completed: false,
-//                        message: "Which city would you like the weather for?" } }
-// Persisted: currentNode = "CollectNode"</code></pre>
-    </div>
-
-    <div class="callout tip">
-      <span class="label">Two setup gotchas, up front</span>
-      <p>
-        Tool handlers use a method decorator, so your <code>tsconfig.json</code> needs
-        <code>experimentalDecorators</code> and <code>emitDecoratorMetadata</code>. And
-        <code>reflect-metadata</code> must be imported <b>once, before any node module loads</b>
-        — without it, <code>@Tool</code> metadata isn't collected and your nodes will look like
-        they have no tools. Both are covered in
-        <a href="/ezgraph/docs/developer-guide/state-context-and-history/">the state and history guide</a>.
-      </p>
-    </div>
-
-    <div class="btn-row" style="justify-content:center;margin-top:30px">
-      <a class="btn btn-primary" href="/ezgraph/tutorial/">Start the tutorial</a>
-      <a class="btn btn-ghost" href="/ezgraph/docs/developer-guide/">Full developer guide</a>
-    </div>
+Session document: { … }</code></pre></div></div>
   </div>
 </section>

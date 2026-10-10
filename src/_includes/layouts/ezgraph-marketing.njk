@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  {% set ezgraphPageTitle = title | replace(' | EZGraph', '') %}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0e13">
+  <title>{{ ezgraphPageTitle }} | EZGraph</title>
+  <meta name="description" content="{{ description }}">
+  <link rel="canonical" href="{{ site.url }}{{ page.url }}">
+  <link rel="icon" href="/assets/ezgraph/img/logo.svg" type="image/svg+xml">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="EZGraph">
+  <meta property="og:title" content="{{ ezgraphPageTitle }} | EZGraph">
+  <meta property="og:description" content="{{ description }}">
+  <meta property="og:url" content="{{ site.url }}{{ page.url }}">
+  <meta property="og:image" content="{{ site.url }}/assets/ezgraph/img/marketing-card.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="EZGraph — the application layer for guided LangGraph workflows">
+  <meta name="twitter:card" content="summary_large_image">
+  {% if ezgraphDocument or ezgraphDocs %}<link rel="stylesheet" href="/assets/css/ezgraph.css">{% endif %}
+  <link rel="stylesheet" href="/assets/css/ezgraph-marketing.css">
+  {% if ezgraphDocument or ezgraphDocs %}<link rel="stylesheet" href="/assets/css/ezgraph-docs.css">{% endif %}
+</head>
+<body class="ezgraph-site">
+  <a class="eg-skip" href="#main">Skip to content</a>
+  <header class="eg-header">
+    <div class="eg-container eg-header-inner">
+      <a class="eg-brand" href="/ezgraph/" aria-label="EZGraph home"><img src="/assets/ezgraph/img/logo.svg" alt="EZGraph" width="151" height="36"></a>
+      <nav class="eg-nav" aria-label="EZGraph navigation">
+        <a href="/ezgraph/why/"{% if page.url == '/ezgraph/why/' %} aria-current="page"{% endif %}>Why EZGraph</a>
+        <a href="/ezgraph/workflows/"{% if page.url == '/ezgraph/workflows/' or page.url == '/ezgraph/quote-graph/' %} aria-current="{% if page.url == '/ezgraph/workflows/' %}page{% else %}true{% endif %}"{% endif %}>Workflows</a>
+        <a href="/ezgraph/compare/langgraph/"{% if ezgraphCompare %} aria-current="{% if page.url == '/ezgraph/compare/langgraph/' %}page{% else %}true{% endif %}"{% endif %}>vs. LangGraph</a>
+        <a href="/ezgraph/docs/developer-guide/"{% if ezgraphDocument or ezgraphDocs %} aria-current="{% if page.url == '/ezgraph/docs/developer-guide/' %}page{% else %}true{% endif %}"{% endif %}>Docs</a>
+        <a href="/ezgraph/license/"{% if page.url == '/ezgraph/license/' %} aria-current="page"{% endif %}>Licence</a>
+      </nav>
+      <a class="eg-button eg-button-small" href="/ezgraph/tutorial/"{% if page.url == '/ezgraph/tutorial/' %} aria-current="page"{% endif %}>Get started <span aria-hidden="true">↗</span></a>
+    </div>
+  </header>
+  {% include "partials/ezgraph/landing/ticker.njk" %}
+  <main id="main">{% if ezgraphLegal %}<div class="eg-container eg-legal">{% endif %}{{ content | safe }}{% if ezgraphLegal %}</div>{% endif %}</main>
+  <footer class="eg-footer">
+    <div class="eg-container eg-footer-top">
+      <div><a class="eg-brand" href="/ezgraph/"><img src="/assets/ezgraph/img/logo.svg" alt="EZGraph" width="151" height="36"></a><p>A consistent application layer.<br>A real LangGraph underneath.</p><a class="eg-byline" href="/">Built by PicoFlow <span aria-hidden="true">↗</span></a></div>
+      <div><h2>Build</h2><a href="/ezgraph/tutorial/">First workflow</a><a href="/ezgraph/workflows/">Workflow examples</a><a href="/ezgraph/docs/developer-guide/">Developer guide</a><a href="https://www.npmjs.com/package/@picoflow/ezgraph">npm package ↗</a></div>
+      <div><h2>Explore</h2><a href="/ezgraph/why/">Why EZGraph</a><a href="/ezgraph/compare/langgraph/">Compare the layers</a><a href="/ezgraph/quote-graph/">QuoteGraph walkthrough</a><a href="https://github.com/picoflowio/ezgraph-demo">Example source ↗</a></div>
+      <div><h2>Connect</h2><a href="/ezgraph/license/">Runtime license</a><a href="{{ site.discord }}">Developer community ↗</a><a href="/contact/">Contact &amp; support</a><a href="/">Explore PicoFlow ↗</a></div>
+    </div>
+    <div class="eg-container eg-footer-bottom"><span>© {{ site.year }} picoflow LLC</span><span>Free production use under the <a href="/ezgraph/license/">commercial runtime license</a>. Model and hosting costs are yours.</span></div>
+  </footer>
+</body>
+</html>

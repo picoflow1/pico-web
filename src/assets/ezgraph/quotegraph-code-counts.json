@@ -1,0 +1,143 @@
+{
+  "measuredAt": "2026-10-09",
+  "sourceRepository": "https://github.com/picoflowio/ezgraph-demo",
+  "sourceRevision": "76273d6654ec83816890a1d094b77959e98c7d24",
+  "method": "Count remaining physical lines after excluding blank lines, full-line comments, and imports. Runtime libraries, prompts, tests, controllers, and backend code are excluded from the graph-application headline; controller and backend counts are reported separately.",
+  "measurementScript": "https://www.picoflow.io/assets/ezgraph/ezgraph-compare-metrics.mjs",
+  "quoteGraph": {
+    "normalized": 657,
+    "raw": 878,
+    "files": {
+      "src/graphs/quote-graph/quote-graph.ts": {
+        "normalized": 50,
+        "raw": 81,
+        "sha256": "2a1f32f2b522f3a53f8a4b7924d22dec930b79e91a70233a26eeb849c93a7ff5"
+      },
+      "src/graphs/quote-graph/quote-graph.state.ts": {
+        "normalized": 66,
+        "raw": 89,
+        "sha256": "684a07e313be14c2ecc08deeab3ce1d421f5015211963b71f5fa364827a17198"
+      },
+      "src/graphs/quote-graph/nodes/coverage.node.ts": {
+        "normalized": 81,
+        "raw": 115,
+        "sha256": "75a5571f32a88ee007abce2483260dbb00939964c15e2783af8c4931d67dba54"
+      },
+      "src/graphs/quote-graph/nodes/driver.node.ts": {
+        "normalized": 85,
+        "raw": 109,
+        "sha256": "39947292871f194c94581ee6024d1aab2a7774fa08e2119460a86534039f3f7d"
+      },
+      "src/graphs/quote-graph/nodes/history.node.ts": {
+        "normalized": 83,
+        "raw": 111,
+        "sha256": "adf14759bdc1583be9a9992aadb1e2f592dab7c9bc6dc160801f666baa6b8352"
+      },
+      "src/graphs/quote-graph/nodes/quote.node.ts": {
+        "normalized": 178,
+        "raw": 232,
+        "sha256": "2d8f649c5a2a5fa56c9d212bae661d0855cd5b52e2c30357b1db1b3679a3f50b"
+      },
+      "src/graphs/quote-graph/nodes/vehicle.node.ts": {
+        "normalized": 114,
+        "raw": 141,
+        "sha256": "cca7a135c96961302c296dededda762d616acb164b6c70dec2f34eb7d013700e"
+      }
+    }
+  },
+  "quoteLanggraph": {
+    "normalized": 1322,
+    "raw": 1532,
+    "files": {
+      "src/graphs/quote-langgraph/quote-langgraph.ts": {
+        "normalized": 1019,
+        "raw": 1160,
+        "sha256": "a5da90bc7bd5cd3c3a9ce026d73825d24883bfa1d8c919f97f60a096d79ff8f3"
+      },
+      "src/graphs/quote-langgraph/quote-langgraph.state.ts": {
+        "normalized": 83,
+        "raw": 103,
+        "sha256": "3d982413c5cd5da0ebcab2105961db7c52e6cd023dcdb14e418a55d912f5e967"
+      },
+      "src/graphs/quote-langgraph/quote-session-store.ts": {
+        "normalized": 177,
+        "raw": 212,
+        "sha256": "b3dcf2d614c0f822238cdc46184585aee6b7cd4f3b6135934221e5f9ec0ea787"
+      },
+      "src/graphs/quote-langgraph/quote-types.ts": {
+        "normalized": 43,
+        "raw": 57,
+        "sha256": "e65ca87ca75b5e5a564548373d237753d5cb33690033047049e33c3c5964e222"
+      }
+    }
+  },
+  "controllers": {
+    "ezgraph": {
+      "normalized": 47,
+      "raw": 71,
+      "files": {
+        "src/controllers/ai-controller.ts": {
+          "normalized": 47,
+          "raw": 71,
+          "sha256": "a9ecc329b9bce46fbdabe98134fc2d5821e7518628aec2793cc42be9219df3dd"
+        }
+      }
+    },
+    "langgraph": {
+      "normalized": 74,
+      "raw": 106,
+      "files": {
+        "src/controllers/ai-langgraph-controller.ts": {
+          "normalized": 74,
+          "raw": 106,
+          "sha256": "c7c9a155c2803052cdbc8900b5325456e031de74848e98ea2c56ac56670dab14"
+        }
+      }
+    }
+  },
+  "backend": {
+    "ezgraph": {
+      "normalized": 287,
+      "raw": 356,
+      "files": {
+        "src/graphs/quote-graph/backend/quote-clock.ts": {
+          "normalized": 56,
+          "raw": 71,
+          "sha256": "d5b24f05354cfde92015a00b2c4fd80979ecacfcfc3e5e77f87cc3765b278c6d"
+        },
+        "src/graphs/quote-graph/backend/rating-engine.ts": {
+          "normalized": 169,
+          "raw": 211,
+          "sha256": "1e550cc111fd0ce3069e2647e8245392c4c973f7859cb5ad3306be37ba14cd68"
+        },
+        "src/graphs/quote-graph/backend/vehicle-catalog.ts": {
+          "normalized": 62,
+          "raw": 74,
+          "sha256": "9b03f80b9cb9fd36c265eedc720d2d9bcd9b4eb5d37b7b9b8f61138048cc8c2c"
+        }
+      }
+    },
+    "langgraph": {
+      "normalized": 287,
+      "raw": 355,
+      "files": {
+        "src/graphs/quote-langgraph/backend/quote-clock.ts": {
+          "normalized": 56,
+          "raw": 71,
+          "sha256": "d5b24f05354cfde92015a00b2c4fd80979ecacfcfc3e5e77f87cc3765b278c6d"
+        },
+        "src/graphs/quote-langgraph/backend/rating-engine.ts": {
+          "normalized": 169,
+          "raw": 210,
+          "sha256": "8c4340de46f59fc62e08b9f81b1a3a66d80b9904c53feb449afed78868ae66b0"
+        },
+        "src/graphs/quote-langgraph/backend/vehicle-catalog.ts": {
+          "normalized": 62,
+          "raw": 74,
+          "sha256": "9b03f80b9cb9fd36c265eedc720d2d9bcd9b4eb5d37b7b9b8f61138048cc8c2c"
+        }
+      }
+    }
+  },
+  "sourceHasLocalChanges": false
+}

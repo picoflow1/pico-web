@@ -1,4 +1,4 @@
-<aside class="ezgraph-docs-sidebar">
+{% macro documentationLinks() %}
   <nav aria-label="EZGraph documentation sections">
     <p class="ezgraph-docs-sidebar__title">EZGraph docs</p>
     {% for group in ezgraphDocsNav %}
@@ -25,4 +25,11 @@
     </div>
     {% endfor %}
   </nav>
+{% endmacro %}
+<aside class="ezgraph-docs-sidebar">
+  <div class="ezgraph-docs-sidebar__desktop">{{ documentationLinks() }}</div>
+  <details class="ezgraph-docs-sidebar__mobile">
+    <summary>Browse documentation <span aria-hidden="true">+</span></summary>
+    {{ documentationLinks() }}
+  </details>
 </aside>

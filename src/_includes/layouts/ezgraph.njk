@@ -1,65 +1,15 @@
-<!doctype html>
-<html lang="en">
-<head>
-  {% include "partials/head.njk" %}
-</head>
-<body class="marketing-body ezgraph-body">
-  {% include "partials/site-header.njk" %}
-  <nav class="ezgraph-product-nav" aria-label="EZGraph navigation">
-    <div class="shell ezgraph-product-nav__inner">
-      <a class="ezgraph-product-nav__brand" href="/ezgraph/">
-        <img src="/assets/ezgraph/img/logo.svg" alt="EZGraph" width="166" height="34">
-        <span>by PicoFlow</span>
-      </a>
-      <div class="ezgraph-product-nav__links">
-        <a href="/ezgraph/">Overview</a>
-        <a href="/ezgraph/tutorial/">Get started</a>
-        <a href="/ezgraph/quote-graph/">QuoteGraph</a>
-        <a href="/ezgraph/compare/langgraph/"{% if ezgraphCompare %} aria-current="{% if page.url == '/ezgraph/compare/langgraph/' %}page{% else %}true{% endif %}"{% endif %}>vs. LangGraph</a>
-        <a href="/ezgraph/docs/developer-guide/">Docs</a>
-        <a href="/ezgraph/license/">License</a>
-      </div>
-    </div>
-  </nav>
-  <section class="ezgraph-license-ticker" aria-label="EZGraph runtime benefits">
-    <p class="ezgraph-license-ticker__sr-only">No EZGraph key required. Free production use. No runtime fee. Bring your own model provider. Support Jev. Run in your own infrastructure. Optional support is available.</p>
-    <div class="ezgraph-license-ticker__viewport" aria-hidden="true">
-      <div class="ezgraph-license-ticker__track">
-        <div class="ezgraph-license-ticker__group">
-          <span>No EZGraph key required</span><span>Free production use</span><span>No runtime fee</span><span>Bring your own model provider</span><span>Support Jev</span><span>Run in your own infrastructure</span><span>Optional support when you need it</span>
-        </div>
-        <div class="ezgraph-license-ticker__group">
-          <span>No EZGraph key required</span><span>Free production use</span><span>No runtime fee</span><span>Bring your own model provider</span><span>Support Jev</span><span>Run in your own infrastructure</span><span>Optional support when you need it</span>
-        </div>
-      </div>
-    </div>
-  </section>
-  <main id="main" class="ezgraph-main">
-    <div class="ezgraph-content{% if ezgraphCompare %} ezgraph-content--compare{% endif %}{% if ezgraphDocument or ezgraphDocs %} ezgraph-content--docs{% endif %}">
-      {% if ezgraphCompare %}
-      <div class="ezgraph-compare-layout">
-        {% include "partials/ezgraph-compare-nav.njk" %}
-        <div class="ezgraph-compare-body">
-      {% endif %}
-      {% if ezgraphDocument or ezgraphDocs %}
-      <div class="ezgraph-docs-layout">
-        {% include "partials/ezgraph-docs-nav.njk" %}
-        <div class="ezgraph-docs-body">
-      {% endif %}
+---
+layout: layouts/ezgraph-marketing.njk
+ezgraphDocs: true
+---
+<div class="ezgraph-content ezgraph-content--docs">
+  <div class="eg-container ezgraph-docs-layout">
+    {% include "partials/ezgraph-docs-nav.njk" %}
+    <div class="ezgraph-docs-body">
       {% if ezgraphDocument %}<article class="wrap ezgraph-document">{% endif %}
       {{ content | safe }}
       {% if ezgraphGuide %}{% include "partials/ezgraph-guide-pagination.njk" %}{% endif %}
       {% if ezgraphDocument %}</article>{% endif %}
-      {% if ezgraphDocument or ezgraphDocs %}
-        </div>
-      </div>
-      {% endif %}
-      {% if ezgraphCompare %}
-        </div>
-      </div>
-      {% endif %}
     </div>
-  </main>
-  {% include "partials/site-footer.njk" %}
-</body>
-</html>
+  </div>
+</div>
