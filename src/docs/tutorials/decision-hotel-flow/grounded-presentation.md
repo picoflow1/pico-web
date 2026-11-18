@@ -73,7 +73,7 @@ rejected draft never reaches the customer.
 
 `CriteriaHelper.renderHotelResults()` builds a numbered list directly from the
 saved array. `PresentationJudgeStep.onDecisionError()` returns that same list
-when Jev is unavailable. This boundary fails closed with respect to generated
+when Gemini is unavailable. This boundary fails closed with respect to generated
 prose: only a reviewed draft or code-rendered results can be shown.
 
 The renderer does not make the model's prose “more likely” to be correct. It is
@@ -141,4 +141,4 @@ write and persist the external operation ID before returning the confirmation.
 
 [7. Fallbacks and two-tier testing](/docs/tutorials/decision-hotel-flow/fallbacks-and-testing/)
 tests every decision boundary without providers, then separates that evidence
-from a real OpenAI-and-Jev replay.
+from the historical OpenAI and TypeSafe replay.

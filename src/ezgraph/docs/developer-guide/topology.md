@@ -148,9 +148,10 @@ before continuing. Use `fanout()` when workers and their join are explicit
 stages of graph traversal. `fanout()` is an imported response builder, not an
 awaitable `LlmNode` method, and it returns no child-output tuple.
 
-Neither API alone establishes recovery across a process restart. The current
-EZGraph engine does not configure a LangGraph checkpointer; `runNode()` requires
-an active compiled graph even when no checkpointer is configured.
+`runNode()` requires an active compiled graph. To resume a failed single-request
+graph after a process restart, opt into
+[resumable checkpointing](/ezgraph/docs/developer-guide/state-context-and-history/#resumable-checkpointing)
+with a durable LangGraph saver.
 
 ## Sequential and fixed-entry workers
 

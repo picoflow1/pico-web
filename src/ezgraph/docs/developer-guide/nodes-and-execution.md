@@ -423,9 +423,9 @@ Sequential reuse after settlement is allowed. A child started by `runNode()`
 cannot invoke another nested child or start another batch in this version.
 
 `runNode()` requires an active compiled LangGraph node or task. Standalone
-`parent.invoke()` execution that calls it is unsupported. The default EZGraph
-engine does not configure a LangGraph checkpointer, so functional task
-scheduling is not a promise of restart durability.
+`parent.invoke()` execution that calls it is unsupported. Completed tasks can
+be reused on retry when a single-request graph opts into
+[resumable checkpointing](/ezgraph/docs/developer-guide/state-context-and-history/#resumable-checkpointing).
 
 Compare this with graph-scheduled branches in
 [runNode versus fanout](/ezgraph/docs/developer-guide/topology/#runnode-versus-fanout):

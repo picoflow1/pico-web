@@ -140,6 +140,11 @@ The Step's non-null result wins; `null` delegates to `Flow.onLlmError()`. When b
 | `empty_response` | The provider returned no usable content or tool call | `lastResponse`; attempts exhausted |
 | `response_rejected` | `checkResponse()` requested another candidate | `lastResponse`; attempts exhausted |
 
+Missing (`null` or `undefined`) model or structured-parser output follows the
+`empty_response` path. Structured-output retries request a schema-compliant result
+and ask the model to call the provided output tool. Existing schema validation
+still applies.
+
 The hook may return an ordinary final Step response, including routing or `finish(...)`.
 It may also return `retryWithModel(selection)` to continue the same Step temporarily with
 another registered model. The alternate model gets one attempt per model call; if it calls a

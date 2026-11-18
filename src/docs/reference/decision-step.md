@@ -9,9 +9,8 @@ source: pf/src/picoflow/flow/decision-step.ts, pf/src/picoflow/flow/decision-run
 evidence rather than generated prose. Register it alongside ordinary `Step`s and
 `LogicStep`s in `Flow.defineSteps()`.
 
-TypeSafe Jev is PicoFlow's built-in decision provider. It is called through
-LangChain's `TypeSafeClassifier`, but PicoFlow owns provider-neutral question,
-answer, configuration, routing, and usage types.
+PicoFlow includes TypeSafe Jev, Gemini Decisions, and OpenAI Decisions. All
+three use the same PicoFlow question, answer, routing, and usage types.
 
 ```ts
 abstract class DecisionStep<
@@ -96,7 +95,7 @@ type Noul = {
 | --- | --- | --- |
 | `Choice` | `{ choice, probabilities, confidence }` | `choice` is inferred from the string keys in `criteria`; probabilities cover every label |
 | `Score` | `{ score, legend, probabilities, confidence }` | `score` is from zero through the last criterion index and may be fractional |
-| `Noul` | `{ noul }` | one probability in `[0, 1]`; there is no separate confidence field |
+| `Noul` | `{ noul, confidence? }` | probability of yes in `[0, 1]`. Gemini also reports confidence. |
 
 Declare maps with `as const satisfies DecisionQuestionMap` so keys and Choice
 labels remain literal types. `defineQuestions()` runs once per invocation and
@@ -165,8 +164,8 @@ Configure flow defaults with `Flow.configDecision()`:
 ```ts
 protected override configDecision() {
   return {
-    provider: 'typesafe',
-    model: 'jev-latest',
+    provider: 'google',
+    model: 'gemini-decision-1',
     timeoutMs: 15_000,
     maxRetries: 2,
   };
@@ -203,14 +202,17 @@ const engine = await FlowEngine.create({
   }),
   decisionProviders: DecisionProvider.create({
     typesafe: { apiKey: process.env.TYPESAFE_API_KEY },
+    google: { apiKey: process.env.GEMINI_API_KEY },
+    openai: { apiKey: process.env.OPENAI_API_KEY },
   }),
 });
 ```
 
 `DecisionProvider.create()` registers only the providers named in its argument.
-PicoFlow does not implicitly enable TypeSafe. Its standard endpoint is supplied
-by the LangChain client; PicoFlow does not read a TypeSafe base-URL environment
-variable.
+Select both provider and model when switching backends. The default pair is
+`typesafe` / `jev-latest`. Use `google` / `gemini-decision-1` for Gemini or
+`openai` / `gpt-6-luna` for OpenAI. Gemini requires text instructions for each
+question. Confidence values depend on the selected provider.
 
 Applications may register their own adapter:
 
@@ -226,8 +228,8 @@ interface DecisionProviderAdapter {
 ```
 
 Only errors explicitly classified as transient by `shouldRetry()` use another
-attempt. The built-in TypeSafe adapter retries connection/timeout errors, HTTP
-408 and 429, and 5xx responses.
+attempt. The built-in adapters retry connection and timeout errors, HTTP 408
+and 429, and 5xx responses.
 
 ## Answer validation and handling
 
@@ -267,7 +269,7 @@ The context contains `stepId`, configured provider and model, and the original
 2. when it returns `null`, `Flow.onDecisionError(context)`;
 3. when both return `null`, propagate the original provider failure.
 
-Caller cancellation bypasses both hooks. A provider answer that fails framework
+Caller cancellation, typed request errors, and provider refusals bypass both hooks. A Gemini content block or an OpenAI refusal for any question fails the step. A provider answer that fails framework
 validation is not retried, never reaches `onDecision()`, and enters this fallback
 chain with a `DecisionValidationError`. Question construction, configuration,
 decision-input errors, and exceptions thrown by `onDecision()` occur outside the
@@ -291,7 +293,7 @@ type DecisionUsage = {
 ```
 
 `calls` counts provider responses observed by the runner, including a response
-later rejected by framework validation. Failed transport attempts and results
+later rejected by framework validation. OpenAI responses that report usage on a refusal also count. Failed transport attempts and results
 arriving after cancellation are not counted, so observed usage may be lower than
 provider-side billing. Parallel decision usage is retained even when business
 state publication is rolled back.

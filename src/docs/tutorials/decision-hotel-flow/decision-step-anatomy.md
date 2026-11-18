@@ -117,7 +117,7 @@ state. Do not mutate one shared question object between requests.
 
 ## Provider registration is explicit
 
-The application composition root registers TypeSafe next to chat providers:
+The application composition root registers Gemini Decisions alongside the OpenAI chat provider:
 
 ```ts
 const engine = await FlowEngine.create({
@@ -126,14 +126,13 @@ const engine = await FlowEngine.create({
     openai: { apiKey: process.env.OPENAI_API_KEY },
   }),
   decisionProviders: DecisionProvider.create({
-    typesafe: { apiKey: process.env.TYPESAFE_API_KEY },
+    google: { apiKey: process.env.GEMINI_API_KEY },
   }),
 });
 ```
 
-PicoFlow does not silently enable TypeSafe and does not read a custom TypeSafe
-base URL. The adapter uses LangChain's `TypeSafeClassifier`; PicoFlow owns the
-provider-neutral public contracts and runtime policy.
+The `google` adapter sends the questions to the Gemini Developer API. PicoFlow
+owns the question and answer types, deadline, retries, and routing.
 
 ## What happens during one invocation
 
@@ -152,7 +151,7 @@ model, duration, usage, and optional request ID.
 ## Thresholds are application policy
 
 The presentation judge requires grounding probability `>= 0.85`, both scores
-`>= 1.5`, and both score confidences `>= 0.75`. Jev supplies evidence; this
+`>= 1.5`, and both score confidences `>= 0.75`. Gemini supplies evidence; this
 TypeScript expression supplies policy. Change and calibrate thresholds against a
 labeled application dataset, not intuition or one successful replay.
 

@@ -143,10 +143,6 @@ function enhanceCodeBlocks(content, variant) {
   );
 }
 
-function enhanceEzgraphCodeBlocks(content) {
-  return enhanceCodeBlocks(content, "ezgraph");
-}
-
 function anchorSlug(value) {
   return String(value)
     .trim()
@@ -270,14 +266,9 @@ export default function (eleventyConfig) {
     );
   });
 
-  eleventyConfig.addTransform("enhanceEzgraphCodeBlocks", function (content) {
-    if (!this.page?.outputPath?.includes(`${path.sep}ezgraph${path.sep}`)) return content;
-    return enhanceEzgraphCodeBlocks(content);
-  });
-
-  eleventyConfig.addTransform("enhancePicoflowCodeBlocks", function (content) {
-    if (this.page?.outputPath?.includes(`${path.sep}ezgraph${path.sep}`)) return content;
-    return enhanceCodeBlocks(content, "picoflow");
+  eleventyConfig.addTransform("enhanceCodeBlocks", function (content) {
+    const isEzgraph = this.page?.inputPath?.includes("/src/ezgraph/");
+    return enhanceCodeBlocks(content, isEzgraph ? "ezgraph" : "picoflow");
   });
 
   eleventyConfig.addCollection("docsSearch", (collectionApi) =>

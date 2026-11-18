@@ -1,12 +1,12 @@
 ---
 title: Track overview
 eyebrow: DecisionHotelFlow tutorial
-lede: DecisionHotelFlow combines ordinary conversational Steps, typed Jev DecisionSteps, deterministic validation and search, grounded presentation, and safe provider fallbacks in one durable hotel-booking journey.
+lede: DecisionHotelFlow combines ordinary conversational Steps, typed Gemini DecisionSteps, deterministic validation and search, grounded presentation, and safe provider fallbacks in one durable hotel-booking journey.
 source: pico-demo/src/myflow/decision-hotel-flow/decision-hotel-flow.ts
 ---
 
 `DecisionHotelFlow` is the decision-model track. It uses a chat model where the
-application needs conversation, TypeSafe's Jev API where it needs a typed
+application needs conversation, the Gemini Decisions API where it needs a typed
 classification or judgment, and ordinary TypeScript where it needs validation,
 search, pricing, or a final side effect.
 
@@ -77,8 +77,8 @@ export class DecisionHotelFlow extends Flow {
 
   protected override configDecision() {
     return {
-      provider: 'typesafe',
-      model: 'jev-latest',
+      provider: 'google',
+      model: 'gemini-decision-1',
       timeoutMs: 15_000,
       maxRetries: 2,
     };
@@ -147,7 +147,7 @@ attempts after the first. Both deadlines apply per attempt.
 
 DecisionHotelFlow is registered with the other flows on AppModule's shared
 engine. Its session database uses the same inline MongoDB/Cosmos factories;
-Jev's `decisionProviders` registration is separate from database authentication.
+Gemini's `decisionProviders` registration is separate from database authentication.
 See the [bootstrap lesson](/docs/tutorials/basic-flow/bootstrapping/#registering-the-engine)
 and [persistence guide](/docs/guides/persistence/#application-owned-database-initialization).
 The live suite retains the configured `SESSION_STORE`, defaulting to memory
@@ -160,7 +160,7 @@ npm run test:decision-hotel-flow
 ```
 
 The contract is deterministic and needs no provider credentials. The live test
-requires PicoFlow, OpenAI, and TypeSafe credentials; without them it is skipped.
+requires PicoFlow, OpenAI, and Gemini credentials.
 
 ## Next
 

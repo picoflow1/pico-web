@@ -1,13 +1,13 @@
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header">
   <div class="site-header__inner shell">
-    <a class="brand" href="/" aria-label="PicoFlow home">
+    <a class="brand" href="/picoflow/" aria-label="PicoFlow home">
       <img class="brand__logo" src="/assets/img/logo2.png" alt="" width="38" height="38">
       <span class="brand__name">picoflow.io</span>
     </a>
     <nav class="site-nav" aria-label="Primary navigation">
       {% for item in marketing.nav %}
-      <a{% if item.href == "/ezgraph/" %} class="site-nav__ezgraph"{% endif %} href="{{ item.href }}" {% if page.url == item.href or (item.href == "/ezgraph/" and page.url.startsWith("/ezgraph/")) %}aria-current="page"{% endif %}>{{ item.label }}</a>
+      <a{% if item.href == "/" %} class="site-nav__ezgraph"{% endif %} href="{{ item.href }}" {% if page.url == item.href %}aria-current="page"{% endif %}>{{ item.label }}</a>
       {% endfor %}
     </nav>
     <a class="button button--small button--gold header-cta" href="/demo/">Book a demo <span aria-hidden="true">→</span></a>

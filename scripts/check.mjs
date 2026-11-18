@@ -127,7 +127,7 @@ for (const group of ezgraphDocsNav) {
 }
 
 const htmlFiles = await collectHtmlFiles(siteDirectory);
-const internalHref = /href="(\/[^"#][^"]*)"/g;
+const internalHref = /href="(\/(?!\/)[^"]*)"/g;
 const legacyDocsHref = /href="\/(get-started|concepts|tutorials|guides|reference|resources)(?:\/|\")/;
 
 for (const file of htmlFiles) {
@@ -171,7 +171,7 @@ for (const file of htmlFiles) {
     const url = match[1];
     if (url.startsWith("/ezgraph/")) {
       await checkEzgraphDestination(url, relativeFile);
-    } else if (relativeFile.startsWith(`ezgraph${path.sep}`)) {
+    } else if (relativeFile === "index.html" || relativeFile.startsWith(`ezgraph${path.sep}`)) {
       const pageUrl = `/${relativeFile.split(path.sep).join("/").replace(/index\.html$/, "")}`;
       await checkEzgraphDestination(pageUrl + url, relativeFile);
     }

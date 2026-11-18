@@ -12,6 +12,18 @@ ezgraphGuide: true
 
 Validate model candidates, configure retries, handle blocked responses, and recover with a temporary alternate model.
 
+## Amazon Bedrock
+
+Select a named `bedrock:` catalog entry for a supported Claude, GPT, or Gemma
+model. Use `bedrock:configured` with a Converse-compatible Bedrock model or
+inference profile ARN. Install the integration for your selected API.
+`@langchain/aws` handles Converse, `@langchain/openai` handles Bedrock Chat
+Completions, and `@langchain/anthropic` handles Bedrock Messages.
+
+Set `BEDROCK_ARN` and `BEDROCK_API_KEY` in your deployment. Named Converse
+models can also use an explicitly configured region and the AWS SDK credential
+chain. Access and model availability depend on your AWS account and region.
+
 ## Error handling
 
 `LlmNode` owns response validation and model-error policy in conversational,

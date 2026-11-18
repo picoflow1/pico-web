@@ -26,7 +26,7 @@ set of framework features unavoidable.
 		<span class="card__body">A search, compare, and book workflow. Large prompt files, your own backend behind a tool, memory compaction, and answering without an LLM call.</span>
 	</a>
 	<a class="card" href="/docs/tutorials/decision-hotel-flow/">
-		<span class="card__title"><span class="card__title-main">DecisionHotelFlow</span><span class="card__title-sub">typed Jev decisions</span></span>
+		<span class="card__title"><span class="card__title-main">DecisionHotelFlow</span><span class="card__title-sub">typed Gemini decisions</span></span>
 		<span class="card__body">A routed hotel journey with three DecisionSteps for typed intent, readiness, and grounding decisions; deterministic validation, search, fallbacks, and booking remain in code.</span>
 	</a>
 	<a class="card" href="/docs/tutorials/invoice-flow/">
@@ -52,7 +52,7 @@ set of framework features unavoidable.
 | Feature | BasicFlow | HotelFlow | Decision hotel | InvoiceFlow | SupportFlow | Home insurance | Employee benefits |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Zod tool definitions and `@Tool` handlers | yes | yes | yes | yes | yes | yes | yes |
-| `DecisionStep` with typed Jev questions | no | no | yes | no | no | no | no |
+| `DecisionStep` with typed Gemini questions | no | no | yes | no | no | no | no |
 | Multi-tool batching with `@Tools([...])` | yes | no | no | no | no | no | no |
 | MCP-backed application operation | yes | yes | yes | no | no | no | no |
 | `LogicStep` (no model call) | yes | no | yes | no | yes | yes | yes |

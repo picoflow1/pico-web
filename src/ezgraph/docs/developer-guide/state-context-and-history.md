@@ -159,6 +159,20 @@ Factories are optional: without one for the selected backend, EZGraph retains
 its built-in configuration-based client creation. Use application-owned
 factories when you need explicit authentication or SDK connection options.
 
+## Resumable checkpointing
+
+EZGraph persists application session documents by default. For graphs that
+complete in a single request, set `checkpointing: "resumable"` in the graph
+definition and pass an application-owned LangGraph `checkpointer` to
+`GraphEngine.create()`.
+
+Retry a failed request with the same session ID and input to resume its run.
+EZGraph reuses completed `runNode()` task results and runs failed tasks again.
+Recovery across process restarts requires a durable saver. Give external
+side effects idempotency keys because a failed task can repeat them on retry.
+Multi-turn checkpoint continuation and LangGraph interrupts are outside this
+mode's scope.
+
 ## Initial node and history routing
 
 The first argument to `createGraphStateAnnotation()` declares the initial

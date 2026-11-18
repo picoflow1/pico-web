@@ -5,7 +5,7 @@ lede: Split the journey by responsibility, then choose a chat model, decision mo
 source: pico-demo/src/myflow/decision-hotel-flow/decision-hotel-flow.ts, pico-demo/src/myflow/decision-hotel-flow/criteria-helper.ts
 ---
 
-The important design choice in `DecisionHotelFlow` is not Jev itself. It is the
+The central design choice in `DecisionHotelFlow` is the
 decision to give each kind of work the narrowest runtime that can do it.
 
 ## The goal
@@ -20,7 +20,7 @@ decision to give each kind of work the narrowest runtime that can do it.
 | Work | Mechanism | Why |
 | --- | --- | --- |
 | Understand and phrase an open-ended conversation | ordinary `Step` with a chat model | It can ask follow-ups and call typed tools |
-| Choose among declared labels or score a bounded claim | `DecisionStep` with Jev | The output is typed evidence rather than prose |
+| Choose among declared labels or score a bounded claim | `DecisionStep` with Gemini Decisions | The output is typed evidence rather than prose |
 | Validate, search, price, render a safe fallback, or commit | TypeScript and `LogicStep` | The result must be reproducible and application-owned |
 
 That yields three decision boundaries and seven ordinary execution stages:
@@ -31,7 +31,7 @@ typed route -> conversational collector -> typed readiness review
             -> typed grounding review -> deterministic selection check
 ```
 
-Jev does not validate dates, compare budgets, query the hotel catalogue, or
+Gemini does not validate dates, compare budgets, query the hotel catalogue, or
 authorize a booking. It classifies bounded questions. Application code decides
 what those answers permit.
 
@@ -80,8 +80,8 @@ Decision configuration is flow-wide:
 ```ts
 protected override configDecision() {
   return {
-    provider: 'typesafe',
-    model: 'jev-latest',
+    provider: 'google',
+    model: 'gemini-decision-1',
     timeoutMs: 15_000,
     maxRetries: 2,
   };

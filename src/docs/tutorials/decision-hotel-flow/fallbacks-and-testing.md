@@ -32,7 +32,7 @@ instead of entering business fallback policy.
 ## Decision retry policy
 
 `maxRetries: 2` means at most three attempts. Only failures the provider adapter
-marks transient are retried. The TypeSafe adapter treats timeouts, connection
+marks transient are retried. The Gemini adapter treats timeouts, connection
 errors, HTTP 408, HTTP 429, and 5xx responses as transient. Invalid answer
 envelopes and handler exceptions are not transport retries.
 
@@ -78,7 +78,7 @@ npm run test:decision-hotel-flow
 ```
 
 With all required credentials, the E2E test boots the demo, uses the real
-OpenAI and TypeSafe providers, sends the sixteen scenario requests through one
+OpenAI chat and Gemini Decisions, sends the sixteen scenario requests through one
 session, semantically grades each reply, and checks active step plus final state.
 Only after every assertion succeeds does it write
 `test/.tmp/decision-hotel-flow/live.json`.
@@ -125,7 +125,7 @@ beyond this tutorial.
 - **Mocking only happy paths.** Force every decision fallback and every
   correctable validation branch.
 - **Returning malformed fake answers.** The runner validates test adapters with
-  the same contracts as Jev.
+  the same contracts as Gemini.
 - **Testing routes by exact prose.** Assert cursor and saved state; reserve
   semantic wording checks for the live tier.
 - **Combining chat and decision usage.** They are separate runtime mechanisms

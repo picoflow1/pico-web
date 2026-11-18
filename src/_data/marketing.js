@@ -6,7 +6,7 @@ export default {
     { label: "Docs", href: "/docs/" },
     { label: "Licensing", href: "/license/" },
     { label: "Contact", href: "/contact/" },
-    { label: "EZGraph", href: "/ezgraph/" },
+    { label: "EZGraph", href: "/" },
   ],
   pillars: [
     {
@@ -140,7 +140,7 @@ export default {
         {
           question: "How do I choose between LangGraph, EZGraph, and PicoFlow?",
           answer:
-            'Choose <strong>LangGraph</strong> when you need low-level graph control, native checkpoint interrupts, or a permissive open-source dependency, and are comfortable owning the surrounding application conventions. Choose <a href="/ezgraph/"><strong>EZGraph</strong></a> when you want to keep LangGraph as the execution engine but want a ready-made, typed application layer for guided conversations; it requires no EZGraph account or key and is free to use in production. Choose <strong>PicoFlow</strong> when the conversation is a customer-facing business application: named flows, explicit domain steps, durable business state, validation, and transitions all need to work as one shared runtime. EZGraph can be a sensible on-ramp; none of these choices requires pretending the other two are bad fits.',
+            'Choose <strong>LangGraph</strong> when you need low-level graph control, native checkpoint interrupts, or a permissive open-source dependency, and are comfortable owning the surrounding application conventions. Choose <a href="/"><strong>EZGraph</strong></a> when you want to keep LangGraph as the execution engine but want a ready-made, typed application layer for guided conversations; it requires no EZGraph account or key and is free to use in production. Choose <strong>PicoFlow</strong> when the conversation is a customer-facing business application: named flows, explicit domain steps, durable business state, validation, and transitions all need to work as one shared runtime. EZGraph can be a sensible on-ramp; none of these choices requires pretending the other two are bad fits.',
         },
         {
           question: "Is PicoFlow built on LangChain?",

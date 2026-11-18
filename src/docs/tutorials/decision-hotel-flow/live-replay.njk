@@ -5,12 +5,12 @@ lede: "Start with a recorded provider-backed journey through invalid values, a c
 source: pico-demo/test/decision-hotel-flow/decision-hotel-flow.e2e-spec.ts, pico-demo/test/.tmp/decision-hotel-flow/live.json
 ---
 
-<p>Read this first. It is a complete, passing run of the sixteen-turn live scenario with <code>HOTEL_FLOW_CURRENT_DATE</code> frozen to <code>2027-07-15</code>. The run used the real OpenAI chat provider and TypeSafe Jev decision provider. Wording and confirmation numbers may vary; saved state, routing, grounded results, and completion are the durable contracts.</p>
+<p>Read this first. This historical capture is a complete, passing run of the sixteen-turn live scenario with <code>HOTEL_FLOW_CURRENT_DATE</code> frozen to <code>2027-07-15</code>. The run used OpenAI chat and TypeSafe Jev before the switch to Gemini Decisions. Wording and confirmation numbers may vary; saved state, routing, grounded results, and completion are the durable contracts.</p>
 
 <h2 id="run-it-yourself">Run it yourself</h2>
 <pre><code class="language-bash">cd pico-demo
 npm run test:decision-hotel-flow</code></pre>
-<p>The test sends every request through one session, semantically judges every response, and verifies the active step and final state. It is skipped unless <code>PICOFLOW_KEY</code>, <code>OPENAI_API_KEY</code>, and <code>TYPESAFE_API_KEY</code> are available. A skipped test is not live evidence.</p>
+<p>The test sends every request through one session, semantically judges every response, and verifies the active step and final state. It is skipped unless <code>PICOFLOW_KEY</code>, <code>OPENAI_API_KEY</code>, and <code>GEMINI_API_KEY</code> are available.</p>
 
 <h2 id="captured-live-transcript">Captured live transcript</h2>
 <div class="quote-replay">

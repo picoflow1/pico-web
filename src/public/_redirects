@@ -8,7 +8,8 @@
 /guides/* /docs/guides/:splat 301
 /reference/* /docs/reference/:splat 301
 /resources/* /docs/resources/:splat 301
-/ezgraph/index.html /ezgraph/ 301
+/ezgraph/ / 301
+/ezgraph/index.html / 301
 /ezgraph/tutorial.html /ezgraph/tutorial/ 301
 /ezgraph/tutorial-quote.html /ezgraph/quote-graph/ 301
 /ezgraph/compare.html /ezgraph/compare/langgraph/ 301

@@ -27,7 +27,7 @@
   <a class="eg-skip" href="#main">Skip to content</a>
   <header class="eg-header">
     <div class="eg-container eg-header-inner">
-      <a class="eg-brand" href="/ezgraph/" aria-label="EZGraph home"><img src="/assets/ezgraph/img/logo.svg" alt="EZGraph" width="151" height="36"></a>
+      <a class="eg-brand" href="/" aria-label="EZGraph home"><img src="/assets/ezgraph/img/logo.svg" alt="EZGraph" width="151" height="36"></a>
       <nav class="eg-nav" aria-label="EZGraph navigation">
         <a href="/ezgraph/why/"{% if page.url == '/ezgraph/why/' %} aria-current="page"{% endif %}>Why EZGraph</a>
         <a href="/ezgraph/workflows/"{% if page.url == '/ezgraph/workflows/' or page.url == '/ezgraph/quote-graph/' %} aria-current="{% if page.url == '/ezgraph/workflows/' %}page{% else %}true{% endif %}"{% endif %}>Workflows</a>
@@ -42,10 +42,10 @@
   <main id="main">{% if ezgraphLegal %}<div class="eg-container eg-legal">{% endif %}{{ content | safe }}{% if ezgraphLegal %}</div>{% endif %}</main>
   <footer class="eg-footer">
     <div class="eg-container eg-footer-top">
-      <div><a class="eg-brand" href="/ezgraph/"><img src="/assets/ezgraph/img/logo.svg" alt="EZGraph" width="151" height="36"></a><p>A consistent application layer.<br>A real LangGraph underneath.</p><a class="eg-byline" href="/">Built by PicoFlow <span aria-hidden="true">↗</span></a></div>
+      <div><a class="eg-brand" href="/"><img src="/assets/ezgraph/img/logo.svg" alt="EZGraph" width="151" height="36"></a><p>A consistent application layer.<br>A real LangGraph underneath.</p><span class="eg-byline">Built by PicoFlow</span></div>
       <div><h2>Build</h2><a href="/ezgraph/tutorial/">First workflow</a><a href="/ezgraph/workflows/">Workflow examples</a><a href="/ezgraph/docs/developer-guide/">Developer guide</a><a href="https://www.npmjs.com/package/@picoflow/ezgraph">npm package ↗</a></div>
       <div><h2>Explore</h2><a href="/ezgraph/why/">Why EZGraph</a><a href="/ezgraph/compare/langgraph/">Compare the layers</a><a href="/ezgraph/quote-graph/">QuoteGraph walkthrough</a><a href="https://github.com/picoflowio/ezgraph-demo">Example source ↗</a></div>
-      <div><h2>Connect</h2><a href="/ezgraph/license/">Runtime license</a><a href="{{ site.discord }}">Developer community ↗</a><a href="/contact/">Contact &amp; support</a><a href="/">Explore PicoFlow ↗</a></div>
+      <div><h2>Connect</h2><a href="/ezgraph/license/">Runtime license</a><a href="{{ site.discord }}">Developer community ↗</a><a href="/contact/">Contact &amp; support</a></div>
     </div>
     <div class="eg-container eg-footer-bottom"><span>© {{ site.year }} picoflow LLC</span><span>Free production use under the <a href="/ezgraph/license/">commercial runtime license</a>. Model and hosting costs are yours.</span></div>
   </footer>

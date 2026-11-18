@@ -103,13 +103,13 @@ Three outcomes are explicit:
 | No matches | `RouterStep` with a revision notice |
 | Matches | `PresentStep` with results, criteria, and accepted-review flag |
 
-The router displays a saved notice before it asks Jev to interpret another
+The router displays a saved notice before it asks Gemini to interpret another
 request. An empty result is therefore normal workflow data, not an exception and
 not a reason to lose the session.
 
 ## Read-only fallback policy
 
-If the Jev call fails, `CriteriaReadinessJudgeStep.onDecisionError()` lets
+If the Gemini call fails, `CriteriaReadinessJudgeStep.onDecisionError()` lets
 deterministic validation decide:
 
 ```ts

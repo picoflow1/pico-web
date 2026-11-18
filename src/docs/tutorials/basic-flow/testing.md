@@ -2,7 +2,7 @@
 title: 18. Testing a flow end to end
 eyebrow: BasicFlow tutorial
 lede: Assert on the persisted session document, not only on what the assistant said. A fluent reply from the wrong step is the failure mode that matters.
-source: pico-demo/test/basic-flow/basic-flow.scenario.json, pico-demo/test/basic-flow/basic-flow.e2e-spec.ts
+source: pico-demo/test/basic-flow/basic-flow.scenario.json, pico-demo/test/basic-flow/basic-flow.e2e-spec.ts, pico-demo/test/regression/basic-flow-parallel.spec.ts, pico-demo/test/basic-flow-ollama/local-conversation.eval.ts
 ---
 
 A flow test that only checks response text passes when the model is charming and the
@@ -195,21 +195,20 @@ if (normalized === "la") return 72;
 
 ## Live model versus scripted model
 
-The same file runs two ways.
+The live entrypoint contains one conversation test and creates one session document.
 
 ```bash
-npm run test:basic-flow                                       # live provider
-BASIC_FLOW_USE_SCRIPTED_MODEL=1 npm run test:basic-flow       # scripted, no provider calls
+npm run test:basic-flow              # eight-turn live conversation
 ```
 
-<div class="callout callout--note"><span class="callout__title">Note</span><p>The demo's internal guide refers to an <code>npm run test:basic-flow:contract</code> script. No such script exists in <code>pico-demo/package.json</code>; set <code>BASIC_FLOW_USE_SCRIPTED_MODEL=1</code> on the normal test script instead.</p></div>
+The scripted parallel-join regression is retained separately in
+`test/regression/basic-flow-parallel.spec.ts`, outside the flow package commands.
 
-The scripted variant is selected by `BASIC_FLOW_USE_SCRIPTED_MODEL=1`, and the test swaps
-the model factory on the prototype:
+The scripted regression swaps the model factory on the prototype:
 
 ```ts
 function installScriptedBasicFlowModel(): () => void {
-  const modelPrototype = Model.prototype as Model & {
+  const modelPrototype = Model.prototype as unknown as {
     createInstance: (...args: unknown[]) => unknown;
   };
   const originalCreateInstance = modelPrototype.createInstance;
@@ -251,36 +250,32 @@ throw new Error(
 Add a step and forget to script it, and the scripted run fails with the prompt that had
 no branch — a useful forcing function.
 
-What the scripted run still covers: the controller, DTOs, engine, session lock, SQLite
-store, tool dispatch including group dispatch, transitions, logic steps, nested and
-parallel execution, structured output, and every persisted-state assertion. What it does
-not cover: whether a real model actually calls the tool when a real user types
-`"1/1/2000"`. That is what the live run is for, and it is why both exist.
+The scripted regression runs the first six scenario turns. It covers the controller,
+DTOs, engine, configured session store, grouped tool dispatch, nested parallel execution,
+structured output, and persisted join results. The live replay checks all eight turns,
+including DOB, address, and profile completion with the actual provider.
 
 ## Environment
 
 ```ts
-const requiredConfig = useScriptedModel
-  ? ["PICOFLOW_KEY"]
-  : ["OPENAI_API_KEY", "PICOFLOW_KEY"];
+const requiredConfig = ["OPENAI_API_KEY", "PICOFLOW_KEY"];
 const missingConfig = requiredConfig.filter((key) => !process.env[key]?.trim());
 ```
 
-The test **skips** rather than fails when configuration is missing, with the reason in
-the skip message. `PICOFLOW_KEY` is required for both, because the runner verifies the
-licence on every model call.
+The live test **skips** when its configuration is missing, with the reason in the
+skip message. The scripted regression requires `PICOFLOW_KEY`, because the runner
+verifies the licence on every model call.
 
-The test loads `.env`, but its normal mode deliberately replaces session persistence with
-SQLite at `test/.tmp/basic-flow-session.sqlite`. Set `USE_ENV=1` when you want the test to
-retain the session-store configuration from `.env`:
+The live package command sets `USE_ENV=1` and retains the session-store configuration
+from `.env`:
 
 ```bash
-USE_ENV=1 npm run test:basic-flow
+npm run test:basic-flow
 ```
 
-This switch affects persistence only; provider credentials still determine whether the live
-scenario runs. Running against a real store matters: the persisted-state assertions are only
-meaningful if serialisation and deserialisation are in the loop.
+Running the test file directly without `USE_ENV=1` defaults to SQLite at
+`test/.tmp/basic-flow-session.sqlite`. Running against a real store verifies that
+serialisation and deserialisation participate in the persisted-state assertions.
 
 ## Why it is written this way
 
@@ -303,6 +298,29 @@ Extending the flow means extending the test in the same shape:
    prompt.
 4. For nested work, assert the child's state too. A fluent outer response can hide a
    failed internal branch, and the reply text will not tell you.
+
+## Run BasicFlow with local Ollama
+
+```sh
+ollama pull qwen3.5:9b
+npm run test:basic-flow-ollama
+```
+
+This opt-in replay uses BasicFlow's existing eight-turn scenario. Scoped
+`node:test` mocks select Qwen for the flow and every step, including WeatherStep,
+DOBStep, and the nested ConcurStep workers. BasicFlow's production model
+declarations, prompts, tools, memories, and routing remain intact.
+The test's Ollama adapter uses native tool-based structured output with the
+original Zod schema, including its 0–10 movie-rating validation.
+
+The script requires a running Ollama server, `PICOFLOW_KEY`, and credentials for
+`.env`'s selected session store. `OLLAMA_BASE_URL` defaults to
+`http://localhost:11434`. The command sets `USE_ENV=1 KEEP_SESSION=1`, retains the
+session, and writes a transcript and snapshot to
+`test/.tmp/basic-flow-ollama/replay.latest.json` on success or failure.
+The artifact also records raw structured-output answers and tool calls for diagnosis.
+The test uses response/state assertions without a separate LLM grader. The original
+`test:basic-flow` continues to exercise the hosted-model declarations.
 
 ## Common mistakes
 

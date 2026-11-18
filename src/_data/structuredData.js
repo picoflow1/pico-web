@@ -2,7 +2,7 @@ import marketing from "./marketing.js";
 import site from "./site.js";
 
 /**
- * JSON-LD for the home page. This is declarative metadata, not executable
+ * JSON-LD for the PicoFlow landing page. This is declarative metadata, not executable
  * JavaScript, so it does not break the site's no-client-script rule.
  */
 
@@ -34,7 +34,7 @@ const softwareApplication = {
   operatingSystem: "Node.js 22.5+",
   softwareVersion: site.latestRelease.version,
   description: site.description,
-  url: site.url,
+  url: `${site.url}/picoflow/`,
   downloadUrl: site.npm,
   programmingLanguage: "TypeScript",
   offers: {

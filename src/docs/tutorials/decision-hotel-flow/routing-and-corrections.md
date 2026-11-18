@@ -12,7 +12,7 @@ The router answers two different questions:
    destination must receive?**
 
 Keeping those questions independent is what makes them safe to evaluate in one
-Jev call.
+Gemini call.
 
 ## Dynamic questions from current state
 
@@ -48,7 +48,7 @@ return {
 } as const satisfies DecisionQuestionMap;
 ```
 
-Do not make `request_delivery` say “if `destination` is a collector…”. Jev
+Do not make `request_delivery` say “if `destination` is a collector…”. Gemini
 answers batched questions together; one answer cannot be an input to another in
 that same request. Both questions must be answerable from the saved criteria and
 latest request.
@@ -88,7 +88,7 @@ return answers.request_delivery.choice === 'apply_request'
   : next;
 ```
 
-`context.request` is the same request Jev classified. `HumanMessageEx` preserves
+`context.request` is the same request Gemini classified. `HumanMessageEx` preserves
 step attribution and marks it as user-originated.
 
 ## Why a transition alone is not enough
@@ -110,6 +110,28 @@ Bot: Which hotel amenities do you require? ...
 sees that dates are already reflected, so it selects the first unresolved field,
 amenities. All of that happens in one turn.
 
+## Prompting for saved values and new corrections
+
+The router evaluates the same latest request before and after a collector saves
+it. Its prompts compare the requested values with the current saved values;
+`answered: true` alone does not establish that a new correction has been applied.
+The choice descriptions include saved values, and each question names the first
+unresolved criterion. Earlier rejected or superseded requests are history rather
+than pending changes.
+
+For the date correction above, different saved dates require delivery to
+`DateRangeStep`. Once both dates match, the router resumes the first unresolved
+collector. Amenities with `answered: false` and `amenities: []` still require an
+answer; an empty list represents no preference only after `answered` becomes
+true. The amenity prompt prioritizes a new request for another criterion and
+uses an activation message to ask for amenities without replaying earlier work.
+The room-type prompt likewise treats `Start` as activation and asks for one bed,
+two beds, or a suite.
+
+These are prompt instructions. The existing tool handlers, validation, and
+transition code continue to own state changes. Live replay verifies the model's
+interpretation separately from deterministic contract tests.
+
 ## Collector-owned validation
 
 The router never saves dates or budgets. Each collector validates its own tool
@@ -125,10 +147,10 @@ validation.
 
 ## Router fallback
 
-If Jev is unavailable, `RouterStep.onDecisionError()` reads only saved state. It
+If Gemini is unavailable, `RouterStep.onDecisionError()` reads only saved state. It
 shows a pending notice, sends the customer to the first invalid or missing
 criterion, or renders a safe criteria summary and asks for an explicit search or
-revision. It cannot interpret a new cross-step correction without Jev, so it
+revision. It cannot interpret a new cross-step correction without Gemini, so it
 does not pretend to.
 
 ## Common mistakes

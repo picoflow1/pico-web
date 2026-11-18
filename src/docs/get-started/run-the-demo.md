@@ -155,7 +155,7 @@ FlowEngine.create({
     EmployeeBenefitsFlow,
   ],
   decisionProviders: DecisionProvider.create({
-    typesafe: { apiKey: config.get<string>("TYPESAFE_API_KEY") },
+    google: { apiKey: config.get<string>("GEMINI_API_KEY") },
   }),
   providers: [
     ...ModelProvider.createBuiltinAdapters({

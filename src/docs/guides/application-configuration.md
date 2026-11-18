@@ -29,7 +29,7 @@ which model to use. Registering a provider does not select a default model for y
 
 ## Configure app.module.ts
 
-This example registers two demo flows, OpenAI chat support, the TypeSafe decision provider,
+This example registers two demo flows, OpenAI chat support, the Gemini decision provider,
 and MongoDB/Cosmos session-client factories. It shortens Cosmos authentication to an API key;
 the [persistence guide](/docs/guides/persistence/#application-owned-database-initialization)
 includes service-principal and default Azure credentials. Keep your existing controllers in
@@ -63,7 +63,7 @@ import { DecisionHotelFlow } from "./myflow/decision-hotel-flow/decision-hotel-f
         openai: { apiKey: config.get<string>("OPENAI_API_KEY") },
       }),
       decisionProviders: DecisionProvider.create({
-        typesafe: { apiKey: config.get<string>("TYPESAFE_API_KEY") },
+        google: { apiKey: config.get<string>("GEMINI_API_KEY") },
       }),
       sessionClients: {
         mongodb: () => {
@@ -123,8 +123,8 @@ For typed decision Steps, set Flow defaults with a separate hook:
 ```ts
 protected override configDecision() {
   return {
-    provider: "typesafe",
-    model: "jev-latest",
+    provider: "google",
+    model: "gemini-decision-1",
     timeoutMs: 15_000,
     maxRetries: 2,
   };
