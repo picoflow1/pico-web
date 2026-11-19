@@ -109,6 +109,7 @@ not required at startup.
 | `memory` (default) | No database client; sessions last for the process lifetime. |
 | `sqlite` | `SQLITE_DB_PATH`, default `./data/sessions.sqlite`. |
 | `mongodb` (alias `mongo`) | Required `MONGODB_NAME` and `MONGODB_COLLECTION`. The application factory above reads `MONGODB_URL` and optional `MONGODB_TLS_CA_FILE`. |
+| `documentdb` (alias `docdb`) | Database and collection names, plus the endpoint and TLS certificate path when EZGraph builds the client. See [Amazon DocumentDB](#amazon-documentdb). |
 | `cosmos` (alias `cosmosdb`) | `COSMO_DB_ID`, default `langgraph`; `COSMO_DB_SESSION_CONTAINER_ID`, default `sessions`. The application factory above reads the endpoint and credentials. |
 
 For MongoDB, a minimal local configuration is:
@@ -121,9 +122,9 @@ MONGODB_COLLECTION=sessions
 ```
 
 `MONGODB_TLS_CA_FILE` is an optional path to a trusted CA certificate file, passed
-as the MongoDB SDK's `tlsCAFile` option. Set it when your deployment requires a
-custom CA, such as a DocumentDB connection configured that way. Keep connection,
-TLS, and authentication options in the application factory.
+as the MongoDB SDK's `tlsCAFile` option. Set it when your MongoDB deployment uses
+a custom certificate authority. Keep connection, TLS, and authentication
+options in the application factory.
 
 For a pre-provisioned Cosmos database and container using key authentication:
 
@@ -158,6 +159,38 @@ through your application's own lifecycle.
 Factories are optional: without one for the selected backend, EZGraph retains
 its built-in configuration-based client creation. Use application-owned
 factories when you need explicit authentication or SDK connection options.
+
+## Amazon DocumentDB
+
+Select `SESSION_STORE=documentdb` to persist EZGraph session documents in
+Amazon DocumentDB. EZGraph can build the MongoDB-compatible client from the
+following settings. Use the cluster endpoint without credentials and set the
+local path to the Amazon RDS certificate authority (CA) bundle.
+
+```dotenv
+SESSION_STORE=documentdb
+DOCUMENTDB_URL=mongodb://your-cluster-endpoint:27017/?replicaSet=rs0
+DOCUMENTDB_NAME=ezgraph
+DOCUMENTDB_COLLECTION=sessions
+DOCUMENTDB_TLS_CA_FILE=/path/to/global-bundle.pem
+```
+
+- **IAM (default).** Install `@aws-sdk/credential-providers` in your application
+  and make AWS credentials available through the default credential chain. The
+  client uses `MONGODB-AWS` authentication against `$external`.
+- **Username and password.** Set `DOCUMENTDB_AUTH=scram` and inject
+  `DOCUMENTDB_USERNAME` and `DOCUMENTDB_PASSWORD` at runtime.
+
+The built-in client uses TLS and reads from the primary so revision checks see
+the latest session document. `DOCUMENTDB_RETRY_WRITES` defaults to `false`.
+Enable it only on a DocumentDB engine that supports retryable writes.
+`DOCUMENTDB_CREATE_INDEX` defaults to `true` and creates a unique index on
+`id`. Set it to `false` to verify an index you've provisioned separately.
+
+You can also pass a `sessionClients.documentdb` factory to
+`GraphEngine.create()`. Its client must use TLS and
+`readPreference: "primary"`. Specify the database and collection through the
+same settings. They fall back to `MONGODB_NAME` and `MONGODB_COLLECTION`.
 
 ## Resumable checkpointing
 

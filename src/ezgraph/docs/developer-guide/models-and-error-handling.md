@@ -20,9 +20,25 @@ inference profile ARN. Install the integration for your selected API.
 `@langchain/aws` handles Converse, `@langchain/openai` handles Bedrock Chat
 Completions, and `@langchain/anthropic` handles Bedrock Messages.
 
-Set `BEDROCK_ARN` and `BEDROCK_API_KEY` in your deployment. Named Converse
-models can also use an explicitly configured region and the AWS SDK credential
-chain. Access and model availability depend on your AWS account and region.
+For a Converse-compatible model or inference profile, install
+`@langchain/aws` and set these deployment variables. Use the Amazon Resource
+Name (ARN) of the target and inject the Bedrock API key at runtime.
+
+```dotenv
+BEDROCK_ARN=arn:aws:bedrock:us-east-1:123456789012:application-inference-profile/your-profile
+BEDROCK_API_KEY=
+```
+
+Set the graph's `llmConfig` to `ModelCatalog.model("bedrock:configured", { retries: 2 })`.
+EZGraph invokes that ARN through Converse. If your application owns provider
+configuration, pass the Bedrock settings to `GraphEngine.create()` through
+`ModelProvider.createBuiltinAdapters({ bedrock: { arn, apiKey } })`.
+
+When `BEDROCK_ARN` is set, named catalog entries use its region and invoke their
+own model IDs. Named Converse models can also use an explicit region and the
+AWS SDK credential chain. The Chat Completions and Messages integrations
+require a Bedrock API key. Access and model availability depend on your AWS
+account and region.
 
 ## Error handling
 

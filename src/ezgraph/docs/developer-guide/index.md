@@ -53,6 +53,7 @@ and manage durable node state and graph context.
 [Read this topic →](/ezgraph/docs/developer-guide/state-context-and-history/)
 
 - <a id="application-owned-database-initialization" href="/ezgraph/docs/developer-guide/state-context-and-history/#application-owned-database-initialization">Application-owned database initialization</a>
+- <a id="amazon-documentdb" href="/ezgraph/docs/developer-guide/state-context-and-history/#amazon-documentdb">Amazon DocumentDB</a>
 - <a id="initial-node-and-history-routing" href="/ezgraph/docs/developer-guide/state-context-and-history/#initial-node-and-history-routing">Initial node and history routing</a>
 - <a id="graph-wide-runtime-context" href="/ezgraph/docs/developer-guide/state-context-and-history/#graph-wide-runtime-context">Graph-wide runtime context</a>
 - <a id="state-belongs-to-the-node-that-owns-it" href="/ezgraph/docs/developer-guide/state-context-and-history/#state-belongs-to-the-node-that-owns-it">State belongs to the node that owns it</a>
@@ -73,6 +74,7 @@ Validate model candidates, configure retries, handle blocked responses, and reco
 
 [Read this topic →](/ezgraph/docs/developer-guide/models-and-error-handling/)
 
+- <a id="amazon-bedrock" href="/ezgraph/docs/developer-guide/models-and-error-handling/#amazon-bedrock">Amazon Bedrock</a>
 - <a id="error-handling" href="/ezgraph/docs/developer-guide/models-and-error-handling/#error-handling">Error handling</a>
 - <a id="validate-candidates-before-tools-run" href="/ezgraph/docs/developer-guide/models-and-error-handling/#validate-candidates-before-tools-run">Validate candidates before tools run</a>
 - <a id="set-retry-and-graph-wide-recovery-policy" href="/ezgraph/docs/developer-guide/models-and-error-handling/#set-retry-and-graph-wide-recovery-policy">Set retry and graph-wide recovery policy</a>

@@ -803,6 +803,18 @@
   color:var(--muted);
   text-decoration:none;
 }
+.eg-footer-top>div>a.eg-footer-social {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  width:fit-content;
+}
+.eg-footer-icon {
+  width:16px;
+  height:16px;
+  flex:none;
+  fill:currentColor;
+}
 .eg-footer-top>div>a:hover {
   text-decoration:underline;
 }
