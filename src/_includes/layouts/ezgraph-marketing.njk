@@ -8,7 +8,11 @@
   <title>{{ ezgraphPageTitle }} | EZGraph</title>
   <meta name="description" content="{{ description }}">
   <link rel="canonical" href="{{ site.url }}{{ page.url }}">
+  {% if page.url == "/" %}
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  {% else %}
   <link rel="icon" href="/assets/ezgraph/img/logo.svg" type="image/svg+xml">
+  {% endif %}
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="EZGraph">
   <meta property="og:title" content="{{ ezgraphPageTitle }} | EZGraph">
